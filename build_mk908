@@ -1,0 +1,29 @@
+#!/bin/bash
+
+THREADS="6"
+DEVICE="rk3188-mk908-defconfig"
+
+# default toolchain
+#TOOLCHAIN=../../../prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm_eabi-
+
+# linaro 4.8 toolchain
+TOOLCHAIN=../../../prebuilts/gcc/linux-x86/arm/android-toolchain-eabi/bin/arm-linux-androideabi-
+
+if [ "$1" != "" ]; then
+	THREADS="$1"
+fi
+
+if [ "$2" != "" ]; then
+	DEVICE="$2"
+fi
+
+echo -e "\n==========================================="
+echo -e " Configuring kernel for ${DEVICE}"
+echo -e "===========================================\n"
+ARCH=arm CROSS_COMPILE=$TOOLCHAIN make $DEVICE
+
+echo -e "\n==========================================="
+echo -e " Building kernel for ${DEVICE} with ${THREADS} thread(s)"
+echo -e "===========================================\n"
+ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS
+
