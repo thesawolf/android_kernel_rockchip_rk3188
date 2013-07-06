@@ -109,6 +109,20 @@ config CPU_FREQ_DEFAULT_GOV_INTERACTIVE
 	  loading your cpufreq low-level hardware driver, using the
 	  'interactive' governor for latency-sensitive workloads.
 
+config CPU_FREQ_DEFAULT_GOV_SMARTASS2
+	bool "smartass2"
+	select CPU_FREQ_GOV_SMARTASS2
+	help
+	  Use the CPUFreq governor 'smartassV2' as default. See 
+	  smartassV2 governor help for more details.
+
+config CPU_FREQ_DEFAULT_GOV_MINMAX
+	bool "minmax"
+	select CPU_FREQ_GOV_MINMAX
+	help
+	  Use the CPUFreq governor 'minmax' as default. See minmax
+	  governor help for more details.
+
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -205,6 +219,22 @@ config CPU_FREQ_GOV_CONSERVATIVE
 	  For details, take a look at linux/Documentation/cpu-freq.
 
 	  If in doubt, say N.
+
+config CPU_FREQ_GOV_SMARTASS2
+	tristate "'smartassV2' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  Version 2 of the original smartass governor from Erasmux. Favourite
+	  for many people. The governor aims for an 'ideal frequency', and ramps
+	  up aggressively twards this freq and less aggressive after. The motto
+	  for this governor is a balance between performance and battery.
+
+config CPU_FREQ_GOV_MINMAX
+	tristate "'minmax' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  Simple governor that makes use of only the min and max frequencies 
+	  based on workload, NO intermediate frequencies are used.
 
 menu "x86 CPU frequency scaling drivers"
 depends on X86
