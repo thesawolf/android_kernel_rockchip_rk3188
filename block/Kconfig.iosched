@@ -15,7 +15,7 @@ config IOSCHED_NOOP
 config IOSCHED_SIO
 	tristate "Simple I/O scheduler"
 	default y
-	--help--
+	---help---
           Simple I/O scheduler aims to keep minimum overhead to achieve low 
 	  latency to serve I/O requests. No priority queues concepts, but only
 	  basic merging. Sio is a mix between noop and deadline. No reordering
@@ -28,7 +28,7 @@ config IOSCHED_SIO
 config IOSCHED_VR
 	tristate "V(R) I/O scheduler"
 	default y
-	--help--
+	---help---
 	  Unlike other schedulers, synchronous and asynchronous requests are
 	  not treated separately, instead a deadline is imposed for fairness.
 	  The next request to be served is based on its distance from last
@@ -82,7 +82,13 @@ choice
 	config DEFAULT_CFQ
 		bool "CFQ" if IOSCHED_CFQ=y
 
-	config DEFAULT_NOOP
+        config DEFAULT_SIO
+		bool "SIO" if IOSCHED_SIO=y
+
+	config DEFAULT_VR
+		bool "VR" if IOSCHED_VR=y
+	
+        config DEFAULT_NOOP
 		bool "No-op"
 
 endchoice
@@ -92,6 +98,8 @@ config DEFAULT_IOSCHED
 	default "deadline" if DEFAULT_DEADLINE
 	default "cfq" if DEFAULT_CFQ
 	default "noop" if DEFAULT_NOOP
+	default "sio" if DEFAULT_SIO
+	default "vr" if DEFAULT_VR
 
 endmenu
 
