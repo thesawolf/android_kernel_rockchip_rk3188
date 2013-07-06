@@ -47,6 +47,11 @@
 #include <linux/mfd/tps65910.h>
 #include <linux/regulator/act8846.h>
 #include <linux/regulator/rk29-pwm-regulator.h>
+
+#define OVERCLOCK_CPU
+#define OVERCLOCK_RAM
+//#define OVERCLOCK_GPU
+
 #if defined(CONFIG_CT36X_TS)
 #include <linux/ct36x.h>
 #endif
@@ -996,13 +1001,13 @@ static struct rfkill_rk_platform_data rfkill_rk_platdata = {
    }, 
 
     .wake_gpio          = { // BT_WAKE, use to control bt's sleep and wakeup
-        .io             = RK30_PIN3_PC6, // set io to INVALID_GPIO for disable it
+        .io             = RK30_PIN3_PC7, // SAW(6) set io to INVALID_GPIO for disable it
         .enable         = GPIO_HIGH,
     },
 
     .wake_host_irq      = { // BT_HOST_WAKE, for bt wakeup host when it is in deep sleep
         .gpio           = {
-            .io         = RK30_PIN0_PA5, // set io to INVALID_GPIO for disable it
+            .io         = RK30_PIN3_PC6, // SAW(PIN3_PC6) set io to INVALID_GPIO for disable it
             .enable     = GPIO_LOW,      // set GPIO_LOW for falling, set 0 for rising
             .iomux      = {
                 .name   = NULL,
@@ -1173,6 +1178,39 @@ static struct platform_device rockchip_hdmi_audio = {
 #endif
 /*$_rbox_$_modify_$_zhengyang_end$_20130407_$*/
 
+#if defined CONFIG_TCC_BT_DEV
+static struct tcc_bt_platform_data tcc_bt_platdata = {
+
+	.power_gpio	  = { // ldoon
+		.io				=  RK30_PIN3_PC7,
+		.enable			= GPIO_HIGH,
+		.iomux			= {
+			.name		= NULL,
+			},
+		},
+		
+		
+		
+		
+		
+	.wake_host_gpio = { // BT_HOST_WAKE, for bt wakeup host when it is in deep sleep
+		.io		   = RK30_PIN3_PD0, // set io to INVALID_GPIO for disable it
+		.enable	   = IRQF_TRIGGER_RISING,// set IRQF_TRIGGER_FALLING for falling, set IRQF_TRIGGER_RISING for rising
+		.iomux	   = {
+			.name	   = NULL,
+		},
+	},
+};
+
+static struct platform_device device_tcc_bt = {
+	.name	= "tcc_bt_dev",
+	.id		= -1,
+	.dev	= {
+		.platform_data = &tcc_bt_platdata,
+		},
+};
+#endif
+
 static struct platform_device *devices[] __initdata = {
 
 #ifdef CONFIG_ION
@@ -1214,6 +1252,10 @@ static struct platform_device *devices[] __initdata = {
 	&rockchip_hdmi_audio,
 #endif
 /*$_rbox_$_modify_$_zhengyang_end$_20130407_$*/
+
+#ifdef CONFIG_TCC_BT_DEV
+		&device_tcc_bt,
+#endif
 };
 
 
@@ -1909,19 +1951,19 @@ static void rk30_pm_power_off(void)
 #if defined(CONFIG_REGULATOR_ACT8846)
        if (pmic_is_act8846()) {
                printk("enter dcdet===========\n");
-               if(gpio_get_value (RK30_PIN0_PB2) == GPIO_LOW)
+               /*if(gpio_get_value (RK30_PIN0_PB2) == GPIO_LOW)
                {
                        printk("enter restart===========\n");
                        arm_pm_restart(0, NULL);
                }
-		/** code here may cause tablet cannot boot when shutdown without charger pluged in
+		* code here may cause tablet cannot boot when shutdown without charger pluged in
 		  * and then plug in charger. -- Cody Xie
-               else
-		{
+               else*/
+		//{
 			act8846_device_shutdown();
-		}
-		  */
-       }
+		//}
+		
+ 	   }
 #endif
 	gpio_direction_output(POWER_ON_PIN, GPIO_LOW);
 	while (1);
@@ -1997,7 +2039,18 @@ static void __init rk30_reserve(void)
  * comments	: min arm/logic voltage
  */
 static struct cpufreq_frequency_table dvfs_arm_table[] = {
-
+#ifdef OVERCLOCK_CPU
+		{.frequency = 312 * 1000,		.index = 875 * 1000},
+		{.frequency = 504 * 1000,		.index = 900 * 1000},
+		{.frequency = 816 * 1000,		.index = 975 * 1000},
+		{.frequency = 1008 * 1000,		.index = 1050 * 1000},
+		{.frequency = 1200 * 1000, 		.index = 1125 * 1000},
+		{.frequency = 1416 * 1000,		.index = 1225 * 1000},
+		{.frequency = 1608 * 1000, 		.index = 1325 * 1000},
+		{.frequency = 1704 * 1000,		.index = 1350 * 1000},
+		{.frequency = 1800 * 1000, 		.index = 1375 * 1000},
+		{.frequency = 1920 * 1000,		.index = 1375 * 1000},
+#else
         {.frequency = 312 * 1000,       .index = 900 * 1000},
         {.frequency = 504 * 1000,       .index = 925 * 1000},
         {.frequency = 816 * 1000,       .index = 1000 * 1000},
@@ -2005,12 +2058,23 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
         {.frequency = 1200 * 1000,      .index = 1150 * 1000},
         {.frequency = 1416 * 1000,      .index = 1250 * 1000},
         {.frequency = 1608 * 1000,      .index = 1350 * 1000},
-
-
+#endif
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
 static struct cpufreq_frequency_table dvfs_gpu_table[] = {
+// other limit need adjusting for this to work
+#ifdef OVERCLOCK_GPU
+       {.frequency = 133 * 1000,       .index = 975 * 1000},
+       {.frequency = 200 * 1000,       .index = 1000 * 1000},  
+       {.frequency = 266 * 1000,       .index = 1025 * 1000},  
+       {.frequency = 300 * 1000,       .index = 1050 * 1000},  
+       {.frequency = 400 * 1000,       .index = 1100 * 1000},
+       {.frequency = 600 * 1000,       .index = 1150 * 1000},
+       {.frequency = 666 * 1000,       .index = 1200 * 1000},
+       {.frequency = 700 * 1000,       .index = 1250 * 1000},
+
+#else
 	   {.frequency = 133 * 1000,       .index = 975 * 1000},
        //{.frequency = 150 * 1000,       .index = 975 * 1000},
        {.frequency = 200 * 1000,       .index = 1000 * 1000},  
@@ -2018,13 +2082,19 @@ static struct cpufreq_frequency_table dvfs_gpu_table[] = {
        {.frequency = 300 * 1000,       .index = 1050 * 1000},  
        {.frequency = 400 * 1000,       .index = 1100 * 1000},
        {.frequency = 600 * 1000,       .index = 1250 * 1000},
+#endif
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
 static struct cpufreq_frequency_table dvfs_ddr_table[] = {
-	//{.frequency = 200 * 1000 + DDR_FREQ_SUSPEND,    .index = 950 * 1000},
+#ifdef OVERCLOCK_RAM
+	{.frequency = 400 * 1000 + DDR_FREQ_VIDEO,      .index = 1100 * 1000},
+	{.frequency = 720 * 1000 + DDR_FREQ_NORMAL,     .index = 1200 * 1000},
+#else
+		//{.frequency = 200 * 1000 + DDR_FREQ_SUSPEND,    .index = 950 * 1000},
 	{.frequency = 300 * 1000 + DDR_FREQ_VIDEO,      .index = 1000 * 1000},
-	{.frequency = 400 * 1000 + DDR_FREQ_NORMAL,     .index = 1100 * 1000},
+	{.frequency = 360 * 1000 + DDR_FREQ_NORMAL,     .index = 1100 * 1000},
+#endif
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
