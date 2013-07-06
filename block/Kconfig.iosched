@@ -12,6 +12,32 @@ config IOSCHED_NOOP
 	  that do their own scheduling and require only minimal assistance from
 	  the kernel.
 
+config IOSCHED_SIO
+	tristate "Simple I/O scheduler"
+	default y
+	--help--
+          Simple I/O scheduler aims to keep minimum overhead to achieve low 
+	  latency to serve I/O requests. No priority queues concepts, but only
+	  basic merging. Sio is a mix between noop and deadline. No reordering
+          or sorting of requests. 
+       
+          Adv: simple, reliable; minimized starvation of requests
+	  Dis: slow random-read speeds on flash drives, compared to others;
+	       sequential-read speeds on flash drives not so good
+
+config IOSCHED_VR
+	tristate "V(R) I/O scheduler"
+	default y
+	--help--
+	  Unlike other schedulers, synchronous and asynchronous requests are
+	  not treated separately, instead a deadline is imposed for fairness.
+	  The next request to be served is based on its distance from last
+    	  request.
+	
+	  Adv: Best for benchmarking
+	  Dis: performance fluctuation results in below-average performance
+               at times; least reliable/most unstable
+
 config IOSCHED_DEADLINE
 	tristate "Deadline I/O scheduler"
 	default y

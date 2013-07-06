@@ -1,7 +1,7 @@
 #!/bin/bash
 
 THREADS="6"
-DEVICE="rk3188-mk908-defconfig"
+DEVICE="mk908-defconfig"
 
 # default toolchain
 #TOOLCHAIN=../../../prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm_eabi-

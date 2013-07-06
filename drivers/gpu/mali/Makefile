@@ -3,13 +3,6 @@
 # Mostly reverse engineered from (closed source) Rockchip driver
 # Omegamoon <<
 
-# Based on the stock Android image
-# API_VERSION:=19
-# REPO_URL:=r3p2-01rel0
-# REVISION:=r3p2-01rel0
-# CHANGED_REVISION:=
-# CHANGE_DATE:= BUILD_DATE=2013-05-10 18:09:16 CET
-
 CONFIG:=rk3x
 TARGET_PLATFORM:=rk30
 # TARGET_PLATFORM:=mali400-pmu
