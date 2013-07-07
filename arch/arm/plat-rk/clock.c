@@ -258,13 +258,9 @@ int clk_set_rate_nolock(struct clk *clk, unsigned long rate)
 {
 	int ret;
 	unsigned long old_rate;
-//$_rbox_$_modify_$_chenzhi_20120616: remove if
-//$_rbox_$_modify_$_begin
-#if 0
+
 	if (rate == clk->rate)
 		return 0;
-#endif
-//$_rbox_$_modify_$_end
 	if (clk->flags & CONFIG_PARTICIPANT)
 		return -EINVAL;
 
@@ -328,11 +324,6 @@ int clk_set_parent_nolock(struct clk *clk, struct clk *parent)
 }
 /**********************************dvfs****************************************************/
 
-struct clk_node *clk_get_dvfs_info(struct clk *clk)
-{
-    return clk->dvfs_info;
-}
-
 int clk_set_rate_locked(struct clk * clk,unsigned long rate)
 {
 	int ret;
@@ -348,7 +339,18 @@ void clk_register_dvfs(struct clk_node *dvfs_clk, struct clk *clk)
     clk->dvfs_info = dvfs_clk;
 }
 
-
+int clk_set_enable_locked(struct clk * clk,int on)
+{
+	int ret=0;
+	LOCK();
+	if(on)
+		ret=clk_enable_nolock(clk);
+	else	
+		clk_disable_nolock(clk);
+	UNLOCK();
+	return ret;
+}
+EXPORT_SYMBOL(clk_set_enable_locked);
 /*-------------------------------------------------------------------------
  * Optional clock functions defined in include/linux/clk.h
  *-------------------------------------------------------------------------*/
@@ -407,8 +409,8 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 	}
 	if (rate == clk->rate)
 		return 0;
-	if (clk->dvfs_info!=NULL&&is_support_dvfs(clk->dvfs_info))
-		return dvfs_set_rate(clk, rate);
+	if (dvfs_support_clk_set_rate(clk->dvfs_info)==true)
+		return dvfs_vd_clk_set_rate(clk, rate);
 
 	LOCK();
 	ret = clk_set_rate_nolock(clk, rate);
@@ -494,6 +496,9 @@ void clk_disable(struct clk *clk)
 	if (clk == NULL || IS_ERR(clk))
 		return;
 
+	if (dvfs_support_clk_disable(clk->dvfs_info)==true)
+		return dvfs_vd_clk_disable(clk, 0);
+		
 	LOCK();
 	clk_disable_nolock(clk);
 	UNLOCK();
@@ -514,6 +519,9 @@ int  clk_enable(struct clk *clk)
 
 	if (clk == NULL || IS_ERR(clk))
 		return -EINVAL;
+
+	if (dvfs_support_clk_disable(clk->dvfs_info)==true)
+		return dvfs_vd_clk_disable(clk, 1);
 
 	LOCK();
 	ret = clk_enable_nolock(clk);
@@ -751,7 +759,7 @@ static const struct file_operations proc_clk_fops = {
 
 static int __init clk_proc_init(void)
 {
-	proc_create("clocks", 0, NULL, &proc_clk_fops);
+	proc_create("clocks", S_IFREG | S_IRUSR | S_IRGRP, NULL, &proc_clk_fops);
 	return 0;
 
 }

@@ -22,8 +22,6 @@
 #include <mach/cpu_axi.h>
 #include <mach/debug_uart.h>
 
-#define OMEGAMOON_CHANGED		1
-
 static void __init rk30_cpu_axi_init(void)
 {
 	CPU_AXI_SET_QOS_PRIORITY(0, 0, DMAC);
@@ -60,40 +58,6 @@ static void __init rk30_cpu_axi_init(void)
 static void __init rk30_l2_cache_init(void)
 {
 #ifdef CONFIG_CACHE_L2X0
-#ifdef OMEGAMOON_CHANGED_TRIED_ROLLBACK_WITHOUT_SUC6
-	u32 aux_ctrl, aux_ctrl_mask;
-
-	writel_relaxed(L2_LY_SET(1,L2_LY_SP_OFF)
-				|L2_LY_SET(1,L2_LY_RD_OFF)
-				|L2_LY_SET(1,L2_LY_WR_OFF), RK30_L2C_BASE + L2X0_TAG_LATENCY_CTRL);
-	writel_relaxed(L2_LY_SET(4,L2_LY_SP_OFF)
-				|L2_LY_SET(6,L2_LY_RD_OFF)
-				|L2_LY_SET(1,L2_LY_WR_OFF), RK30_L2C_BASE + L2X0_DATA_LATENCY_CTRL);
-
-	/* L2X0 Prefetch Control */
-	writel_relaxed(0x70000003, RK30_L2C_BASE + L2X0_PREFETCH_CTRL);
-
-	/* L2X0 Power Control */
-	writel_relaxed(L2X0_DYNAMIC_CLK_GATING_EN | L2X0_STNDBY_MODE_EN, RK30_L2C_BASE + L2X0_POWER_CTRL);
-
-	aux_ctrl = (
-			(0x1 << 25) | 	// round-robin
-			(0x1 << 0) |		// Full Line of Zero Enable
-			(0x1 << L2X0_AUX_CTRL_NS_LOCKDOWN_SHIFT) |
-			(0x1 << L2X0_AUX_CTRL_DATA_PREFETCH_SHIFT) |
-			(0x1 << L2X0_AUX_CTRL_INSTR_PREFETCH_SHIFT) |
-			(0x1 << L2X0_AUX_CTRL_EARLY_BRESP_SHIFT) );
-
-	aux_ctrl_mask = ~(
-			(0x1 << 25) | 	// round-robin
-			(0x1 << 0) |		// Full Line of Zero Enable
-			(0x1 << L2X0_AUX_CTRL_NS_LOCKDOWN_SHIFT) |
-			(0x1 << L2X0_AUX_CTRL_DATA_PREFETCH_SHIFT) |
-			(0x1 << L2X0_AUX_CTRL_INSTR_PREFETCH_SHIFT) |
-			(0x1 << L2X0_AUX_CTRL_EARLY_BRESP_SHIFT) );
-
-	l2x0_init(RK30_L2C_BASE, aux_ctrl, aux_ctrl_mask);
-#else
 	u32 aux_ctrl, aux_ctrl_mask, data_latency_ctrl;
 	unsigned int max_cpu_freq = 1608000; // kHz
 	struct cpufreq_frequency_table *table = NULL;
@@ -147,7 +111,6 @@ static void __init rk30_l2_cache_init(void)
 			(0x1 << L2X0_AUX_CTRL_EARLY_BRESP_SHIFT) );
 
 	l2x0_init(RK30_L2C_BASE, aux_ctrl, aux_ctrl_mask);
-#endif // OMEGAMOON_CHANGED
 #endif
 }
 
@@ -240,30 +203,6 @@ static void usb_uart_init(void)
 
 void __init rk30_map_io(void)
 {
-#ifdef OMEGAMOON_CHANGED
-	printk("Omegamoon >> rk30_map_io calling rk30_map_common_io...\n");
-	rk30_map_common_io();
-	printk("Omegamoon >> rk30_map_io calling usb_uart_init...\n");
-	usb_uart_init();
-	printk("Omegamoon >> rk30_map_io calling rk29_setup_early_printk...\n");
-	rk29_setup_early_printk();
-	printk("Omegamoon >> rk30_map_io calling rk30_cpu_axi_init...\n");
-	rk30_cpu_axi_init();
-	printk("Omegamoon >> rk30_map_io calling rk29_sram_init...\n");
-	rk29_sram_init();
-	printk("Omegamoon >> rk30_map_io calling board_clock_init...\n");
-	board_clock_init();
-	printk("Omegamoon >> rk30_map_io calling rk30_l2_cache_init...\n");
-	rk30_l2_cache_init();
-	printk("Omegamoon >> rk30_map_io calling ddr_init...\n");
-	ddr_init(DDR_TYPE, DDR_FREQ);
-	printk("Omegamoon >> rk30_map_io calling clk_disable_unused...\n");
-	clk_disable_unused();
-	printk("Omegamoon >> rk30_map_io calling rk30_iomux_init...\n");
-	rk30_iomux_init();
-	printk("Omegamoon >> rk30_map_io calling rk30_boot_mode_init...\n");
-	rk30_boot_mode_init();
-#else
 	rk30_map_common_io();
 	usb_uart_init();
 	rk29_setup_early_printk();
@@ -275,7 +214,6 @@ void __init rk30_map_io(void)
 	clk_disable_unused();
 	rk30_iomux_init();
 	rk30_boot_mode_init();
-#endif
 }
 
 static __init u32 rk30_get_ddr_size(void)

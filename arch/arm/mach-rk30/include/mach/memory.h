@@ -10,10 +10,6 @@
 #define SRAM_CODE_OFFSET	(RK30_IMEM_BASE + 0x0010)
 #define SRAM_CODE_END		(RK30_IMEM_BASE + 0x2FFF)
 #define SRAM_DATA_OFFSET	(RK30_IMEM_BASE + 0x3000)
-/* 
-Omegamoon reverted SRAM_DATA_END back to "old" kernel value
 #define SRAM_DATA_END		(RK30_IMEM_BASE + 0x3FFF - 64)
-*/
-#define SRAM_DATA_END		(RK30_IMEM_BASE + 0x3FFF)
 
 #endif

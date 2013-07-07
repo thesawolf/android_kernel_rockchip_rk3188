@@ -17,13 +17,15 @@ if [ "$2" != "" ]; then
 	DEVICE="$2"
 fi
 
-echo -e "\n==========================================="
+cp $DEVICE .config 
+rm build.log
+echo -e "\n===========================================
 echo -e " Configuring kernel for ${DEVICE}"
 echo -e "===========================================\n"
-ARCH=arm CROSS_COMPILE=$TOOLCHAIN make $DEVICE
+ARCH=arm CROSS_COMPILE=$TOOLCHAIN make $DEVICE 
 
 echo -e "\n==========================================="
 echo -e " Building kernel for ${DEVICE} with ${THREADS} thread(s)"
 echo -e "===========================================\n"
-ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS
+ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS > build.log 2>&1
 

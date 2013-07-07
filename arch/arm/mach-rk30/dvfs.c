@@ -27,8 +27,6 @@
 #include <linux/io.h>
 #include <linux/hrtimer.h>
 
-#define OMEGAMOON_CHANGED			1
-
 static int rk_dvfs_clk_notifier_event(struct notifier_block *this,
 		unsigned long event, void *ptr)
 {
@@ -151,10 +149,6 @@ int dvfs_target_cpu(struct clk *clk, unsigned long rate_hz)
 	unsigned long rate_new, rate_old;
 	int cur_arm_high_logic, cur_logic_high_arm;
 
-#ifdef OMEGAMOON_CHANGED
-	printk("Omegamoon >> %s called, but dvfs is disabled\n", __func__);
-	return -1;
-#endif
 	if (!clk) {
 		DVFS_ERR("%s is not a clk\n", __func__);
 		return -1;
@@ -288,10 +282,6 @@ int dvfs_target_core(struct clk *clk, unsigned long rate_hz)
 	int ret = 0;
 	unsigned long rate_new, rate_old;
 
-#ifdef OMEGAMOON_CHANGED
-	printk("Omegamoon >> %s called, but dvfs is disabled\n", __func__);
-	return -1;
-#endif
 	if (!clk) {
 		DVFS_ERR("%s is not a clk\n", __func__);
 		return -1;
@@ -587,13 +577,6 @@ static struct depend_lookup rk30_depends[] = {
 };
 static struct avs_ctr_st rk30_avs_ctr;
 
-#ifdef OMEGAMOON_CHANGED
-int rk30_dvfs_init(void)
-{
-	return rk_dvfs_init();
-}
-#endif
-
 int rk_dvfs_init(void)
 {
 	int i = 0;
@@ -610,10 +593,6 @@ int rk_dvfs_init(void)
 		rk_regist_depends(&rk30_depends[i]);
 	}
 	dvfs_clk_cpu = dvfs_get_dvfs_clk_byname("cpu");
-#ifdef OMEGAMOON_CHANGED
-	printk("Omegamoon >> %s called\n", __func__);
-	dump_dvfs_map_on_console();
-#endif
 	avs_board_init(&rk30_avs_ctr);
 	printk("rk30_dvfs_init\n");
 	return 0;
@@ -683,3 +662,5 @@ static struct avs_ctr_st rk30_avs_ctr= {
 	.avs_get_val	= rk30_get_avs_val,
 };
 #endif
+
+

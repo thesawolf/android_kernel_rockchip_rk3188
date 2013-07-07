@@ -38,6 +38,18 @@ config IOSCHED_VR
 	  Dis: performance fluctuation results in below-average performance
                at times; least reliable/most unstable
 
+config IOSCHED_ZEN
+	tristate "Zen I/O scheduler"
+	default y
+	---help---
+	  Awfully similar to SIO, although its a bit simpler than SIO 
+          (closer to no-op) and works just slightly different. It is a
+          FCFS (First come, first serve) based algorithm. It is not 
+          strictly FIFO. It does not do any sorting. It uses deadlines 
+          for fairness, and treats synchronous requests with priority 
+          over asynchronous ones. Other than that, pretty much the same 
+          as no-op.
+
 config IOSCHED_DEADLINE
 	tristate "Deadline I/O scheduler"
 	default y
@@ -87,6 +99,9 @@ choice
 
 	config DEFAULT_VR
 		bool "VR" if IOSCHED_VR=y
+
+	config DEFAULT_ZEN
+                bool "ZEN" if IOSCHED_ZEN=y
 	
         config DEFAULT_NOOP
 		bool "No-op"
@@ -100,6 +115,7 @@ config DEFAULT_IOSCHED
 	default "noop" if DEFAULT_NOOP
 	default "sio" if DEFAULT_SIO
 	default "vr" if DEFAULT_VR
+	default "zen" if DEFAULT_ZEN
 
 endmenu
 

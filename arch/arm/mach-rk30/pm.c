@@ -26,8 +26,6 @@
 #include <mach/debug_uart.h>
 #include <plat/efuse.h>
 
-#define OMEGAMOON_CHANGED		1
-
 #define cru_readl(offset)	readl_relaxed(RK30_CRU_BASE + offset)
 #define cru_writel(v, offset)	do { writel_relaxed(v, RK30_CRU_BASE + offset); dsb(); } while (0)
 
@@ -104,11 +102,7 @@ void __sramfunc sram_printch(char byte)
 }
 /********************************ddr test**************************************************/
 #ifdef CONFIG_DDR_TEST
-#ifdef OMEGAMOON_CHANGED
-static int ddr_debug=1;
-#else
 static int ddr_debug=0;
-#endif
 module_param(ddr_debug, int, 0644);
 
 static int inline calc_crc32(u32 addr, size_t len)
@@ -958,10 +952,6 @@ static void noinline rk30_suspend(void)
 
 static int rk30_pm_enter(suspend_state_t state)
 {
-#ifdef OMEGAMOON_CHANGED
-	printk("Omegamoon >> %s called, **SKIPPING** effectively disabling pm\n", __func__);
-	return 0;
-#endif
 	rk_soc_pm_ctr_bits_prepare();
 
 	if(rk_soc_pm_ctr_bits_check(RK_SUSPEND_RET_DIRT_BITS))

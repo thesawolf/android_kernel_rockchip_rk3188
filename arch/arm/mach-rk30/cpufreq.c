@@ -34,9 +34,6 @@
 #include <asm/uaccess.h>
 #include <mach/ddr.h>
 #include <linux/cpu.h>
-
-#define OMEGAMOON_CHANGED		1
-
 #ifdef DEBUG
 #define FREQ_PRINTK_DBG(fmt, args...) pr_debug(fmt, ## args)
 #define FREQ_PRINTK_LOG(fmt, args...) pr_debug(fmt, ## args)
@@ -241,18 +238,6 @@ static int rk30_verify_speed(struct cpufreq_policy *policy)
 		return -EINVAL;
 	return cpufreq_frequency_table_verify(policy, freq_table);
 }
-
-#ifdef OMEGAMOON_CHANGED_TRIED_BUT_DIDNT_WORK
-uint32_t ddr_set_rate(uint32_t nMHz);
-
-int ddr_scale_rate_for_dvfs(struct clk *clk, unsigned long rate, dvfs_set_rate_callback set_rate)
-{
-	#if defined (CONFIG_DDR_FREQ)
-	ddr_set_rate(rate/(1000*1000));
-	#endif
-	return 0;
-}
-#endif
 static int rk30_cpu_init(struct cpufreq_policy *policy)
 {
 	if (policy->cpu == 0) {
@@ -264,19 +249,7 @@ static int rk30_cpu_init(struct cpufreq_policy *policy)
 
 		ddr_clk = clk_get(NULL, "ddr");
 		if (!IS_ERR(ddr_clk))
-#ifdef OMEGAMOON_CHANGED_TRIED_BUT_DIDNT_WORK
-		{
-			dvfs_clk_register_set_rate_callback(ddr_clk, ddr_scale_rate_for_dvfs);
 			clk_enable_dvfs(ddr_clk);
-			//clk_set_rate(ddr_clk,clk_get_rate(ddr_clk)-1);
-		}
-#else
-#ifdef OMEGAMOON_CHANGED
-			printk("Omegamoon >> %s called, **SKIPPING** clk_enable_dvfs(ddr_clk) call\n", __func__);
-#else
-			clk_enable_dvfs(ddr_clk);
-#endif
-#endif
 		
 		cpu_clk = clk_get(NULL, "cpu");
 		
@@ -646,10 +619,6 @@ static int rk30_target(struct cpufreq_policy *policy, unsigned int target_freq, 
 	int ret = 0;
 	bool is_private;
 
-#ifdef OMEGAMOON_CHANGED
-//	printk("Omegamoon >> %s called, **SKIPPING** effectively disabling cpufreq\n", __func__);
-//	return -EINVAL;
-#endif
 	if (!freq_table) {
 		FREQ_PRINTK_ERR("no freq table!\n");
 		return -EINVAL;
