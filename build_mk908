@@ -4,10 +4,10 @@ THREADS="6"
 DEVICE="mk908-defconfig"
 
 # default toolchain
-#TOOLCHAIN=../../../prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm_eabi-
+TOOLCHAIN=../../../prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
 
 # linaro 4.8 toolchain
-TOOLCHAIN=../../../prebuilts/gcc/linux-x86/arm/android-toolchain-eabi/bin/arm-linux-androideabi-
+#TOOLCHAIN=../../../prebuilts/gcc/linux-x86/arm/android-toolchain-eabi/bin/arm-linux-androideabi-
 
 if [ "$1" != "" ]; then
 	THREADS="$1"

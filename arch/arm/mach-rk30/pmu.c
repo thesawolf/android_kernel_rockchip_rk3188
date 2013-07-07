@@ -3,6 +3,7 @@
 #include <mach/pmu.h>
 #include <mach/sram.h>
 #include <mach/cpu_axi.h>
+#define OMEGAMOON_CHANGED		1
 
 static void __sramfunc pmu_set_power_domain_sram(enum pmu_power_domain pd, bool on)
 {
@@ -24,9 +25,17 @@ static noinline void do_pmu_set_power_domain(enum pmu_power_domain pd, bool on)
 {
 	static unsigned long save_sp;
 
+#ifdef OMEGAMOON_CHANGED
+	//printk("Omegamoon >> %s called, Just before calling DDR_SAVE_SP\n", __func__);
+	printk("Omegamoon >> %s called, **SKIPPING** DDR_SAVE_SP & DDR_RESTORE_SP\n", __func__);
 	DDR_SAVE_SP(save_sp);
 	pmu_set_power_domain_sram(pd, on);
 	DDR_RESTORE_SP(save_sp);
+#else
+	DDR_SAVE_SP(save_sp);
+	pmu_set_power_domain_sram(pd, on);
+	DDR_RESTORE_SP(save_sp);
+#endif
 }
 
 /*

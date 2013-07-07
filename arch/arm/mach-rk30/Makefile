@@ -8,6 +8,9 @@ endif
 obj-y += common.o
 CFLAGS_common.o += -DTEXT_OFFSET=$(TEXT_OFFSET)
 obj-y += ddr.o
+# Omegamoon >>> CFLAGS_ddr as contained in previous kernel 
+# CFLAGS_ddr.o += -mthumb
+# Omegamoon <<<
 obj-y += devices.o
 obj-y += io.o
 ifeq ($(CONFIG_ARCH_RK30XX),y)

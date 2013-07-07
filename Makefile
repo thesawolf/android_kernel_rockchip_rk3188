@@ -1,7 +1,7 @@
 VERSION = 3
 PATCHLEVEL = 0
 SUBLEVEL = 36
-EXTRAVERSION =
+EXTRAVERSION = +
 NAME = Sneaky Weasel
 
 # *DOCUMENTATION*
@@ -194,16 +194,7 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 export KBUILD_BUILDHOST := $(SUBARCH)
 #ARCH		?= $(SUBARCH)
 ARCH		?= arm
-ifneq ($(wildcard ../jb/toolchain/arm-eabi-4.4.3),)
-CROSS_COMPILE	?= ../jb/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
-endif
-ifneq ($(wildcard ../jb/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3),)
-CROSS_COMPILE	?= ../jb/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
-endif
-ifneq ($(wildcard ../jb/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6),)
-CROSS_COMPILE   ?= ../jb/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
-endif
-CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
+CROSS_COMPILE	?= arm-eabi-
 
 # Architecture as present in compile.h
 UTS_MACHINE 	:= $(ARCH)
@@ -1422,7 +1413,7 @@ clean: $(clean-dirs)
 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
 		-o -name '*.symtypes' -o -name 'modules.order' \
 		-o -name modules.builtin -o -name '.tmp_*.o.*' \
-		-o -name '*.gcno' \) -type f -print | xargs rm -f
+		-o -name '*.gcno' -o -name 'zImage.img' \) -type f -print | xargs rm -f
 
 # Generate tags for editors
 # ---------------------------------------------------------------------------
