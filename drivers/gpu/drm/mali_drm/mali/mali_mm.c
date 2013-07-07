@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010, 2012 ARM Limited. All rights reserved.
+ * Copyright (C) 2010, 2012-2013 ARM Limited. All rights reserved.
  * 
  * This program is free software and is provided to you under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -8,6 +8,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include "drmP.h"
 #include "mali_drm.h"
 #include "mali_drv.h"
 
@@ -219,6 +220,7 @@ int mali_idle(struct drm_device *dev)
 void mali_lastclose(struct drm_device *dev)
 {
 	drm_mali_private_t *dev_priv = dev->dev_private;
+	printk(KERN_ERR "DRM: %s\n", __func__);
 
 	if (!dev_priv) return;
 

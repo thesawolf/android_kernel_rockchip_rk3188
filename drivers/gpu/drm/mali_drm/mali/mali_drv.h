@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010, 2012 ARM Limited. All rights reserved.
+ * Copyright (C) 2010, 2012-2013 ARM Limited. All rights reserved.
  * 
  * This program is free software and is provided to you under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation, and any use by you of this program is subject to the terms of such GNU licence.
@@ -19,7 +19,7 @@
 #define DRIVER_MINOR		1
 #define DRIVER_PATCHLEVEL	0
 
-#include "drm/drm_sman.h"
+#include "drm_sman.h"
 
 typedef struct drm_mali_private 
 {
@@ -30,19 +30,10 @@ typedef struct drm_mali_private
 	unsigned long vram_offset;
 } drm_mali_private_t;
 
-
-
-int mali_drm_init(struct platform_device *dev);
-void mali_drm_exit(struct platform_device *dev);
-
 extern int mali_idle(struct drm_device *dev);
 extern void mali_reclaim_buffers_locked(struct drm_device *dev, struct drm_file *file_priv);
 extern void mali_lastclose(struct drm_device *dev);
 extern struct drm_ioctl_desc mali_ioctls[];
 extern int mali_max_ioctl;
-
-#define DRM_MEM_DRIVER 2
-#define DRM_IOCTL_DEF(ioctl, _func, _flags) \
-         [DRM_IOCTL_NR(ioctl)] = {.cmd = ioctl, .func = _func, .flags = _flags, .cmd_drv = 0}
 
 #endif /* _MALI_DRV_H_ */
