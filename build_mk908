@@ -19,7 +19,7 @@ fi
 
 cp $DEVICE .config 
 rm build.log
-echo -e "\n===========================================
+echo -e "\n==========================================="
 echo -e " Configuring kernel for ${DEVICE}"
 echo -e "===========================================\n"
 ARCH=arm CROSS_COMPILE=$TOOLCHAIN make $DEVICE 
