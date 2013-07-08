@@ -48,7 +48,9 @@ SiI9022A/9024A and ITE IT66121 [MK908-specific] HDMI transmitter support
 - ALSA (sound) support (ARM, USB and Rockchip specific devices)
 - full complement of USB HID, printer, Mass storage, Serial and mobile modem
 devices support via regular usb port and OTG
-- Ext3/Ext4/ISO9660 CDROM/UDF/VFAT/NTFS (w/write)/proc/NFS/CIFS filesystems
+- Ext2, Ext3, Ext4, ISO9660 CDROM, UDF, VFAT, NTFS (w/write), exFAT, YAFFS2,
+proc, NFS, CIFS filesystem support
+- CPU/GPU overclocking support (not a kernel config option, built-in)
 
 **Revision History:**
 - Initial commit, honestly have no idea of the source as it was sent to me
@@ -63,3 +65,4 @@ was from.
 - Added SmartAssV2 and MinMax CPU governors
 - Added prelim CPU o/c up to 1920 MHz with initial GPU o/c (needs tweaking)
 - Added Zen I/O scheduler
+- Added exFAT filesystem support
