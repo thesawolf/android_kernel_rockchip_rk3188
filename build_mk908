@@ -30,8 +30,7 @@ echo -e "===========================================\n"
 ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS > build.log 2>&1
 ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS modules > build.log 2>&1
 
-if [ -f ./arch/arm/boot/zImage ]
- then
+if [ -f arch/arm/boot/zImage ]; then
   echo -e "\n==========================================="
   echo -e " Copying kernel/modules into rk3188 device directories"
   echo -e "===========================================\n"
