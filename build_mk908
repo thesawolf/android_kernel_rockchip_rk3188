@@ -28,7 +28,7 @@ echo -e "\n==========================================="
 echo -e " Building kernel for ${DEVICE} with ${THREADS} thread(s)"
 echo -e "===========================================\n"
 ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS > build.log 2>&1
-ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS modules > build.log 2>&1
+ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS modules 
 
 if [ -f arch/arm/boot/zImage ]; then
   echo -e "\n==========================================="

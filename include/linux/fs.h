@@ -1639,6 +1639,7 @@ struct super_operations {
 	int (*unfreeze_fs) (struct super_block *);
 	int (*statfs) (struct dentry *, struct kstatfs *);
 	int (*remount_fs) (struct super_block *, int *, char *);
+	void (*clear_inode) (struct inode *); //SAW - exfat
 	void (*umount_begin) (struct super_block *);
 
 	int (*show_options)(struct seq_file *, struct vfsmount *);
@@ -1824,6 +1825,45 @@ struct file_system_type {
 	struct lock_class_key i_alloc_sem_key;
 };
 
+struct file_system_type_ex {
+	const char *name;
+	int fs_flags;
+	int (*get_sb) (struct file_system_type_ex *, int,
+			const char *, void *, struct vfsmount *);
+	void (*kill_sb) (struct super_block *);
+	struct module *owner;
+	struct file_system_type * next;
+	struct list_head fs_supers;
+
+	struct lock_class_key s_lock_key;
+	struct lock_class_key s_umount_key;
+	
+	struct lock_class_key i_lock_key;
+	struct lock_class_key i_mutex_key;
+	struct lock_class_key i_mutex_dir_key;
+	struct lock_class_key i_alloc_sem_key;
+};
+
+//SAW - get_sb exfat stuff
+/*
+extern int get_sb_ns(struct file_system *fs_type, int flags, void *data,
+	int (*fill_super)(struct super_block *, void *, int),
+	struct vfsmount *mnt);
+*/
+extern int get_sb_bdev(struct file_system_type_ex *fs_type,
+	int flags, const char *dev_name, void *data,
+	int (*fill_super)(struct super_block *, void *, int),
+	struct vfsmount *mnt); 
+/*
+extern int get_sb_single(struct file_system_type *fs_type,
+	int flags, void *data,
+	int (*fill_super)(struct super_block *, void *, int),
+	struct vfsmount *mnt);
+extern int get_sb_nodev(struct file_system_type *fs_type,
+	int flags, void *data,
+	int (*fill_super)(struct super_block *, void *, int),
+	struct vfsmount *mnt);
+*/
 extern struct dentry *mount_ns(struct file_system_type *fs_type, int flags,
 	void *data, int (*fill_super)(struct super_block *, void *, int));
 extern struct dentry *mount_bdev(struct file_system_type *fs_type,
@@ -1872,6 +1912,10 @@ static inline int sb_is_dirty(struct super_block *sb)
 
 extern int register_filesystem(struct file_system_type *);
 extern int unregister_filesystem(struct file_system_type *);
+//SAW - exfat
+extern int register_filesystem_ex(struct file_system_type_ex *);
+extern int unregister_filesystem_ex(struct file_system_type_ex *);
+
 extern struct vfsmount *kern_mount_data(struct file_system_type *, void *data);
 #define kern_mount(type) kern_mount_data(type, NULL)
 extern int may_umount_tree(struct vfsmount *);

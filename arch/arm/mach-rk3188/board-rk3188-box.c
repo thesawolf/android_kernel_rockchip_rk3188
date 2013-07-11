@@ -1305,7 +1305,7 @@ static int rk_platform_add_display_devices(void)
 
 #if (defined(CONFIG_LCDC0_RK3188) && !defined(CONFIG_LCDC1_RK3188))
 
- static struct rkdisplay_platform_data_hdmi_data = {
+ static struct rkdisplay_platform_data hdmi_data = {
 	.property	= DISPLAY_MAIN,
 	.video_source	= DISPLAY_SOURCE_LCDC0,
 	.io_pwr_pin	= INVALID_GPIO,

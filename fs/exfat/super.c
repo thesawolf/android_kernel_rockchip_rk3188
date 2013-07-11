@@ -564,14 +564,14 @@ error:
 	return err;
 }
 
-static int exfat_get_sb(struct file_system_type *fs_type, int flags,
+static int exfat_get_sb(struct file_system_type_ex *fs_type, int flags,
 			const char *dev_name, void *data, struct vfsmount *mnt)
 {
 	return get_sb_bdev(fs_type, flags, dev_name, data,
 			   exfat_fill_super, mnt);
 }
 
-static struct file_system_type exfat_fs_type = {
+static struct file_system_type_ex exfat_fs_type = {
 	.owner		= THIS_MODULE,
 	.name		= "exfat",
 	.get_sb		= exfat_get_sb,
@@ -589,7 +589,7 @@ static int __init exfat_fs_init(void)
 	err = exfat_init_inodecache();
 	if (err)
 		goto error_cache;
-	err = register_filesystem(&exfat_fs_type);
+	err = register_filesystem_ex(&exfat_fs_type);
 	if (err)
 		goto error_inode;
 	return 0;
@@ -604,7 +604,7 @@ error:
 
 static void __exit exfat_fs_exit(void)
 {
-	unregister_filesystem(&exfat_fs_type);
+	unregister_filesystem_ex(&exfat_fs_type);
 	exfat_destroy_inodecache();
 	exfat_destroy_cache_cachep();
 }
