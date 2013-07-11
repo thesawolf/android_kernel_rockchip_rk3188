@@ -70,3 +70,4 @@ was from.
 - Disabled exFAT and YAFFS2 to debug some code, still in source, just not
 enabled in config. Enabling will cause some errors, atm.
 - Extended build script to move kernel/modules into device directories
+- Updated some rockchip/fb source from leolas, galland sources
