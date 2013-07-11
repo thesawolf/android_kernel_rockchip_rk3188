@@ -1,0 +1,20 @@
+  CHK     include/linux/version.h
+  CHK     include/generated/utsrelease.h
+make[1]: `include/generated/mach-types.h' is up to date.
+  CALL    scripts/checksyscalls.sh
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_atomics.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_locks.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_math.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_memory.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_kernel_linux.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_misc.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_memory_backend.o
+  CC [M]  drivers/gpu/mali/ump/../mali/linux/mali_osk_atomics.o
+  LD [M]  drivers/gpu/mali/mali/mali.o
+  LD [M]  drivers/gpu/mali/ump/ump.o
+  Building modules, stage 2.
+  MODPOST 24 modules
+  CC      drivers/gpu/mali/mali/mali.mod.o
+  CC      drivers/gpu/mali/ump/ump.mod.o
+  LD [M]  drivers/gpu/mali/mali/mali.ko
+  LD [M]  drivers/gpu/mali/ump/ump.ko

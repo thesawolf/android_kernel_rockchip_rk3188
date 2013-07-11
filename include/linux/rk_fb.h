@@ -43,6 +43,16 @@
 #define FB0_IOCTL_CLOSE_BUF				0x6019
 #endif
 
+#define FBIOGET_PANEL_SIZE		0x5001
+#define FBIOSET_YUV_ADDR		0x5002
+//#define FB1_TOCTL_SET_MCU_DIR			0x5003
+#define FBIOSET_ROTATE			0x5003
+#define FB_IOCTL_SET_I2P_ODD_ADDR	0x5005
+#define FB_IOCTL_SET_I2P_EVEN_ADDR	0x5006
+#define FBIOSET_OVERLAY_STATE		0x5018
+#define FBIOSET_ENABLE			0x5019
+#define FBIOGET_ENABLE			0x5020
+
 #define RK_FBIOGET_PANEL_SIZE		0x5001
 #define RK_FBIOSET_YUV_ADDR		0x5002
 #define RK_FBIOGET_SCREEN_STATE    	0X4620
@@ -61,6 +71,10 @@
 #define RK_FBIOSET_VSYNC_ENABLE		0x4629
 #define RK_FBIOPUT_NUM_BUFFERS 	0x4625
 
+// OLEGK0 and IAM
+#define FBIOPUT_SET_COLORKEY		0x5010
+#define GET_UMP_SECURE_ID_BUF1 _IOWR('m', 310, unsigned int)
+#define GET_UMP_SECURE_ID_BUF2 _IOWR('m', 311, unsigned int)
 
 /********************************************************************
 **          display output interface supported by rockchip lcdc                       *
@@ -279,7 +293,13 @@ struct rk_fb_inf {
 	int video_mode;  //when play video set it to 1
 	struct workqueue_struct *workqueue;
 	struct delayed_work delay_work;
+#ifdef CONFIG_MALI
+	void * ump_wrapped_buffer[RK_MAX_FB_SUPPORT][2]; //IAM
+#endif
 };
+#ifdef CONFIG_MALI
+extern int (*disp_get_ump_secure_id)(struct fb_info *info, struct rk_fb_inf *g_fbi, unsigned long arg, int buf);
+#endif
 extern int rk_fb_register(struct rk_lcdc_device_driver *dev_drv,
 	struct rk_lcdc_device_driver *def_drv,int id);
 extern int rk_fb_unregister(struct rk_lcdc_device_driver *dev_drv);

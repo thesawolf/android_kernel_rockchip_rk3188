@@ -79,6 +79,7 @@ deps_config := \
 	fs/reiserfs/Kconfig \
 	fs/jbd2/Kconfig \
 	fs/jbd/Kconfig \
+	fs/exfat/Kconfig \
 	fs/ext4/Kconfig \
 	fs/ext3/Kconfig \
 	fs/ext2/Kconfig \

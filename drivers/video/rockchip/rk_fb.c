@@ -35,15 +35,18 @@
 #include "hdmi/rk_hdmi.h"
 #include <linux/linux_logo.h>
 
+#include "mali_def.h" //Galland, framebuffer stuff
+
+#ifdef CONFIG_MALI 
+#include "ump/ump_kernel_interface.h"
+#endif
+
 void rk29_backlight_set(bool on);
 bool rk29_get_backlight_status(void);
 
 #ifdef	CONFIG_FB_MIRRORING
-
-
 int (*video_data_to_mirroring)(struct fb_info *info,u32 yuv_phy[2]) = NULL;
 EXPORT_SYMBOL(video_data_to_mirroring);
-
 #endif
 static struct platform_device *g_fb_pdev;
 
@@ -272,6 +275,12 @@ static int rk_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
  	#endif
 	return 0;
 }
+//IAM (SAW - who is this?)
+#ifdef CONFIG_MALI
+int (*disp_get_ump_secure_id) (struct fb_info *info, struct rk_fb_inf *g_fbi, unsigned long arg, int buf);
+EXPORT_SYMBOL(disp_get_ump_secure_id);
+#endif
+
 static int rk_fb_ioctl(struct fb_info *info, unsigned int cmd,unsigned long arg)
 {
 	struct fb_fix_screeninfo *fix = &info->fix;
@@ -282,6 +291,12 @@ static int rk_fb_ioctl(struct fb_info *info, unsigned int cmd,unsigned long arg)
 	int ovl;	//overlay:0 win1 on the top of win0;1,win0 on the top of win1
 	int num_buf; //buffer_number
 	void __user *argp = (void __user *)arg;
+
+#ifdef CONFIG_MALI
+	int secure_id_buf_num = 0; //IAM
+#endif
+
+	struct rk_fb_inf *inf = dev_get_drvdata(info->device); //required by CONFIG_MALI and CONFIG_DUAL_LCDC_DUAL_DISP_IN_KERNEL
 	
 	//$_rbox_$_modify_$ zhengyang modified for box display system
 	#if defined(CONFIG_DUAL_LCDC_DUAL_DISP_IN_KERNEL)
@@ -339,6 +354,21 @@ static int rk_fb_ioctl(struct fb_info *info, unsigned int cmd,unsigned long arg)
 			//$_rbox_$_modify_$ end
 			printk("rk fb use %d buffers\n",num_buf);
 			break;
+
+#ifdef CONFIG_MALI      //IAM
+		case GET_UMP_SECURE_ID_BUF2: //flow through
+			secure_id_buf_num = 1;
+		case GET_UMP_SECURE_ID_BUF1:
+			{
+			    if (!disp_get_ump_secure_id)
+				request_module("disp_ump");
+			    if (disp_get_ump_secure_id)
+				return disp_get_ump_secure_id(info, inf, arg, secure_id_buf_num);
+			    else
+				return -ENOTSUPP;
+			}
+#endif
+
 		case RK_FBIOSET_VSYNC_ENABLE:
 			if (copy_from_user(&enable, argp, sizeof(enable)))
 				return -EFAULT;
@@ -392,8 +422,10 @@ static int rk_fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 {
 	
 	if( 0==var->xres_virtual || 0==var->yres_virtual ||
-		 0==var->xres || 0==var->yres || var->xres<16 ||
-		 ((16!=var->bits_per_pixel)&&(32!=var->bits_per_pixel)) )
+	 0==var->yres || var->xres<16 ||
+	 ((16!=var->bits_per_pixel)&&(24!=var->bits_per_pixel)&&(32!=var->bits_per_pixel)) ) //olegk0 added 24bpp
+//		 0==var->xres || 0==var->yres || var->xres<16 ||
+//		 ((16!=var->bits_per_pixel)&&(32!=var->bits_per_pixel)) )
 	 {
 		 printk("%s check var fail 1!!! \n",info->fix.id);
 		 printk("xres_vir:%d>>yres_vir:%d\n", var->xres_virtual,var->yres_virtual);
@@ -1111,7 +1143,8 @@ static int rk_request_fb_buffer(struct fb_info *fbi,int fb_id)
 	struct rk_fb_inf *fb_inf = platform_get_drvdata(g_fb_pdev);
 	if (!strcmp(fbi->fix.id,"fb0"))
 	{
-		res = platform_get_resource_byname(g_fb_pdev, IORESOURCE_MEM, "fb0 buf");
+		//res = platform_get_resource_byname(g_fb_pdev, IORESOURCE_MEM, "fb0 buf");
+		res = platform_get_resource_byname(g_fb_pdev, IORESOURCE_MEM, "ipp buf");
 		if (res == NULL)
 		{
 			dev_err(&g_fb_pdev->dev, "failed to get memory for fb0 \n");
@@ -1124,6 +1157,9 @@ static int rk_request_fb_buffer(struct fb_info *fbi,int fb_id)
 		memset(fbi->screen_base, 0, fbi->fix.smem_len);
 		printk("fb%d:phy:%lx>>vir:%p>>len:0x%x\n",fb_id,
 		fbi->fix.smem_start,fbi->screen_base,fbi->fix.smem_len);
+		// Galland/Olegk0 - next 2 lines copied to fb_id 0 from olegk0's fb_id 1
+		fbi->fix.mmio_len = (fbi->fix.smem_len >> 1)& ~7;
+		fbi->fix.mmio_start = fbi->fix.smem_start + fbi->fix.mmio_len;
 	}
 	else
 	{	
@@ -1145,7 +1181,7 @@ static int rk_request_fb_buffer(struct fb_info *fbi,int fb_id)
 		fbi->screen_base    = fb_inf->fb[0]->screen_base;
 #endif
 		printk("fb%d:phy:%lx>>vir:%p>>len:0x%x\n",fb_id,
-			fbi->fix.smem_start,fbi->screen_base,fbi->fix.smem_len);	
+			fbi->fix.smem_start,fbi->screen_base,fbi->fix.smem_len);	//Galland note: "alt" to differentiate this alternative from the one above, with very same log msg
 	}
     return ret;
 }

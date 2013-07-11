@@ -14,7 +14,7 @@ NAME = Sneaky Weasel
 # o  use make's built-in rules and variables
 #    (this increases performance and avoids hard-to-debug behaviour);
 # o  print "Entering directory ...";
-MAKEFLAGS += -rR --no-print-directory
+MAKEFLAGS += -rR --no-print-directory 
 
 # Avoid funny character set dependencies
 unexport LC_ALL

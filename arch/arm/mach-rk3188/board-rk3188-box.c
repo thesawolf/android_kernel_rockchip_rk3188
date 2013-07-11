@@ -47,12 +47,23 @@
 #include <linux/mfd/tps65910.h>
 #include <linux/regulator/act8846.h>
 #include <linux/regulator/rk29-pwm-regulator.h>
+
+//comment out to disable -credits to Sam321
+#define OVERCLOCK_CPU
+#define OVERCLOCK_RAM
+#define OVERCLOCK_GPU
+
 #if defined(CONFIG_CT36X_TS)
 #include <linux/ct36x.h>
 #endif
 #if defined(CONFIG_MFD_RK610)
 #include <linux/mfd/rk610_core.h>
 #endif
+
+#if defined(CONFIG_RK_HDMI)
+	#include "../../../drivers/video/rockchip/hdmi/rk_hdmi.h"
+#endif
+
 //$_rbox_$_modify_$ zhengyang modified for box
 #include <linux/display-sys.h>
 #include <linux/rk_fb.h>
@@ -398,7 +409,7 @@ static struct sensor_platform_data cm3217_info = {
 #define LCD_CS_PIN         INVALID_GPIO
 #define LCD_CS_VALUE       GPIO_HIGH
 
-#define LCD_EN_PIN         RK30_PIN0_PB0
+#define LCD_EN_PIN         INVALID_GPIO //Galland - RK30_PIN0_PB0
 #define LCD_EN_VALUE       GPIO_LOW
 
 static int rk_fb_io_init(struct rk29_fb_setting_info *fb_setting)
@@ -461,25 +472,40 @@ static int rk_fb_io_enable(void)
 	return 0;
 }
 
-#if defined(CONFIG_LCDC0_RK3188)
+#if (defined(CONFIG_LCDC0_RK3188) && !defined(CONFIG_LCDC1_RK3188))
 struct rk29fb_info lcdc0_screen_info = {
-	.prop           = EXTEND,       //extend display device
-       .lcd_info  = NULL,
-       .set_screen_info = set_lcd_info,
+	.prop      = PRMRY,       //EXTEND - extend display device
+        .io_init = rk_fb_io_init,
+        .io_disable = rk_fb_io_disable,
+        .io_enable = rk_fb_io_enable,
+        .set_screen_info = set_lcd_info,
 
 };
-#endif
 
-#if defined(CONFIG_LCDC1_RK3188)
-struct rk29fb_info lcdc1_screen_info = {
+#else
+
+ #if defined(CONFIG_LCDC0_RK3188)
+ struct rk29fb_info lcdc0_screen_info = {
+	.prop      = EXTEND,
+	.lcd_info  = NULL,
+        .set_screen_info = set_lcd_info,
+
+ }
+ #endif
+
+ #if defined(CONFIG_LCDC1_RK3188)
+ struct rk29fb_info lcdc1_screen_info = {
 	.prop	   = PRMRY,		//primary display device
 	.io_init   = rk_fb_io_init,
 	.io_disable = rk_fb_io_disable,
 	.io_enable = rk_fb_io_enable,
 	.set_screen_info = set_lcd_info,
 	
-};
+ };
+ #endif
+
 #endif
+
 
 static struct resource resource_fb[] = {
 	[0] = {
@@ -1276,24 +1302,38 @@ static int rk_platform_add_display_devices(void)
 	return 0;
 	
 }
-//$_rbox_$_modify_$ zhengyang modified for box
-static struct rkdisplay_platform_data hdmi_data = {
+
+#if (defined(CONFIG_LCDC0_RK3188) && !defined(CONFIG_LCDC1_RK3188))
+
+ static struct rkdisplay_platform_data_hdmi_data = {
+	.property	= DISPLAY_MAIN,
+	.video_source	= DISPLAY_SOURCE_LCDC0,
+	.io_pwr_pin	= INVALID_GPIO,
+	.io_reset_pin	= RK30_PIN3_PB2,
+ };
+
+#else
+
+ //$_rbox_$_modify_$ zhengyang modified for box
+ static struct rkdisplay_platform_data hdmi_data = {
 	.property 		= DISPLAY_MAIN,
 	.video_source 	= DISPLAY_SOURCE_LCDC1,
 	.io_pwr_pin 	= INVALID_GPIO,
 	.io_reset_pin 	= RK30_PIN3_PB2,
-};
+ };
 
-#if defined(CONFIG_RK1000_TVOUT)
-static struct rkdisplay_platform_data tv_data = {
+ #if defined(CONFIG_RK1000_TVOUT)
+ static struct rkdisplay_platform_data tv_data = {
 	.property 		= DISPLAY_AUX,
 	.video_source 	= DISPLAY_SOURCE_LCDC0,
 	.io_pwr_pin 	= INVALID_GPIO,
 	.io_reset_pin 	= RK30_PIN3_PD4,
 	.io_switch_pin	= INVALID_GPIO,
-};
+ };
+ #endif
+ //$_rbox_$_modify_$ zhengyang modified end
+
 #endif
-//$_rbox_$_modify_$ zhengyang modified end
 
 // i2c
 #ifdef CONFIG_I2C0_RK30
@@ -1423,8 +1463,8 @@ static struct pmu_info  act8846_dcdc_info[] = {
 	},
 	{
 		.name          = "act_dcdc4",   //vccio
-		.min_uv          = 3300000,
-		.max_uv         = 3300000,
+		.min_uv          = 3000000, //vccio - 3300000, leolas mod to current
+		.max_uv         = 3000000, //vccio - 3300000, leolas mod to current
 		#ifdef CONFIG_ACT8846_SUPPORT_RESET
 		.suspend_vol  =  3000000,
 		#else
@@ -1461,8 +1501,8 @@ static  struct pmu_info  act8846_ldo_info[] = {
 	},
 	{
 		.name          = "act_ldo6",   //vcc_jetta
-		.min_uv          = 1800000,
-		.max_uv         = 1800000,
+		.min_uv          = 3300000,   // 1800000
+		.max_uv         = 3300000,    // 1800000
 	},
 	{
 		.name          = "act_ldo7",   //vcc18
@@ -2030,7 +2070,18 @@ static void __init rk30_reserve(void)
  * comments	: min arm/logic voltage
  */
 static struct cpufreq_frequency_table dvfs_arm_table[] = {
-
+#ifdef OVERCLOCK_CPU
+        {.frequency = 312 * 1000,	.index = 875 * 1000},
+	{.frequency = 504 * 1000,	.index = 900 * 1000},
+	{.frequency = 816 * 1000,	.index = 975 * 1000},
+	{.frequency = 1008 * 1000,	.index = 1050 * 1000},
+	{.frequency = 1200 * 1000,	.index = 1125 * 1000},
+	{.frequency = 1416 * 1000,	.index = 1225 * 1000},
+	{.frequency = 1608 * 1000,	.index = 1325 * 1000},
+	{.frequency = 1704 * 1000,	.index = 1350 * 1000},
+	{.frequency = 1800 * 1000,	.index = 1375 * 1000},
+	{.frequency = 1920 * 1000, 	.index = 1375 * 1000},
+#else
         {.frequency = 312 * 1000,       .index = 900 * 1000},
         {.frequency = 504 * 1000,       .index = 925 * 1000},
         {.frequency = 816 * 1000,       .index = 1000 * 1000},
@@ -2038,26 +2089,42 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
         {.frequency = 1200 * 1000,      .index = 1150 * 1000},
         {.frequency = 1416 * 1000,      .index = 1250 * 1000},
         {.frequency = 1608 * 1000,      .index = 1350 * 1000},
-
-
+#endif
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
 static struct cpufreq_frequency_table dvfs_gpu_table[] = {
-	   {.frequency = 133 * 1000,       .index = 975 * 1000},
-       //{.frequency = 150 * 1000,       .index = 975 * 1000},
-       {.frequency = 200 * 1000,       .index = 1000 * 1000},  
-       {.frequency = 266 * 1000,       .index = 1025 * 1000},  
-       {.frequency = 300 * 1000,       .index = 1050 * 1000},  
-       {.frequency = 400 * 1000,       .index = 1100 * 1000},
-       {.frequency = 600 * 1000,       .index = 1250 * 1000},
+// other limit need adjusting for this to work
+#ifdef OVERCLOCK_GPU
+	{.frequency = 133 * 1000,	.index = 975 * 1000},
+	{.frequency = 200 * 1000,	.index = 1000 * 1000},
+	{.frequency = 266 * 1000,	.index = 1025 * 1000},
+	{.frequency = 300 * 1000, 	.index = 1050 * 1000},
+	{.frequency = 400 * 1000,	.index = 1100 * 1000},
+	{.frequency = 600 * 1000,	.index = 1150 * 1000},
+	{.frequency = 666 * 1000,	.index = 1200 * 1000},
+	{.frequency = 700 * 1000,	.index = 1250 * 1000},
+#else
+       	{.frequency = 133 * 1000,       .index = 975 * 1000},
+       	//{.frequency = 150 * 1000,       .index = 975 * 1000},
+       	{.frequency = 200 * 1000,       .index = 1000 * 1000},  
+       	{.frequency = 266 * 1000,       .index = 1025 * 1000},  
+       	{.frequency = 300 * 1000,       .index = 1050 * 1000},  
+       	{.frequency = 400 * 1000,       .index = 1100 * 1000},
+       	{.frequency = 600 * 1000,       .index = 1250 * 1000},
+#endif
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
 static struct cpufreq_frequency_table dvfs_ddr_table[] = {
+#ifdef OVERCLOCK_RAM
+	{.frequency = 400 * 1000 + DDR_FREQ_VIDEO,	.index = 1100 * 1000},
+	{.frequency = 720 * 1000 + DDR_FREQ_NORMAL,	.index = 1200 * 1000},
+#else
 	//{.frequency = 200 * 1000 + DDR_FREQ_SUSPEND,    .index = 950 * 1000},
 	{.frequency = 300 * 1000 + DDR_FREQ_VIDEO,      .index = 1000 * 1000},
 	{.frequency = 360 * 1000 + DDR_FREQ_NORMAL,     .index = 1100 * 1000},
+#endif
 	{.frequency = CPUFREQ_TABLE_END},
 };
 

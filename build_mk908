@@ -28,4 +28,16 @@ echo -e "\n==========================================="
 echo -e " Building kernel for ${DEVICE} with ${THREADS} thread(s)"
 echo -e "===========================================\n"
 ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS > build.log 2>&1
+ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS modules > build.log 2>&1
 
+if [ -f ./arch/arm/boot/zImage ]
+ then
+  echo -e "\n==========================================="
+  echo -e " Copying kernel/modules into rk3188 device directories"
+  echo -e "===========================================\n"
+  cp arch/arm/boot/zImage ../../../device/rockchip/rk3188/kernel
+  find . -name "*.ko" -exec cp {} ../../../device/rockchip/rk3188/prebuilt/lib/modules \;
+else 
+  echo " No kernel/module found, stopping."
+  exit 1
+fi

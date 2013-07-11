@@ -50,6 +50,7 @@ SiI9022A/9024A and ITE IT66121 [MK908-specific] HDMI transmitter support
 devices support via regular usb port and OTG
 - Ext2, Ext3, Ext4, ISO9660 CDROM, UDF, VFAT, NTFS (w/write), exFAT, YAFFS2,
 proc, NFS, CIFS filesystem support
+- UPDATE: exFAT and YAFFS2 disabled for code debugging (for now)
 - CPU/GPU overclocking support (not a kernel config option, built-in)
 
 **Revision History:**
@@ -66,3 +67,6 @@ was from.
 - Added prelim CPU o/c up to 1920 MHz with initial GPU o/c (needs tweaking)
 - Added Zen I/O scheduler
 - Added exFAT filesystem support
+- Disabled exFAT and YAFFS2 to debug some code, still in source, just not
+enabled in config. Enabling will cause some errors, atm.
+- Extended build script to move kernel/modules into device directories
