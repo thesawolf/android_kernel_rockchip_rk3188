@@ -34,8 +34,8 @@ if [ -f arch/arm/boot/zImage ]; then
   echo -e "\n==========================================="
   echo -e " Copying kernel/modules into rk3188 device directories"
   echo -e "===========================================\n"
-  cp arch/arm/boot/zImage ../../../device/rockchip/rk3188/kernel
-  find . -name "*.ko" -exec cp {} ../../../device/rockchip/rk3188/prebuilt/lib/modules \;
+  cp arch/arm/boot/zImage ../../../device/rockchip/rk3188/prebuilt/kernel/new/kernel
+  find . -name "*.ko" -exec cp {} ../../../device/rockchip/rk3188/prebuilt/kernel/new/modules \;
 else 
   echo " No kernel/module found, stopping."
   exit 1
