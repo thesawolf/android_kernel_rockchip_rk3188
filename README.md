@@ -48,9 +48,10 @@ SiI9022A/9024A and ITE IT66121 [MK908-specific] HDMI transmitter support
 - ALSA (sound) support (ARM, USB and Rockchip specific devices)
 - full complement of USB HID, printer, Mass storage, Serial and mobile modem
 devices support via regular usb port and OTG
-- Ext2, Ext3, Ext4, ISO9660 CDROM, UDF, VFAT, NTFS (w/write), exFAT, YAFFS2,
+- Ext2, Ext3, Ext4, ISO9660 CDROM, UDF, VFAT, NTFS (w/write), YAFFS2,
 proc, NFS, CIFS filesystem support
-- UPDATE: exFAT and YAFFS2 disabled for code debugging (for now)
+- UPDATE: YAFFS2 disabled for code debugging (for now)
+- UPDATE: exFAT support removed from kernel, moved to fuse-exfat
 - CPU/GPU overclocking support (not a kernel config option, built-in)
 
 **Revision History:**
@@ -71,3 +72,9 @@ was from.
 enabled in config. Enabling will cause some errors, atm.
 - Extended build script to move kernel/modules into device directories
 - Updated some rockchip/fb source from leolas, galland sources
+- Removed exFAT kernel support due to too many issues and old backport,
+moved to fuse-exfat module in device build
+
+**ToDo:**
+- Linaro toolchain build
+- YAFFS2 debugging
