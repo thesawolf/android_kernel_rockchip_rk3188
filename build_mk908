@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Thesawolf (thesawolf [at] gmail [d0t] com) Kernel Build Script v1.0
+# --------------------------------------------------------------------
 # NOTE: THIS BUILD SCRIPT IS TAILOURED TO *MY* BUILD ENVIRONMENT
 # I WILL ATTEMPT TO MAKE A CONFIG SECTION SO YOU CAN MAKE SOME EASY
 # ADJUSTMENTS TO SUIT YOUR OWN, BUT SOME OPTIONS MAY NOT WORK FOR YOU
@@ -35,10 +37,10 @@ fi
 
 if [ -z $LOGIT ]; then
   LOGIT=2
-  LOGPARMA="echo '------------------------NEW-KERNEL---------------------' > BUILD.LOG"
-  LOGPARM1=">> BUILD.LOG 2>&1"
-  LOGPARMB="echo '------------------------NEW-MODULES--------------------' >> BUILD.LOG"
-  LIDESC="BUILD.LOG output (replace)"
+  LOGPARMA="echo '------------------------NEW-KERNEL---------------------' >BUILD.LOG"
+  LOGPARM1='2>&1 | tee -a BUILD.LOG'
+  LOGPARMB="echo '------------------------NEW-MODULES--------------------' >>BUILD.LOG"
+  LIDESC="BUILD.LOG/screen output (replace)"
 fi
 
 function tcitems 
@@ -204,9 +206,9 @@ function logitems
 	echo "   ========================================="
 	echo "   Currently set to: $LOGIT"
 	echo "   -----------------------------------------"
-	echo "   1. NO output to BUILD.LOG (to screen)"
-	echo "   2. Output to BUILD.LOG (replace)"
-	echo "   3. Output to BUILD.LOG (append)"
+	echo "   1. NO output to BUILD.LOG (only screen)"
+	echo "   2. Output to BUILD.LOG & screen (replace)"
+	echo "   3. Output to BUILD.LOG & screen (append)"
 	echo "   ========================================="
 	echo "   0. EXIT"
 	read -p "Select Option: " logopt
@@ -215,21 +217,21 @@ function logitems
 	    LOGPARMA=""
 	    LOGPARM1=""
 	    LOGPARMB=""
-	    LIDESC="no BUILD.LOG output (to screen)"
+	    LIDESC="no BUILD.LOG output (only screen)"
 	   break
 	elif [ "$logopt" = "2" ]; then
 	    LOGIT=2
-            LOGPARMA="echo '------------------------NEW-KERNEL---------------------' > BUILD.LOG"
-	    LOGPARM1=">> BUILD.LOG 2>&1"
-            LOGPARMB="echo '------------------------NEW-MODULES--------------------' >> BUILD.LOG"
-	   LIDESC="BUILD.LOG output (replace)"
+            LOGPARMA="echo '------------------------NEW-KERNEL---------------------' >BUILD.LOG"
+	    LOGPARM1="2>&1 | tee -a BUILD.LOG"
+            LOGPARMB="echo '------------------------NEW-MODULES--------------------' >>BUILD.LOG"
+	   LIDESC="BUILD.LOG/screen output (replace)"
 	   break
 	elif [ "$logopt" = "3" ]; then
 	    LOGIT=3
-            LOGPARMA="echo '------------------------NEW-KERNEL---------------------' >> BUILD.LOG"
-	    LOGPARM1=">> BUILD.LOG 2>&1"
-            LOGPARMB="echo '------------------------NEW-MODULES--------------------' >> BUILD.LOG"
-	   LIDESC="BUILD.LOG output (append)"
+            LOGPARMA="echo '------------------------NEW-KERNEL---------------------' >>BUILD.LOG"
+	    LOGPARM1="2>&1 | tee -a BUILD.LOG"
+            LOGPARMB="echo '------------------------NEW-MODULES--------------------' >>BUILD.LOG"
+	   LIDESC="BUILD.LOG/screen output (append)"
 	   break
         elif [ "$logopt" = "0" ]; then
 	   break
@@ -258,7 +260,7 @@ function thrditems
             THREADS=$THREADS
 	   break           
         else 
-           $THREADS=$($thrdopt)
+            #$THREADS=$($thrdopt)
             THREADS=$thrdopt
            break
         fi
@@ -270,17 +272,23 @@ function buildit
 echo -e "\n-------------------- CLEANING UP BEFORE BUILD ------------------------\n"
 make ARCH=arm mrproper
 echo -e "\n-------------------- $DEVICE to .config ----------------------------\n"
-cp ./$DEVICE ./.config
+cp -v ./$DEVICE ./.config
 echo -e "\n-------------------- BEGINNING KERNEL BUILD ------------------------\n"
 if [ "$KERNPARM2"="./NEW" ]; then
- mkdir NEW
- mkdir NEW/modules
+ mkdir ./NEW
+ mkdir ./NEW/modules
 fi
 eval $LOGPARMA
-make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS $KERNPARM1 $LOGPARM1
+KBLD="make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS $KERNPARM1 $LOGPARM1"
+echo $KBLD
+eval $KBLD
+#make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS $KERNPARM1 $LOGPARM1
 echo -e "\n-------------------- BEGINNING MODULE BUILD ------------------------\n"
 eval $LOGPARMB
-make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS modules $LOGPARM1
+MBLD="make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS modules $LOGPARM1"
+echo $MBLD
+eval $MBLD
+#mark ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS modules $LOGPARM1
 echo -e "\n-------------------- MOVING STUFF AROUND  ---------------------------\n"
 case $OUTLOC in
 1)
@@ -318,7 +326,7 @@ if [ $KERNPARM1="" ]; then
 fi
 
 if [ $KERNPARM2="." ]; then
- $KERNPARM2="./arch/arm/boot"
+ KERNPARM2="./arch/arm/boot"
 fi
 
 if [ -f $KERNPARM2/$KP1 ]; then
