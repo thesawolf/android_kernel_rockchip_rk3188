@@ -1,42 +1,400 @@
 #!/bin/bash
 
-THREADS="6"
-DEVICE="mk908-defconfig"
+# NOTE: THIS BUILD SCRIPT IS TAILOURED TO *MY* BUILD ENVIRONMENT
+# I WILL ATTEMPT TO MAKE A CONFIG SECTION SO YOU CAN MAKE SOME EASY
+# ADJUSTMENTS TO SUIT YOUR OWN, BUT SOME OPTIONS MAY NOT WORK FOR YOU
+# UNLESS YOU ARE USING A SIMILAR SETUP OR ONE PULLED SPECIFICALLY FROM
+# MY GITHUBS (kernel, local_manifest.xml/device, toolchains)
 
-# default toolchain
-TOOLCHAIN=../../../prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
-
-# linaro 4.8 toolchain
-#TOOLCHAIN=../../../prebuilts/gcc/linux-x86/arm/android-toolchain-eabi/bin/arm-linux-androideabi-
-
-if [ "$1" != "" ]; then
-	THREADS="$1"
+# determine threads using count cpu/cores x 2
+if [ -z "$THREADS" ]; then
+ THREADS=$(nproc)
+ THREADS=$(($THREADS*2))
 fi
 
-if [ "$2" != "" ]; then
-	DEVICE="$2"
+# set defaults if not set in env
+if [ -z $TOOLCHAIN ]; then 
+ TOOLCHAIN=1
+ TCDESC="System (arm-linux-gnueabi)"
 fi
 
-cp $DEVICE .config 
-rm build.log
-echo -e "\n==========================================="
-echo -e " Configuring kernel for ${DEVICE}"
-echo -e "===========================================\n"
-ARCH=arm CROSS_COMPILE=$TOOLCHAIN make $DEVICE 
+if [ -z $CROSS_COMPILE ]; then
+ CROSS_COMPILE=arm-linux-gnueabi-
+fi
 
-echo -e "\n==========================================="
-echo -e " Building kernel for ${DEVICE} with ${THREADS} thread(s)"
-echo -e "===========================================\n"
-ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS > build.log 2>&1
-ARCH=arm CROSS_COMPILE=$TOOLCHAIN make -j$THREADS modules 
+if [ -z $DEVICE ]; then
+ DEVICE=mk908-720-debug-defconfig
+fi
 
-if [ -f arch/arm/boot/zImage ]; then
-  echo -e "\n==========================================="
-  echo -e " Copying kernel/modules into rk3188 device directories"
-  echo -e "===========================================\n"
-  cp arch/arm/boot/zImage ../../../device/rockchip/rk3188/prebuilt/kernel/new/kernel
+if [ -z $OUTLOC ]; then
+  KERNPARM1="kernel.img"
+  KERNPARM2="./NEW"
+  OLDESC="kernel.img > KERNEL/MODULES dirs"
+  OUTLOC=5
+fi
+
+if [ -z $LOGIT ]; then
+  LOGIT=2
+  LOGPARMA="echo '------------------------NEW-KERNEL---------------------' > BUILD.LOG"
+  LOGPARM1=">> BUILD.LOG 2>&1"
+  LOGPARMB="echo '------------------------NEW-MODULES--------------------' >> BUILD.LOG"
+  LIDESC="BUILD.LOG output (replace)"
+fi
+
+function tcitems 
+{
+ tcopt=""
+ while [ "$tcopt" != "0" ]
+ do
+	clear
+	echo "              [ TOOLCHAINS MENU ]"
+	echo "   ========================================="
+	echo "   Currently set to: $TOOLCHAIN"
+	echo "   -----------------------------------------"
+	echo "   1. System (arm-linux-gnueabi via apt-get)"
+	echo "   2. Default Android (arm-eabi-4.4.3)"
+	echo "   3. Linaro 4.6.2 (arm-eabi-linaro-4.6.2)"
+	echo "   4. Linaro 4.8 (android-toolchain-eabi)"
+	echo "   5. Google (arm-linux-androideabi-4.7)"
+	echo "   ========================================="
+	echo "   0. EXIT"
+	read -p "Select Option: " tcopt
+	if [ "$tcopt" = "1" ]; then
+	    TOOLCHAIN=1
+	    CROSS_COMPILE=arm-linux-gnueabi-
+	    TCDESC="System (arm-linux-gnueabi)"
+	   break
+	elif [ "$tcopt" = "2" ]; then
+	    TOOLCHAIN=2
+	    CROSS_COMPILE=../../../device/rockchip/rk3188/toolchains/arm-eabi-4.4.3/bin/arm-eabi-
+	    TCDESC="Android (arm-eabi-4.4.3)"
+	   break
+	elif [ "$tcopt" = "3" ]; then
+	    TOOLCHAIN=3
+	    CROSS_COMPILE=../../../device/rockchip/rk3188/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-
+	    TCDESC="Linaro 4.6.2 (arm-eabi-linaro-4.6.2)"
+	   break
+	elif [ "$tcopt" = "4" ]; then
+	    TOOLCHAIN=4
+	    CROSS_COMPILE=../../../device/rockchip/rk3188/toolchains/android-toolchain-eabi/bin/arm-eabi-
+	    TCDESC="Linaro 4.8 (android-toolchain-eabi)"
+	   break
+	elif [ "$tcopt" = "5" ]; then
+	    TOOLCHAIN=5
+	    CROSS_COMPILE=../../../device/rockchip/rk3188/toolchains/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-
+	    TCDESC="Google (arm-linux-androideabi-4.7)"
+	   break
+	elif [ "$tcopt" = "0" ]; then
+	   break
+	fi
+ done
+}
+
+function cfgitems
+{
+ cfgopt=""
+ while [ "$cfgopt" != "0" ]
+ do
+	clear 
+	echo "                [ CONFIGS MENU ]"
+	echo "   ========================================="
+	echo "   Currently set to: $DEVICE"
+	echo "   -----------------------------------------"
+	echo "   1. mk908-720-debug-defconfig"
+	echo "   2. mk908-1080-debug-defconfig"
+	echo "   3. mk908-auto-debug-defconfig"
+	echo "   4. mk908-720-defconfig"
+	echo "   5. mk908-1080-defconfig"
+	echo "   6. mk908-auto-defconfig"
+	echo "   ========================================="
+	echo "   0. EXIT"
+	read -p "Select Option: " cfgopt
+	if [ "$cfgopt" = "1" ]; then
+	    DEVICE=mk908-720-debug-defconfig
+	   break
+	elif [ "$cfgopt" = "2" ]; then
+	    DEVICE=mk908-1080-debug-defconfig
+	   break
+	elif [ "$cfgopt" = "3" ]; then
+            DEVICE=mk908-auto-debug-defconfig
+           break
+	elif [ "$cfgopt" = "4" ]; then
+	    DEVICE=mk908-720-defconfig
+	   break
+	elif [ "$cfgopt" = "5" ]; then
+	    DEVICE=mk908-1080-defconfig
+	   break
+	elif [" $cfgopt" = "6" ]; then
+	    DEVICE=mk908-auto-defconfig
+	   break
+	elif [ "$cfgopt" = "0" ]; then
+	   break
+	fi
+ done
+}
+
+function outitems
+{
+ outopt=""
+ while [ "$outopt" != "0" ]
+ do
+	clear 
+	echo "               [ OUTPUTS MENU ]"
+	echo "   ========================================="
+	echo "   Currently set to: $OUTLOC"
+	echo "   -----------------------------------------"
+	echo "   1. zImage to default compile location"
+	echo "   2. zImage to KERNEL/MODULES directories"
+	echo "   3. zImage to device directories"
+	echo "   4. kernel.img to default compile location"
+	echo "   5. kernel.img to KERNEL/MODULES dirs"
+	echo "   6. kernel.img to device directories"
+	echo "   ========================================="
+	echo "   0. EXIT"
+	read -p "Select Option: " outopt
+	if [ "$outopt" = "1" ]; then
+	    OUTLOC=1
+	    KERNPARM1=""
+	    KERNPARM2="."
+            OLDESC="zImage > default dir"
+	   break
+	elif [ "$outopt" = "2" ]; then
+	    OUTLOC=2
+	    KERNPARM1=""
+	    KERNPARM2="./NEW"
+            OLDESC="zImage > KERNEL/MODULES dirs"
+	   break
+	elif [ "$outopt" = "3" ]; then
+	    OUTLOC=3
+	    KERNPARM1=""
+	    KERNPARM2="../../../device/rockchip/rk3188/prebuilt/new"
+	    OLDESC="zImage > device dirs"
+	   break
+	elif [ "$outopt" = "4" ]; then
+	    OUTLOC=4
+ 	    KERNPARM1="kernel.img"
+	    KERNPARM2="."
+	    OLDESC="kernel.img > default dir"
+ 	   break
+	elif [ "$outopt" = "5" ]; then
+	    OUTLOC=5
+	    KERNPARM1="kernel.img"
+            KERNPARM2="./NEW"
+            OLDESC="kernel.img > KERNEL/MODULES dirs"
+	   break
+	elif [ "$outopt" = "6" ]; then
+	    OUTLOC=6
+	    KERNPARM1="kernel.img"
+	    KERNPARM2="../../../device/rockchip/rk3188/prebuilt/new"
+	    OLDESC="kernel.img > device dirs"
+	   break
+	elif [ "$outopt" = "0" ]; then
+	   break
+	fi
+ done
+}
+
+function logitems
+{
+ logopt=""
+ while [ "$logopt" != "0" ]
+ do
+	clear 
+	echo "                 [ LOGS MENU ]"
+	echo "   ========================================="
+	echo "   Currently set to: $LOGIT"
+	echo "   -----------------------------------------"
+	echo "   1. NO output to BUILD.LOG (to screen)"
+	echo "   2. Output to BUILD.LOG (replace)"
+	echo "   3. Output to BUILD.LOG (append)"
+	echo "   ========================================="
+	echo "   0. EXIT"
+	read -p "Select Option: " logopt
+	if [ "$logopt" = "1" ]; then
+	    LOGIT=1
+	    LOGPARMA=""
+	    LOGPARM1=""
+	    LOGPARMB=""
+	    LIDESC="no BUILD.LOG output (to screen)"
+	   break
+	elif [ "$logopt" = "2" ]; then
+	    LOGIT=2
+            LOGPARMA="echo '------------------------NEW-KERNEL---------------------' > BUILD.LOG"
+	    LOGPARM1=">> BUILD.LOG 2>&1"
+            LOGPARMB="echo '------------------------NEW-MODULES--------------------' >> BUILD.LOG"
+	   LIDESC="BUILD.LOG output (replace)"
+	   break
+	elif [ "$logopt" = "3" ]; then
+	    LOGIT=3
+            LOGPARMA="echo '------------------------NEW-KERNEL---------------------' >> BUILD.LOG"
+	    LOGPARM1=">> BUILD.LOG 2>&1"
+            LOGPARMB="echo '------------------------NEW-MODULES--------------------' >> BUILD.LOG"
+	   LIDESC="BUILD.LOG output (append)"
+	   break
+        elif [ "$logopt" = "0" ]; then
+	   break
+	fi
+ done
+}
+
+function thrditems
+{
+ thrdopt=""
+ while [ "$thrdopt" != "0" ]
+ do
+        clear
+        echo "                [ THREADS MENU ]"
+        echo "   ========================================="
+        echo "   Currently set to: $THREADS"
+        echo "   -----------------------------------------"
+        echo "   Enter the number of threads to compile"
+        echo "   the kernel with. (The general rule is: "
+        echo "   # of CPU/cores x 2 = THREADS)"
+        echo "   Entering 0 will exit this menu using the"
+        echo "   CURRENTLY SET THREADS count above"
+        echo "   ========================================="
+        read -e -p "Select Threads: " thrdopt
+        if [ "$thrdopt" = "0" ]; then
+            THREADS=$THREADS
+	   break           
+        else 
+           $THREADS=$($thrdopt)
+            THREADS=$thrdopt
+           break
+        fi
+ done
+}
+
+function buildit
+{
+echo -e "\n-------------------- CLEANING UP BEFORE BUILD ------------------------\n"
+make ARCH=arm mrproper
+echo -e "\n-------------------- $DEVICE to .config ----------------------------\n"
+cp ./$DEVICE ./.config
+echo -e "\n-------------------- BEGINNING KERNEL BUILD ------------------------\n"
+if [ "$KERNPARM2"="./NEW" ]; then
+ mkdir NEW
+ mkdir NEW/modules
+fi
+eval $LOGPARMA
+make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS $KERNPARM1 $LOGPARM1
+echo -e "\n-------------------- BEGINNING MODULE BUILD ------------------------\n"
+eval $LOGPARMB
+make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS modules $LOGPARM1
+echo -e "\n-------------------- MOVING STUFF AROUND  ---------------------------\n"
+case $OUTLOC in
+1)
+  echo "Nothing to move around.."
+  ;;
+2)
+  echo "Moving stuff to NEW kernel/modules directories.."
+  cp ./arch/arm/boot/zImage ./NEW
+  find . -name "*.ko" -exec cp {} ./NEW/modules \;
+  ;;
+3) 
+  echo "Moving stuff to Device directories.."
+  cp ./arch/arm/boot/zImage ../../../device/rockchip/rk3188/prebuilt/kernel/new/kernel
   find . -name "*.ko" -exec cp {} ../../../device/rockchip/rk3188/prebuilt/kernel/new/modules \;
-else 
-  echo " No kernel/module found, stopping."
-  exit 1
+  ;;
+4) 
+  echo "Nothing to move around.."
+  ;;
+5) 
+  echo "Moving stuff to NEW kernel/modules directories.."
+  cp ./kernel.img ./NEW
+  find . -name "*.ko" -exec cp {} ./NEW/modules \;
+  ;;
+6)
+  echo "Moving stuff to Device directories.."
+  cp ./kernel.img ../../../device/rockchip/rk3188/prebuilt/kernel/new/kernel
+  find . -name "*.ko" -exec cp {} ../../../device/rockchip/rk3188/prebuilt/kernel/new/modules \;
+  ;;
+esac
+
+echo -e "\n===============================================================\n"
+
+if [ $KERNPARM1="" ]; then 
+ KP1="zImage"
 fi
+
+if [ $KERNPARM2="." ]; then
+ $KERNPARM2="./arch/arm/boot"
+fi
+
+if [ -f $KERNPARM2/$KP1 ]; then
+ echo " NOTICE: All done!"
+ ls -al $KERNPARM2/$KP1
+ exit
+else 
+ echo " ERROR: NO compiled kernel found in $KERNPARM2!"
+ echo " Check your BUILD.LOG (if applicable)!"
+ exit
+fi
+
+}
+
+function mihc       
+{
+ doit=""
+        clear
+	echo "              MAKE IT HAP'N CAP'N! "
+	echo "   ========================================="
+	echo "   You will be building with the following:"
+	echo "   -----------------------------------------"
+	echo "    Toolchains : $CROSS_COMPILE"
+	echo "    Device Config: $DEVICE"
+	echo "    Output: $OLDESC"
+	echo "    Logs: $LIDESC"
+	echo "    Threads: $THREADS"
+	echo "   -----------------------------------------"
+        read -p "   Proceed with Build? (y/n) : " doit
+	if [ "$doit" = "n" ]; then
+		break
+	elif [ "$doit" = "N" ]; then
+		break
+	elif [ "$doit" = "y" ]; then
+		buildit
+	elif [ "$doit" = "Y" ]; then
+		buildit
+	else
+		break
+	fi
+}
+
+function mainopt
+{
+ choice=""
+ while [ "$choice" != "0" ]
+ do
+ 	clear
+	echo "                [ BUILD MENU ]"
+	echo "   ========================================="
+	echo "   1. Toolchains : $TCDESC"
+	echo "   2. Configs : $DEVICE"
+	echo "   3. Outputs : $OLDESC"
+	echo "   4. Logs : $LIDESC"
+	echo "   5. Threads : $THREADS"
+	echo "   -----------------------------------------"
+	echo "   9. MAKE IT HAP'N CAP'N! (build it)"
+	echo "   ========================================="
+	echo "   0. EXIT"
+	read -p "Enter your choice : " choice
+	if [ "$choice" = "1" ]; then
+		tcitems
+	elif [ "$choice" = "2" ]; then
+		cfgitems
+	elif [ "$choice" = "3" ]; then
+		outitems
+	elif [ "$choice" = "4" ]; then
+		logitems
+	elif [ "$choice" = "5" ]; then
+	        thrditems
+	elif [ "$choice" = "9" ]; then
+	        mihc
+	elif [ "$choice" = "0" ]; then
+		break
+	fi
+ done
+}
+
+mainopt

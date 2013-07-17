@@ -60,7 +60,7 @@ and doesn't reflect some of the stuff I've seen in aloksinha's or omegamoon's
 RK3188 kernel sources. It could simply be a hybrid. If someone can spot it's 
 origin, please let me know so I can credit them properly. Some old git info
 carried over saying htc authored but I have no idea if that's where the base
-was from.
+was from. (determined that's it the original Rikomagic source)
 - Added some omegamoon defconfigs & build stuff because I'm lazy.
 - Added latest Mali GPU drivers (r3p2-01rel2 from 31 May 2013)
 - Added VR and SIO I/O schedulers
@@ -74,6 +74,10 @@ enabled in config. Enabling will cause some errors, atm.
 - Updated some rockchip/fb source from leolas, galland sources
 - Removed exFAT kernel support due to too many issues and old backport,
 moved to fuse-exfat module in device build
+- Restructure buildscript (build_mk908) to handle menu system so I can
+do specific kind of builds since I keep losing track of stuff :P
+- Determined origin of my kernel source finally. it's the original source
+from Rikomagic before alok's linux-centric source changes
 
 **ToDo:**
 - Linaro toolchain build

@@ -12,13 +12,13 @@
 # - Modify the flash_kernel.sh script's first line ("rkflashtool w 0x... 0x... < recovery.img) to use the two numbers above, BUT SWAPPED (first the hex number after the @, followed by the one before it). In my case that meant leaving the line as:
 #       sudo ./rkflashtool w 0x12000 0x10000 < recovery.img
 # - Make the script executable by typing in the terminal: chmod +x flash_kernel.sh
-./rkcrc -k ../arch/arm/boot/zImage ./zImage.img
+./rkcrc -k ../kernel.img ./kernel
 
-if [ -f ./zImage.img ]; 
+if [ -f ./kernel ]; 
 	then
 		echo "WARNING: You MUST modify this script to flash to the right address or else you WILL BRICK your device."
 		read -p "Press Enter if you want to proceed, CTRL-C to exit"
-		sudo ./rkflashtool w 0x00004000 0x00006000 < zImage.img
+		sudo ./rkflashtool w 0x00004000 0x00006000 < kernel 
 		sudo ./rkflashtool b
 	else
 		echo "You must compile and generate a valid kernel image to use this tool!"

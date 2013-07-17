@@ -1,7 +1,7 @@
 VERSION = 3
 PATCHLEVEL = 0
 SUBLEVEL = 36
-EXTRAVERSION = +
+EXTRAVERSION = 
 NAME = Sneaky Weasel
 
 # *DOCUMENTATION*
@@ -194,7 +194,7 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
 export KBUILD_BUILDHOST := $(SUBARCH)
 #ARCH		?= $(SUBARCH)
 ARCH		?= arm
-CROSS_COMPILE	?= arm-eabi-
+CROSS_COMPILE	?= arm-linux-gnueabi-
 
 # Architecture as present in compile.h
 UTS_MACHINE 	:= $(ARCH)
