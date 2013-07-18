@@ -2,7 +2,7 @@
 
 # LAZY-ASS BUILD SCRIPT v1.0 by
 # Thesawolf (thesawolf [at] gmail [d0t] com)
-# --------------------------------------------------------------------
+# --------------------------------------------------------
 # NOTE: This build script is tailoured to *MY* build
 # environment, some options may not work for you unless
 # you are using a similar setup or one pulled specifically
@@ -13,6 +13,7 @@
 # being lazy (and I know that there are ways to optimize
 # this script or better ways to do it.. but it works for
 # me and I'd like to refer you to the script name.. LOL)
+# --------------------------------------------------------
 
 # determine threads using count cpu/cores x 2
 if [ -z "$THREADS" ]; then
@@ -39,6 +40,7 @@ if [ -z $OUTLOC ]; then
   KERNPARM2="./NEW"
   OLDESC="kernel.img > KERNEL/MODULES dirs"
   OUTLOC=5
+  RKCRC="no"
 fi
 
 if [ -z $LOGIT ]; then
@@ -66,6 +68,7 @@ function tcitems
  while [ "$tcopt" != "0" ]
  do
 	clear
+	echo
 	echo "   ===========[ TOOLCHAINS MENU ]==========="
 	echo "    Current: $TOOLCHAIN"
 	echo "   =---------------------------------------="
@@ -77,7 +80,7 @@ function tcitems
 	echo "   ========================================="
 	echo "   >> 0. EXIT"
 	echo
-	read -p "   Select Option: " tcopt
+	read -n 1 -p "   Select Option: " tcopt
 	if [ "$tcopt" = "1" ]; then
 	    TOOLCHAIN=1
 	    CROSS_COMPILE=arm-linux-gnueabi-
@@ -119,8 +122,7 @@ function poprem
  echo " to file named: $DEVREM -OR- to another file"
  echo " and then load that new defconfig in the configs menu!"
  echo
- echo ">> Press [ENTER] to continue.."
- read 
+ read -n1 -p ">> Press any key to continue.."
 }
 
 # device configs menu, these are all my preset ones with an option to 
@@ -131,6 +133,7 @@ function cfgitems
  while [ "$cfgopt" != "0" ]
  do
 	clear 
+	echo
 	echo "   ================[ CONFIGS MENU ]==============="
 	echo "    Current: $DEVICE"
 	echo "   =---------------------------------------------="
@@ -147,7 +150,7 @@ function cfgitems
 	echo "   ==============================================="
 	echo "   >> 0. EXIT"
 	echo
-	read -p "   Select Option: " cfgopt
+	read -n 1 -p "   Select Option: " cfgopt
 	if [ "$cfgopt" = "1" ]; then
 	   DEVICE=mk908-720-debug-defconfig
 	   break
@@ -217,14 +220,42 @@ function cfgitems
  done
 }
 
+# rkcrc "popup" question, for rockchip device flashing
+function rkit
+{
+ clear
+ echo 
+ echo " Do you want to RKCRC your compiled kernel? (this is one of the"
+ echo " prep steps necessary for flashing your kernel to a rockchip"
+ echo " device) NOTE: If you select YES, your kernel will have an 'rk-'"
+ echo " prepended to the kernel filename to indicate as such"
+ echo 
+ read -n 1 -p " >> Leave blank and press [ENTER] to skip!, otherwise [y|n] : " RKOPT
+ if [ "$RKOPT" != "" ]; then
+  if [[ "$RKOPT" = "n" || "$RKOPT" = "N" ]]; then
+   RKCRC="no"
+  elif [[ "$RKOPT" = "y" || "$RKOPT" = "Y" ]]; then
+   RKCRC="yes"
+  fi
+ fi           	   
+}
+
+# output options menu, choices for where to put stuff after compiled
+# default location is ./arch/arm/boot, etc.
+# kernel/modules dir is ./NEW directory in kernel dir
+# device directories is my rk3188 device directory (through github,
+# installed in (android)/device/rockchip/rk3188/ normally)
+# or you can specify your own location (in relation to the kernel dir!)
 function outitems
 {
  outopt=""
  while [ "$outopt" != "0" ]
  do
 	clear 
+	echo
 	echo "   ============[ OUTPUTS MENU ]============="
-	echo "    Current: $OUTLOC"
+	echo "    Current: $OUTLOC (see option below)"
+        echo "     RKCRC?: $RKCRC"
 	echo "   =---------------------------------------="
 	echo "   1. zImage to default compile location"
 	echo "   2. zImage to KERNEL/MODULES directories"
@@ -232,60 +263,109 @@ function outitems
 	echo "   4. kernel.img to default compile location"
 	echo "   5. kernel.img to KERNEL/MODULES dirs"
 	echo "   6. kernel.img to device directories"
+	echo "   =---------------------------------------="
+	if [ "$OUTLOC" = "9" ]; then
+	 echo "   9. $OLDESC SELECTED"
+	 echo "      DIRECTORY: $KERNPARM2"
+	else
+	 echo "   9. specify your own type/directory"
+	fi
+        echo "   =---------------------------------------="
+        echo "   R. RKCRC it? (for flashing)"
 	echo "   ========================================="
 	echo "   >> 0. EXIT"
 	echo
-	read -p "Select Option: " outopt
+	read -n 1 -p "Select Option: " outopt
 	if [ "$outopt" = "1" ]; then
-	    OUTLOC=1
-	    KERNPARM1=""
-	    KERNPARM2="."
-            OLDESC="zImage > default dir"
+	   OUTLOC=1
+	   KERNPARM1=""
+	   KERNPARM2="."
+           OLDESC="zImage > default dir"
 	   break
 	elif [ "$outopt" = "2" ]; then
-	    OUTLOC=2
-	    KERNPARM1=""
-	    KERNPARM2="./NEW"
-            OLDESC="zImage > KERNEL/MODULES dirs"
+	   OUTLOC=2
+	   KERNPARM1=""
+	   KERNPARM2="./NEW"
+           OLDESC="zImage > KERNEL/MODULES dirs"
 	   break
 	elif [ "$outopt" = "3" ]; then
-	    OUTLOC=3
-	    KERNPARM1=""
-	    KERNPARM2="../../../device/rockchip/rk3188/prebuilt/new"
-	    OLDESC="zImage > device dirs"
+	   OUTLOC=3
+	   KERNPARM1=""
+	   KERNPARM2="../../../device/rockchip/rk3188/prebuilt/new"
+	   OLDESC="zImage > device dirs"
 	   break
 	elif [ "$outopt" = "4" ]; then
-	    OUTLOC=4
- 	    KERNPARM1="kernel.img"
-	    KERNPARM2="."
-	    OLDESC="kernel.img > default dir"
+	   OUTLOC=4
+ 	   KERNPARM1="kernel.img"
+	   KERNPARM2="."
+	   OLDESC="kernel.img > default dir"
  	   break
 	elif [ "$outopt" = "5" ]; then
-	    OUTLOC=5
-	    KERNPARM1="kernel.img"
-            KERNPARM2="./NEW"
-            OLDESC="kernel.img > KERNEL/MODULES dirs"
+	   OUTLOC=5
+	   KERNPARM1="kernel.img"
+           KERNPARM2="./NEW"
+           OLDESC="kernel.img > KERNEL/MODULES dirs"
 	   break
 	elif [ "$outopt" = "6" ]; then
-	    OUTLOC=6
-	    KERNPARM1="kernel.img"
-	    KERNPARM2="../../../device/rockchip/rk3188/prebuilt/new"
-	    OLDESC="kernel.img > device dirs"
+	   OUTLOC=6
+	   KERNPARM1="kernel.img"
+	   KERNPARM2="../../../device/rockchip/rk3188/prebuilt/new"
+	   OLDESC="kernel.img > device dirs"
 	   break
+	elif [ "$outopt" = "9" ]; then
+           clear
+	   echo
+           echo " CUSTOM: What type of kernel to build? "
+           echo " ---------------------------------------------- "
+           echo " 1. zImage - regular, default, compressed kernel"
+           echo " 2. kernel.img - direct to image"
+           echo " ----------------------------------------------"
+           echo " >> 0. Exit the custom option"
+           echo
+           read -n 1 -p " Kernel type : " KTYPE
+           if [ "$KTYPE" = "1" ]; then
+            KERNPARM1=""           
+            OLDESC="zImage > CUSTOM dirs"
+           elif [ "$KTYPE" = "2" ]; then
+            KERNPARM1="kernel.img"
+	    OLDESC="kernel.img > CUSTOM dirs"
+           else
+            break
+           fi
+           echo
+           echo " CUSTOM: Where would you like to dump it?"
+           echo " ------------------------------------------------------"
+           echo " Specify a location in relation to the kernel directory"            
+           echo " (i.e. ../../../kernel will specify 3 directories back"
+           echo " and into a directory called kernel, there is no need"
+           echo " to specify a trailing backslash)"
+           echo
+           echo " Note: This directory will be created if it doesn't"
+           echo " already exist, make sure you have owner permission"
+           echo " to write in that directory or it will fail"
+           echo " ------------------------------------------------------"
+           read -e -p " Directory : " KDIR
+           KERNPARM2="$KDIR"
+	   OUTLOC=9
+           rkit
+        elif [[ "$outopt" = "R" || "$outopt" = "r" ]]; then
+	   rkit
 	elif [ "$outopt" = "0" ]; then
 	   break
 	fi
  done
 }
 
+# logging options menu, nothing special here
 function logitems
 {
  logopt=""
  while [ "$logopt" != "0" ]
  do
 	clear 
-	echo "   ===============[ LOGS MENU ]============="
-	echo "    Current: $LOGIT"
+	echo
+	echo "   ==============[ LOGS MENU ]=============="
+	echo "    Current: $LOGIT (see option below)"
 	echo "   =---------------------------------------="
 	echo "   1. NO output to BUILD.LOG (only screen)"
 	echo "   2. Output to BUILD.LOG & screen (replace)"
@@ -293,7 +373,7 @@ function logitems
 	echo "   ========================================="
 	echo "   >> 0. EXIT"
 	echo
-	read -p "   Select Option: " logopt
+	read -n 1 -p "   Select Option: " logopt
 	if [ "$logopt" = "1" ]; then
 	    LOGIT=1
 	    LOGPARMA=""
@@ -321,14 +401,17 @@ function logitems
  done
 }
 
+# clean-up options menu, nothing fancy here either. Just command to run
+# before everything gets started
 function cuitems
 {
  cuopt=""
  while [ "$cuopt" != "0" ]
  do
 	clear 
+	echo
 	echo "   ============[ CLEAN-UP MENU ]============"
-	echo "    Current: $CUTIME"
+	echo "    Current: $CUTIME (see option below)"
 	echo "   =---------------------------------------="
 	echo "   1. NO clean-up before Building"
 	echo "   2. Prior clean-up (make clean)"
@@ -336,7 +419,7 @@ function cuitems
 	echo "   ========================================="
 	echo "   >> 0. EXIT"
 	echo
-	read -p "   Select Option: " cuopt
+	read -n 1 -p "   Select Option: " cuopt
 	if [ "$cuopt" = "1" ]; then
 	   CUTIME=1
 	   CUPARM=""
@@ -358,12 +441,14 @@ function cuitems
  done
 }
 
+# thread options menu, don't like the default chosen equation? change it
 function thrditems
 {
  thrdopt=""
  while [ "$thrdopt" != "0" ]
  do
         clear
+        echo
         echo "   =============[ THREADS MENU ]============"
         echo "    Current: $THREADS"
         echo "   =---------------------------------------="
@@ -386,111 +471,99 @@ function thrditems
  done
 }
 
+# the actual build process
 function buildit
 {
-echo -e "\n-------------------[ CLEANING UP BEFORE BUILD ]-----------------------\n"
-if [ "$CUTIME" = "1" ]; then
- echo "NO clean-up selected, skipping..."
-else
- echo $CUPARM 
- eval $CUPARM
-fi
-echo -e "\n-------------------[ SETTING KERNEL DEFCONFIG ]---------------------\n"
-cp -v ./$DEVICE ./.config
-echo -e "\n-------------------[ BEGINNING KERNEL BUILD ]-----------------------\n"
-if [ "$KERNPARM2" = "./NEW" ]; then
- mkdir ./NEW
- mkdir ./NEW/modules
-fi
-eval $LOGPARMA
-NLOG="echo '   =---------------------------------------=' $LOGPARM1"
-eval $NLOG
-NLOG="echo '    TOOLCHAINS: $CROSS_COMPILE' $LOGPARM1"
-eval $NLOG
-NLOG="echo '    DEVICE CONFIG: $DEVICE' $LOGPARM1"
-eval $NLOG
-NLOG="echo '    OUTPUT: $OLDESC' $LOGPARM1"
-eval $NLOG
-NLOG="echo '    LOGS: $LIDESC' $LOGPARM1"
-eval $NLOG
-NLOG="echo '    THEADS: $THREADS' $LOGPARM1"
-eval $NLOG
-NLOG="echo '   =---------------------------------------=' $LOGPARM1"
-eval $NLOG
-KBLD="make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS $KERNPARM1 $LOGPARM1"
-echo $KBLD
-eval $KBLD
-echo -e "\n-------------------[ BEGINNING MODULE BUILD ]-----------------------\n"
-eval $LOGPARMB
-MBLD="make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS modules $LOGPARM1"
-echo $MBLD
-eval $MBLD
-echo -e "\n-------------------[ MOVING STUFF AROUND  ]--------------------------\n"
-case $OUTLOC in
-1)
-  OLOG="echo 'Nothing to move around..' $LOGPARM1"
-  eval $OLOG
-  ;;
-2)
-  OLOG="echo 'Moving stuff to NEW kernel/modules directories..' $LOGPARM1"
-  eval $OLOG
-  mv ./arch/arm/boot/zImage ./NEW
-  find . -name "*.ko" -exec mv {} ./NEW/modules \;
-  ;;
-3) 
-  OLOG="echo 'Moving stuff to Device directories..' $LOGPARM1"
-  eval $OLOG
-  mv ./arch/arm/boot/zImage ../../../device/rockchip/rk3188/prebuilt/kernel/new/kernel
-  find . -name "*.ko" -exec mv {} ../../../device/rockchip/rk3188/prebuilt/kernel/new/modules \;
-  ;;
-4) 
-  OLOG="echo 'Nothing to move around..' $LOGPARM1"
-  eval $OLOG
-  ;;
-5) 
-  OLOG="echo 'Moving stuff to NEW kernel/modules directories..' $LOGPARM1"
-  eval $OLOG
-  mv ./kernel.img ./NEW
-  find . -name "*.ko" -exec mv {} ./NEW/modules \;
-  ;;
-6)
-  OLOG="echo 'Moving stuff to Device directories..' $LOGPARM1"
-  eval $OLOG
-  mv ./kernel.img ../../../device/rockchip/rk3188/prebuilt/kernel/new/kernel
-  find . -name "*.ko" -exec mv {} ../../../device/rockchip/rk3188/prebuilt/kernel/new/modules \;
-  ;;
-esac
+ echo
+ echo -e "\n-------------------[ CLEANING UP BEFORE BUILD ]-----------------------\n"
+ if [ "$CUTIME" = "1" ]; then
+  echo "NO clean-up selected, skipping..."
+ else
+  echo $CUPARM 
+  eval $CUPARM
+ fi
+ echo -e "\n-------------------[ SETTING KERNEL DEFCONFIG ]---------------------\n"
+ cp -v ./$DEVICE ./.config
+ echo -e "\n-------------------[ BEGINNING KERNEL BUILD ]-----------------------\n"
 
-echo -e "\n===============================================================\n"
-
-if [ "$KERNPARM1" = "" ]; then 
- KP1="zImage"
-fi
-
-if [ "$KERNPARM2" = "" ]; then
- KERNPARM2="./arch/arm/boot"
-fi
-
-KCHECK="$KPP/$KP1"
-
-if [ -f $KCHECK ]; then
- echo " NOTICE: All done!"
- ls -al $KCHECK
- exit
-else 
- echo " ERROR: NO compiled kernel found in $KERNPARM2!"
- echo " Check your BUILD.LOG (if applicable)!"
- exit
-fi
-
+ eval $LOGPARMA
+ NLOG="echo '   =---------------------------------------=' $LOGPARM1"
+ eval $NLOG
+ NLOG="echo '    TOOLCHAINS: $CROSS_COMPILE' $LOGPARM1"
+ eval $NLOG
+ NLOG="echo '    DEVICE CONFIG: $DEVICE' $LOGPARM1"
+ eval $NLOG
+ NLOG="echo '    OUTPUT: $OLDESC' $LOGPARM1"
+ eval $NLOG
+ NLOG="echo '    LOGS: $LIDESC' $LOGPARM1"
+ eval $NLOG
+ NLOG="echo '    THEADS: $THREADS               RKCRC: $RKCRC' $LOGPARM1"
+ eval $NLOG
+ NLOG="echo '   =---------------------------------------=' $LOGPARM1"
+ eval $NLOG
+ echo
+ KBLD="make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS $KERNPARM1 $LOGPARM1"
+ echo $KBLD
+ eval $KBLD
+ echo -e "\n-------------------[ BEGINNING MODULE BUILD ]-----------------------\n"
+ eval $LOGPARMB
+ MBLD="make ARCH=arm CROSS_COMPILE=$CROSS_COMPILE -j$THREADS modules $LOGPARM1"
+ echo $MBLD
+ eval $MBLD
+ echo -e "\n-------------------[ MOVING STUFF AROUND  ]--------------------------\n"
+ if [ "$KERNPARM1" = "" ]; then
+  KERNPARM1="./arch/arm/boot/"
+  KFILE="zImage"
+ else
+  KERNPARM1="./"
+  KFILE="kernel.img"
+ fi
+ if [ ! -e $KERNPARM1$KFILE ]; then
+  echo
+  echo "   [ ERROR ] : NO compiled kernel found!"
+  echo "   Check your BUILD.LOG (if applicable)"
+  echo "   for probable error(s) during the build."
+  echo
+  exit
+ else
+  if [[ "$OUTLOC" = "1" || "$OUTLOC" = "4" ]]; then
+   OLOG="echo 'Nothing to move around..' $LOGPARM1"
+   eval $OLOG
+   echo
+  else
+   if [ "$KERNPARM2" != "." ]; then
+    KCMD="mkdir $KERNPARM2; mkdir $KERNPARM2/modules"
+    eval $KCMD
+   fi
+   OLOG=" echo 'Moving $OLDESC..' $LOGPARM1"
+   eval $OLOG
+   echo
+   OCMD="mv $KERNPARM1/$KFILE $KERNPARM2; find . -name '*.ko' -exec mv {} $KERNPARM2/modules \;"
+   eval $OCMD
+  fi
+  if [ "$RKCRC" = "yes" ]; then
+   echo
+   echo "RKCRC'ing the kernel (for flashing)..."
+   ./rktools/rkcrc -k $KERNPARM2/$KFILE $KERNPARM2/rk-$KFILE
+  fi
+  echo -e "\n===============================================================\n"
+  echo -n "KERNEL: "
+  du -ach $KERNPARM2/*
+  echo -e "\n===============================================================\n"
+  echo "        NOTICE: Everything looks good! Happy flashing!"
+  echo
+  exit
+ fi
 }
 
+# build overview 
 function mihc       
 {
  doit=""
  while [[ "$doit" != "n" || "$doit" != "N" || "$doit" != "y" || "$doit" != "Y" ]]
  do
         clear
+        echo
 	echo "   -------=>  MAKE IT HAP'N CAP'N! <=-------"
 	echo "   ========================================="
 	echo "   You will be building with the following:"
@@ -499,10 +572,10 @@ function mihc
 	echo "    DEVICE CONFIG: $DEVICE"
 	echo "    OUTPUT: $OLDESC"
 	echo "    LOGS: $LIDESC"
-	echo "    THREADS: $THREADS"
+	echo "    THREADS: $THREADS                   RKCRC: $RKCRC"
 	echo "   =---------------------------------------="
 	echo
-        read -p "   Proceed with Build? (y/n) : " doit
+        read -n 1 -p "   Proceed with Build? [y|n] : " doit
 	if [ "$doit" = "n" ]; then
 		break
 	elif [ "$doit" = "N" ]; then
@@ -523,11 +596,17 @@ function mainopt
  while [ "$choice" != "0" ]
  do
  	clear
+ 	echo
 	echo "   ===================[ BUILD MENU ]=================="
-	echo "   1. TOOLCHAINS: $TCDESC"
-	echo "   2. CONFIGS: $DEVICE"
-	echo "   3. OUTPUTS: $OLDESC"
-	echo "   4. LOGS: $LIDESC"
+	echo "   1. TOOLCHAIN: $TCDESC"
+	echo "   2. CONFIG: $DEVICE"
+	echo -n "   3. OUTPUT: $OLDESC"
+	if [ "$RKCRC" = "yes" ]; then
+	 echo " + RKCRC"
+	else
+	 echo
+	fi
+	echo "   4. LOG: $LIDESC"
         echo "   5. CLEAN-UP: $CUDESC"
 	echo "   6. THREADS: $THREADS"
 	echo "   =-------------------------------------------------="
@@ -535,7 +614,7 @@ function mainopt
 	echo "   ==================================================="
 	echo "   0. EXIT"
 	echo
-	read -p "   Enter your choice : " choice
+	read -n 1 -p "   Enter your choice : " choice
 	if [ "$choice" = "1" ]; then
 		tcitems
 	elif [ "$choice" = "2" ]; then
@@ -558,5 +637,6 @@ function mainopt
 
 mainopt
 clear
-echo "Thanks for using my Lazy-Ass Build Script :) Hope it helped!"
+echo
+echo "Thanks for using my Lazy-Ass Build Script :) Hope it helped! - Thesawolf"
 echo
