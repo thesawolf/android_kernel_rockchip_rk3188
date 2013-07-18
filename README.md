@@ -78,7 +78,8 @@ moved to fuse-exfat module in device build
 do specific kind of builds since I keep losing track of stuff :P
 - Determined origin of my kernel source finally. it's the original source
 from Rikomagic before alok's linux-centric source changes
+- MAJOUR build script overhaul.. it's grown into quite a lazy-ass beast
 
 **ToDo:**
-- Linaro toolchain build
+- Linaro toolchain build (added 4.6 and 4.8 added, not tested yet tho)
 - YAFFS2 debugging
