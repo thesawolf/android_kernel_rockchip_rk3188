@@ -157,7 +157,7 @@ function cfgitems
 	elif [[ "$cfgopt" = "Q" || "$cfgopt" = "q" ]]; then
 	   DEVREM="mk908-720-debug-defconfig"
 	   poprem
-	   cp mk908-720-debug-defconfig .config
+	   cp $DEVREM .config
 	   make ARCH=arm menuconfig
 	   break
 	elif [ "$cfgopt" = "2" ]; then
@@ -166,7 +166,7 @@ function cfgitems
 	elif [[ "$cfgopt" = "W" || "$cfgopt" = "w" ]]; then
 	   DEVREM="mk908-1080-debug-defconfig"
 	   poprem
-	   cp mk908-1080-debug-defconfig .config
+	   cp $DEVREM .config
 	   make ARCH=arm menuconfig
 	   break
 	elif [ "$cfgopt" = "3" ]; then
@@ -175,7 +175,7 @@ function cfgitems
 	elif [[ "$cfgopt" = "E" || "$cfgopt" = "e" ]]; then
            DEVREM="mk908-auto-debug-defconfig"
            poprem
-           cp mk908-auto-debug-defconfig .config
+           cp $DEVREM .config
 	   make ARCH=arm menuconfig
 	   break
 	elif [ "$cfgopt" = "4" ]; then
@@ -184,7 +184,7 @@ function cfgitems
 	elif [[ "$cfgopt" = "R" || "$cfgopt" = "r" ]]; then
 	   DEVREM="mk908-720-defconfig"
 	   poprem
-	   cp mk908-720-defconfig .config
+	   cp $DEVREM .config
 	   make ARCH=arm menuconfig
 	   break
 	elif [ "$cfgopt" = "5" ]; then
@@ -193,7 +193,7 @@ function cfgitems
 	elif [[ "$cfgopt" = "T" || "$cfgopt" = "t" ]]; then
 	   DEVREM="mk908-1080-defconfig"
 	   poprem
-	   cp mk908-1080-defconfig .config
+	   cp $DEVREM .config
 	   make ARCH=arm menuconfig 
 	   break
 	elif [ "$cfgopt" = "6" ]; then
@@ -202,7 +202,7 @@ function cfgitems
 	elif [[ "$cfgopt" = "Y" || "$cfgopt" = "y" ]]; then
 	   DEVREM="mk908-auto-defconfig"
 	   poprem
-	   cp mk908-auto-defconfig .config
+	   cp $DEVREM .config
 	   make ARCH=arm menuconfig 
 	   break
         elif [[ "$cfgopt" = "L" || "$cfgopt" = "l" ]]; then
@@ -550,7 +550,7 @@ function buildit
   echo -n "KERNEL: "
   du -ach $KERNPARM2/*
   echo -e "\n===============================================================\n"
-  echo "        NOTICE: Everything looks good! Happy flashing!"
+  echo "NOTICE: Everything looks good! Happy flashing (your AMP, not people)!"
   echo
   exit
  fi
