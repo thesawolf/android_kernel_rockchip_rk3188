@@ -254,8 +254,7 @@ function outitems
 	clear 
 	echo
 	echo "   ============[ OUTPUTS MENU ]============="
-	echo "    Current: $OUTLOC (see option below)"
-        echo "     RKCRC?: $RKCRC"
+	echo "   Current: $OUTLOC (see option below)  RKCRC: $RKCRC"
 	echo "   =---------------------------------------="
 	echo "   1. zImage to default compile location"
 	echo "   2. zImage to KERNEL/MODULES directories"
