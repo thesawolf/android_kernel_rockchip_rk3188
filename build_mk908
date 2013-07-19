@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VERS="1.2"
-# LAZY-ASS BUILD SCRIPT (LABS) v1.2 by
+# LAZY-ASS BUILD SCRIPT (LABS) by
 # Thesawolf (thesawolf [at] gmail [d0t] com)
 # --------------------------------------------------------
 # NOTE: This build script is tailoured to *MY* build
@@ -27,6 +27,7 @@ VERS="1.2"
 # - RKCRC option
 # - added zkernel.img type to custom output
 # - .config to chosen defconfig after using menuconfig
+# - added default selections as well to custom dirs
 
 
 # determine threads using count cpu/cores x 2
@@ -311,7 +312,7 @@ function outitems
 	elif [ "$outopt" = "3" ]; then
 	   OUTLOC=3
 	   KERNPARM1=""
-	   KERNPARM2="../../../device/rockchip/rk3188/prebuilt/new"
+	   KERNPARM2="../../../device/rockchip/rk3188/prebuilt/kernel/new"
 	   OLDESC="zImage > device dirs"
 	   break
 	elif [ "$outopt" = "4" ]; then
@@ -329,7 +330,7 @@ function outitems
 	elif [ "$outopt" = "6" ]; then
 	   OUTLOC=6
 	   KERNPARM1="kernel.img"
-	   KERNPARM2="../../../device/rockchip/rk3188/prebuilt/new"
+	   KERNPARM2="../../../device/rockchip/rk3188/prebuilt/kernel/new"
 	   OLDESC="kernel.img > device dirs"
 	   break
 	elif [ "$outopt" = "9" ]; then
@@ -364,12 +365,26 @@ function outitems
            echo " and into a directory called kernel, there is no need"
            echo " to specify a trailing backslash)"
            echo
+           echo " 1) default (./arch/arm/boot)"
+           echo " 2) internal (./NEW)"
+           echo " 3) device (../../../device/rockchip/rk3188/prebuilt/kernel/new)"
+           echo "   -OR-"
+           echo " just enter your custom dir and press enter"
+           echo 
            echo " Note: This directory will be created if it doesn't"
            echo " already exist, make sure you have owner permission"
            echo " to write in that directory or it will fail"
            echo " ------------------------------------------------------"
-           read -e -p " Directory : " KDIR
-           KERNPARM2="$KDIR"
+           read -e -p " Directory [1|2|3|enter custom] : " KDIR
+           if [ "$KDIR" = "1" ]; then
+            KERNPARM2="."
+           elif [ "$KDIR" = "2" ]; then
+            KERNPARM2="./NEW"
+           elif [ "$KDIR" = "3" ]; then
+            KERNPARM2="../../../device/rockchip/rk3188/prebuilt/kernel/new"
+           else
+            KERNPARM2="$KDIR"
+           fi
 	   OUTLOC=9
            rkit
         elif [[ "$outopt" = "R" || "$outopt" = "r" ]]; then
@@ -600,13 +615,9 @@ function mihc
 	echo "   =---------------------------------------="
 	echo
         read -n 1 -p "   Proceed with Build? [y|n] : " doit
-	if [ "$doit" = "n" ]; then
+	if [[ "$doit" = "n" || "$doit" = "N" ]]; then
 		break
-	elif [ "$doit" = "N" ]; then
-		break
-	elif [ "$doit" = "y" ]; then
-		buildit
-	elif [ "$doit" = "Y" ]; then
+	elif [[ "$doit" = "y" || "$doit" = "Y" ]]; then
 		buildit
 	else
 		mihc
@@ -636,7 +647,7 @@ function mainopt
 	echo "   =-------------------------------------------------="
 	echo "   9. BUILD IT!"
         echo "   =============( LABS v$VERS - THESAWOLF )============="
-	echo "   0. EXIT"
+	echo "   >> 0. EXIT"
 	echo
 	read -n 1 -p "   Enter your choice : " choice
 	if [ "$choice" = "1" ]; then
