@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# LAZY-ASS BUILD SCRIPT v1.0 by
+VERS="1.2"
+# LAZY-ASS BUILD SCRIPT (LABS) v1.2 by
 # Thesawolf (thesawolf [at] gmail [d0t] com)
 # --------------------------------------------------------
 # NOTE: This build script is tailoured to *MY* build
@@ -14,6 +15,19 @@
 # this script or better ways to do it.. but it works for
 # me and I'd like to refer you to the script name.. LOL)
 # --------------------------------------------------------
+#
+# Revision history:
+# - framework (output, logs, build, threads, toolchains)
+# - menu system in place
+# - added extra toolchains selection
+# - added menuconfig options
+# - added custom menuconfig loader
+# - output custom type/location
+# - clean-up options
+# - RKCRC option
+# - added zkernel.img type to custom output
+# - .config to chosen defconfig after using menuconfig
+
 
 # determine threads using count cpu/cores x 2
 if [ -z "$THREADS" ]; then
@@ -118,9 +132,10 @@ function poprem
  clear
  echo "Loading ($DEVREM) into .config..."
  echo 
- echo "REMINDER: If you make any changes, remember to save the options"
- echo " to file named: $DEVREM -OR- to another file"
- echo " and then load that new defconfig in the configs menu!"
+ echo "REMINDER: If you make any changes and choose to save the .config,"
+ echo " the .config will be copied over : $DEVREM"
+ echo " If you save the configuration to another file be sure to load"
+ echo " that new config file in the configs menu when you are done!"
  echo
  read -n1 -p ">> Press any key to continue.."
 }
@@ -159,6 +174,7 @@ function cfgitems
 	   poprem
 	   cp $DEVREM .config
 	   make ARCH=arm menuconfig
+	   cp .config $DEVREM
 	   break
 	elif [ "$cfgopt" = "2" ]; then
 	   DEVICE=mk908-1080-debug-defconfig
@@ -168,6 +184,7 @@ function cfgitems
 	   poprem
 	   cp $DEVREM .config
 	   make ARCH=arm menuconfig
+           cp .config $DEVREM
 	   break
 	elif [ "$cfgopt" = "3" ]; then
            DEVICE=mk908-auto-debug-defconfig
@@ -177,6 +194,7 @@ function cfgitems
            poprem
            cp $DEVREM .config
 	   make ARCH=arm menuconfig
+	   cp .config $DEVREM
 	   break
 	elif [ "$cfgopt" = "4" ]; then
 	   DEVICE=mk908-720-defconfig
@@ -186,6 +204,7 @@ function cfgitems
 	   poprem
 	   cp $DEVREM .config
 	   make ARCH=arm menuconfig
+	   cp .config $DEVREM
 	   break
 	elif [ "$cfgopt" = "5" ]; then
 	   DEVICE=mk908-1080-defconfig
@@ -194,7 +213,8 @@ function cfgitems
 	   DEVREM="mk908-1080-defconfig"
 	   poprem
 	   cp $DEVREM .config
-	   make ARCH=arm menuconfig 
+	   make ARCH=arm menuconfig
+	   cp .config $DEVREM 
 	   break
 	elif [ "$cfgopt" = "6" ]; then
 	   DEVICE=mk908-auto-defconfig
@@ -204,6 +224,7 @@ function cfgitems
 	   poprem
 	   cp $DEVREM .config
 	   make ARCH=arm menuconfig 
+	   cp .config $DEVREM
 	   break
         elif [[ "$cfgopt" = "L" || "$cfgopt" = "l" ]]; then
            clear
@@ -318,6 +339,7 @@ function outitems
            echo " ---------------------------------------------- "
            echo " 1. zImage - regular, default, compressed kernel"
            echo " 2. kernel.img - direct to image"
+           echo " 3. zkernel.img - compressed direct to image"
            echo " ----------------------------------------------"
            echo " >> 0. Exit the custom option"
            echo
@@ -328,6 +350,9 @@ function outitems
            elif [ "$KTYPE" = "2" ]; then
             KERNPARM1="kernel.img"
 	    OLDESC="kernel.img > CUSTOM dirs"
+	   elif [ "$KTYPE" = "3" ]; then
+	    KERNPARM1="zkernel.img"
+	    OLDESC="zkernel.img > CUSTOM dirs"
            else
             break
            fi
@@ -449,7 +474,7 @@ function thrditems
         clear
         echo
         echo "   =============[ THREADS MENU ]============"
-        echo "    Current: $THREADS"
+        echo "    Current: $THREADS threads"
         echo "   =---------------------------------------="
         echo "   Enter the number of threads to compile"
         echo "   the kernel with. (The general rule is: "
@@ -514,8 +539,8 @@ function buildit
   KERNPARM1="./arch/arm/boot/"
   KFILE="zImage"
  else
+  KFILE="$KERNPARM1"
   KERNPARM1="./"
-  KFILE="kernel.img"
  fi
  if [ ! -e $KERNPARM1$KFILE ]; then
   echo
@@ -609,8 +634,8 @@ function mainopt
         echo "   5. CLEAN-UP: $CUDESC"
 	echo "   6. THREADS: $THREADS"
 	echo "   =-------------------------------------------------="
-	echo "   9. MAKE IT HAP'N CAP'N! (Build it)"
-	echo "   ==================================================="
+	echo "   9. BUILD IT!"
+        echo "   =============( LABS v$VERS - THESAWOLF )============="
 	echo "   0. EXIT"
 	echo
 	read -n 1 -p "   Enter your choice : " choice
@@ -639,3 +664,4 @@ clear
 echo
 echo "Thanks for using my Lazy-Ass Build Script :) Hope it helped! - Thesawolf"
 echo
+
