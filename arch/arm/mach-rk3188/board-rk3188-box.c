@@ -414,7 +414,7 @@ static struct sensor_platform_data cm3217_info = {
 #define LCD_CS_PIN         INVALID_GPIO
 #define LCD_CS_VALUE       GPIO_HIGH
 
-#define LCD_EN_PIN         INVALID_GPIO //Galland RK30_PIN0_PB0
+#define LCD_EN_PIN         RK30_PIN0_PB0 //INVALID_GPIO //Galland RK30_PIN0_PB0
 #define LCD_EN_VALUE       GPIO_LOW
 
 static int rk_fb_io_init(struct rk29_fb_setting_info *fb_setting)
@@ -668,7 +668,7 @@ static struct rk_hdmi_platform_data rk_hdmi_pdata = {
 };
 #endif
 #ifdef CONFIG_ION
-#define ION_RESERVE_SIZE        (80 * SZ_1M)
+#define ION_RESERVE_SIZE        (120 * SZ_1M) // SAW -- 80
 static struct ion_platform_data rk30_ion_pdata = {
 	.nr = 1,
 	.heaps = {
@@ -1470,8 +1470,8 @@ static struct pmu_info  act8846_dcdc_info[] = {
 	},
 	{
 		.name          = "act_dcdc4",   //vccio //modded by leolas orig 3300000
-		.min_uv          = 3000000,
-		.max_uv         = 3000000,
+		.min_uv          = 3300000,
+		.max_uv         = 3300000,
 		#ifdef CONFIG_ACT8846_SUPPORT_RESET
 		.suspend_vol  =  3000000,
 		#else
@@ -1508,8 +1508,8 @@ static  struct pmu_info  act8846_ldo_info[] = {
 	},
 	{
 		.name          = "act_ldo6",   //vcc_jetta //leolas modded orig 1800000
-		.min_uv          = 3300000,
-		.max_uv         = 3300000,
+		.min_uv          = 1800000,
+		.max_uv         = 1800000,
 	},
 	{
 		.name          = "act_ldo7",   //vcc18
@@ -2087,7 +2087,7 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
         {.frequency = 1608 * 1000,      .index = 1325 * 1000},
         {.frequency = 1704 * 1000,      .index = 1350 * 1000},
         {.frequency = 1800 * 1000,      .index = 1375 * 1000},        
-        //{.frequency = 1920 * 1000,      .index = 1375 * 1000},
+        {.frequency = 1920 * 1000,      .index = 1375 * 1000},
 #else
         {.frequency = 312 * 1000,       .index = 900 * 1000},
         {.frequency = 504 * 1000,       .index = 925 * 1000},
@@ -2108,9 +2108,9 @@ static struct cpufreq_frequency_table dvfs_gpu_table[] = {
        {.frequency = 266 * 1000,       .index = 1025 * 1000},  
        {.frequency = 300 * 1000,       .index = 1050 * 1000},  
        {.frequency = 400 * 1000,       .index = 1100 * 1000},
-       {.frequency = 600 * 1000,       .index = 1200 * 1000},//leolas stock 1150
-       //{.frequency = 666 * 1000,       .index = 1200 * 1000},
-       //{.frequency = 700 * 1000,       .index = 1250 * 1000},
+       {.frequency = 600 * 1000,       .index = 1150 * 1000},//leolas stock 1150
+       {.frequency = 666 * 1000,       .index = 1200 * 1000},
+       {.frequency = 700 * 1000,       .index = 1250 * 1000},
 
 #else
        {.frequency = 133 * 1000,       .index = 975 * 1000},

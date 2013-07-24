@@ -684,21 +684,23 @@ static struct sensor_platform_data light_stk3171_info = {
 #ifdef CONFIG_FB_ROCKCHIP
 
 #define LCD_CS_MUX_NAME    GPIO4C7_SMCDATA7_TRACEDATA7_NAME
-#define LCD_CS_VALUE       GPIO_HIGH
 #define LCD_EN_MUX_NAME    GPIO4C7_SMCDATA7_TRACEDATA7_NAME
-#define LCD_EN_VALUE       GPIO_LOW
 
 // We have no build-in lcd screen, so we need not to set following gpio.
-//#if  defined(CONFIG_MACH_RK30_BOX_PIZZA) || defined(CONFIG_MACH_RK30_BOX)
-
+#if  defined(CONFIG_MACH_RK30_BOX_PIZZA) || defined(CONFIG_MACH_RK30_BOX)
 #define LCD_CS_PIN         INVALID_GPIO
-#define LCD_EN_PIN         INVALID_GPIO
+#define LCD_CS_VALUE	   GPIO_HIGH
 
-//#else
+#define LCD_EN_PIN         INVALID_GPIO
+#define LCD_EN_VALUE       GPIO_LOW
+#else
 // Omegamoon >> TODO: Create separate KConfig option in cases where there is a build-in lcd
-//#define LCD_CS_PIN         RK30_PIN4_PC7
-//#define LCD_EN_PIN         RK30_PIN6_PB4
-//#endif
+#define LCD_CS_PIN         RK30_PIN4_PC7
+#define LCD_CS_VALUE	   GPIO_HIGH
+
+#define LCD_EN_PIN         RK30_PIN6_PB4
+#define LCD_EN_VALUE	   GPIO_LOW
+#endif
 
 static int rk_fb_io_init(struct rk29_fb_setting_info *fb_setting)
 {
@@ -776,7 +778,8 @@ struct rk29fb_info lcdc1_screen_info = {
 	#if defined(CONFIG_RK_HDMI)
 	.prop		= EXTEND,	//extend display device
 	.lcd_info  = NULL,
-	.set_screen_info = hdmi_init_lcdc, //Galland: new kernel points to:  set_lcd_info,  (with rbox comment: For BOX, lcdc1 default screen timing same as lcdc0.)
+	.set_screen_info = set_lcd_info, //SAW -- hdmi_init_lcdc, 
+//Galland: new kernel points to:  set_lcd_info,  (with rbox comment: For BOX, lcdc1 default screen timing same as lcdc0.)
 	#endif
 };
 #endif
@@ -2166,16 +2169,15 @@ static void __init rk30_reserve(void)
  * comments	: min arm/logic voltage
  */
 static struct dvfs_arm_table dvfs_cpu_logic_table[] = {
-	{.frequency = 126 * 1000,  .cpu_volt = 1075 * 1000,   .logic_volt = 1125 * 1000},//0.975V/1.000V //Galland: for lower idle power (cpufreq.c line 214 suggests this frequency is supported) 0.975V/1V and 1.025/1.05V don't work for Measy U2C
-	{.frequency = 252 * 1000,	.cpu_volt = 1075 * 1000,	.logic_volt = 1125 * 1000},//0.975V/1.000V
-	{.frequency = 504 * 1000,	.cpu_volt = 1100 * 1000,	.logic_volt = 1125 * 1000},//0.975V/1.000V
-	{.frequency = 816 * 1000,	.cpu_volt = 1125 * 1000,	.logic_volt = 1150 * 1000},//1.000V/1.025V
-	{.frequency = 1008 * 1000,	.cpu_volt = 1125 * 1000,	.logic_volt = 1150 * 1000},//1.025V/1.050V
-	{.frequency = 1200 * 1000,	.cpu_volt = 1175 * 1000,	.logic_volt = 1200 * 1000},//1.100V/1.050V
-	{.frequency = 1272 * 1000,	.cpu_volt = 1225 * 1000,	.logic_volt = 1200 * 1000},//1.150V/1.100V
-	{.frequency = 1416 * 1000,	.cpu_volt = 1300 * 1000,	.logic_volt = 1200 * 1000},//1.225V/1.100V
-	{.frequency = 1512 * 1000,	.cpu_volt = 1350 * 1000,	.logic_volt = 1250 * 1000},//1.300V/1.150V
-	{.frequency = 1608 * 1000,	.cpu_volt = 1400 * 1000,	.logic_volt = 1300 * 1000},//1.325V/1.175V
+        {.frequency = 252 * 1000,	.cpu_volt = 1075 * 1000,	.logic_volt = 1125 * 1000},//0.975V/1.00V
+	{.frequency = 504 * 1000,       .cpu_volt = 1100 * 1000,        .logic_volt = 1125 * 1000},//0.975V/1.000V
+        {.frequency = 816 * 1000,       .cpu_volt = 1125 * 1000,        .logic_volt = 1150 * 1000},//1.000V/1.025V
+        {.frequency = 1008 * 1000,      .cpu_volt = 1125 * 1000,        .logic_volt = 1150 * 1000},//1.025V/1.050V
+        {.frequency = 1200 * 1000,      .cpu_volt = 1175 * 1000,        .logic_volt = 1200 * 1000},//1.100V/1.050V
+        {.frequency = 1272 * 1000,      .cpu_volt = 1225 * 1000,        .logic_volt = 1200 * 1000},//1.150V/1.100V
+        {.frequency = 1416 * 1000,      .cpu_volt = 1300 * 1000,        .logic_volt = 1200 * 1000},//1.225V/1.100V
+        {.frequency = 1512 * 1000,      .cpu_volt = 1350 * 1000,        .logic_volt = 1250 * 1000},//1.300V/1.150V
+        {.frequency = 1608 * 1000,      .cpu_volt = 1425 * 1000,        .logic_volt = 1300 * 1000},//1.325V/1.175V
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
