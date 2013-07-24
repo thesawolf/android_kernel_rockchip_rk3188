@@ -28,7 +28,7 @@ VERS="1.2"
 # - added zkernel.img type to custom output
 # - .config to chosen defconfig after using menuconfig
 # - added default selections as well to custom dirs
-
+# - oops.. RKCRC NOT needed for standalone kernels for RK
 
 # determine threads using count cpu/cores x 2
 if [ -z "$THREADS" ]; then
@@ -55,7 +55,7 @@ if [ -z $OUTLOC ]; then
   KERNPARM2="./NEW"
   OLDESC="kernel.img > KERNEL/MODULES dirs"
   OUTLOC=5
-  RKCRC="no"
+#  RKCRC="no"
 fi
 
 if [ -z $LOGIT ]; then
@@ -243,6 +243,7 @@ function cfgitems
 }
 
 # rkcrc "popup" question, for rockchip device flashing
+# SAW - this function not necessary right now because kernels don't need CRC
 function rkit
 {
  clear
@@ -276,7 +277,8 @@ function outitems
 	clear 
 	echo
 	echo "   ============[ OUTPUTS MENU ]============="
-	echo "   Current: $OUTLOC (see option below)  RKCRC: $RKCRC"
+	echo "   Current: $OUTLOC (see option below)  "
+# dont need right now --- RKCRC: $RKCRC"
 	echo "   =---------------------------------------="
 	echo "   1. zImage to default compile location"
 	echo "   2. zImage to KERNEL/MODULES directories"
@@ -291,8 +293,8 @@ function outitems
 	else
 	 echo "   9. specify your own type/directory"
 	fi
-        echo "   =---------------------------------------="
-        echo "   R. RKCRC it? (for flashing)"
+        # echo "   =---------------------------------------="
+        # echo "   R. RKCRC it? (for flashing)"
 	echo "   ========================================="
 	echo "   >> 0. EXIT"
 	echo
@@ -386,9 +388,9 @@ function outitems
             KERNPARM2="$KDIR"
            fi
 	   OUTLOC=9
-           rkit
-        elif [[ "$outopt" = "R" || "$outopt" = "r" ]]; then
-	   rkit
+         #  rkit
+        #elif [[ "$outopt" = "R" || "$outopt" = "r" ]]; then
+	#   rkit
 	elif [ "$outopt" = "0" ]; then
 	   break
 	fi
@@ -611,7 +613,8 @@ function mihc
 	echo "    DEVICE CONFIG: $DEVICE"
 	echo "    OUTPUT: $OLDESC"
 	echo "    LOGS: $LIDESC"
-	echo "    THREADS: $THREADS                   RKCRC: $RKCRC"
+	echo "    THREADS: $THREADS                   "
+# no need for this right now -- RKCRC: $RKCRC"
 	echo "   =---------------------------------------="
 	echo
         read -n 1 -p "   Proceed with Build? [y|n] : " doit
