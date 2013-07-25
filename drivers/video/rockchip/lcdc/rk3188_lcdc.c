@@ -34,10 +34,8 @@
 #include "rk3188_lcdc.h"
 
 
-//#define GALLAND_CHANGED //Galland to fix FRAMEBUFFER_CONSOLE on rk30 and rk31 1//leolas modded
 
-
-static int dbg_thresd = 0;//modded leolas to remove logs stock value 2
+static int dbg_thresd = 0;
 module_param(dbg_thresd, int, S_IRUGO|S_IWUSR);
 #define DBG(level,x...) do { 			\
 	if(unlikely(dbg_thresd >= level)) 	\
@@ -166,12 +164,16 @@ static int win0_open(struct rk3188_lcdc_device *lcdc_dev,bool open)
 		lcdc_dev->driver.layer_par[0]->state = open;
 
 		lcdc_msk_reg(lcdc_dev, SYS_CTRL, m_WIN0_EN, v_WIN0_EN(open));
+		#ifdef CONFIG_LCDC_OVERLAY_ENABLE
+		lcdc_msk_reg(lcdc_dev, DSP_CTRL0, m_ALPHA_MODE_SEL0 | m_WIN1_ALPHA_MODE, v_ALPHA_MODE_SEL0(1) | v_WIN1_ALPHA_MODE(1));
+		lcdc_msk_reg(lcdc_dev, ALPHA_CTRL, m_WIN1_ALPHA_EN, v_WIN1_ALPHA_EN(open));
+		#endif
 		if(!lcdc_dev->atv_layer_cnt)  //if no layer used,disable lcdc
 		{
 			printk(KERN_INFO "no layer of lcdc%d is used,go to standby!\n",lcdc_dev->id);
 			lcdc_msk_reg(lcdc_dev, SYS_CTRL,m_LCDC_STANDBY,v_LCDC_STANDBY(1));
 		}
-		//lcdc_cfg_done(lcdc_dev);	
+		lcdc_cfg_done(lcdc_dev);	
 	}
 	spin_unlock(&lcdc_dev->reg_lock);
 
@@ -224,7 +226,6 @@ static int rk3188_lcdc_open(struct rk_lcdc_device_driver *dev_drv,int layer_id,b
 	if((open) && (!lcdc_dev->atv_layer_cnt)) //enable clk,when first layer open
 	{
 		rk3188_lcdc_clk_enable(lcdc_dev);
-#ifndef GALLAND_CHANGED //Galland to fix FRAMEBUFFER_CONSOLE on rk30 and rk31
 		rk3188_lcdc_reg_resume(lcdc_dev); //resume reg
 		rk3188_load_screen(dev_drv,1);
 		spin_lock(&lcdc_dev->reg_lock);
@@ -243,7 +244,6 @@ static int rk3188_lcdc_open(struct rk_lcdc_device_driver *dev_drv,int layer_id,b
 			lcdc_msk_reg(lcdc_dev,SYS_CTRL,m_DSP_LUT_EN,v_DSP_LUT_EN(1)); //enable dsp lut
 		}
 		spin_unlock(&lcdc_dev->reg_lock);
-#endif
 	}
 
 	if(layer_id == 0)
@@ -925,12 +925,10 @@ static int rk3188_lcdc_early_suspend(struct rk_lcdc_device_driver *dev_drv)
 	struct rk3188_lcdc_device *lcdc_dev = 
 		container_of(dev_drv,struct rk3188_lcdc_device,driver);
 
-#ifndef GALLAND_CHANGED //Galland to fix FRAMEBUFFER_CONSOLE on rk30 and rk31
 	if(dev_drv->screen0->standby)
 		dev_drv->screen0->standby(1);
 	if(dev_drv->screen_ctr_info->io_disable)
 		dev_drv->screen_ctr_info->io_disable();
-#endif
 
 	spin_lock(&lcdc_dev->reg_lock);
 	if(likely(lcdc_dev->clk_on))
@@ -959,10 +957,8 @@ static int rk3188_lcdc_early_resume(struct rk_lcdc_device_driver *dev_drv)
 	int __iomem *c;
 	int v;
 
-#ifndef GALLAND_CHANGED //Galland to fix FRAMEBUFFER_CONSOLE on rk30 and rk31
 	if(dev_drv->screen_ctr_info->io_enable) 		//power on
 		dev_drv->screen_ctr_info->io_enable();
-#endif
 	
 	if(!lcdc_dev->clk_on)
 	{
@@ -995,10 +991,8 @@ static int rk3188_lcdc_early_resume(struct rk_lcdc_device_driver *dev_drv)
 	if(!lcdc_dev->atv_layer_cnt)
 		rk3188_lcdc_clk_disable(lcdc_dev);
 
-#ifndef GALLAND_CHANGED //Galland to fix FRAMEBUFFER_CONSOLE on rk30 and rk31
 	if(dev_drv->screen0->standby)
 		dev_drv->screen0->standby(0);	      //screen wake up
-#endif
 	
 	return 0;
 }
@@ -1249,11 +1243,19 @@ static int rk3188_fb_get_layer(struct rk_lcdc_device_driver *dev_drv,const char 
        mutex_lock(&dev_drv->fb_win_id_mutex);
        if(!strcmp(id,"fb0")||!strcmp(id,"fb2"))
        {
+               #ifdef CONFIG_LCDC_OVERLAY_ENABLE
+               layer_id = dev_drv->fb1_win_id;
+               #else
                layer_id = dev_drv->fb0_win_id;
+               #endif
        }
        else if(!strcmp(id,"fb1")||!strcmp(id,"fb3"))
        {
+               #ifdef CONFIG_LCDC_OVERLAY_ENABLE
+               layer_id = dev_drv->fb0_win_id;
+               #else
                layer_id = dev_drv->fb1_win_id;
+               #endif
        }
        mutex_unlock(&dev_drv->fb_win_id_mutex);
 
@@ -1333,9 +1335,7 @@ static irqreturn_t rk3188_lcdc_isr(int irq, void *dev_id)
 {
 	struct rk3188_lcdc_device *lcdc_dev = 
 				(struct rk3188_lcdc_device *)dev_id;
-#ifndef GALLAND_CHANGED //Galland to fix FRAMEBUFFER_CONSOLE on rk30 and rk31
 	ktime_t timestamp = ktime_get();
-#endif
 	
 	lcdc_msk_reg(lcdc_dev, INT_STATUS, m_FS_INT_CLEAR, v_FS_INT_CLEAR(1));
 
@@ -1345,12 +1345,9 @@ static irqreturn_t rk3188_lcdc_isr(int irq, void *dev_id)
 		complete(&(lcdc_dev->driver.frame_done));
 		spin_unlock(&(lcdc_dev->driver.cpl_lock));
 	}
-
-#ifndef GALLAND_CHANGED //Galland to fix FRAMEBUFFER_CONSOLE on rk30 and rk31
 	lcdc_dev->driver.vsync_info.timestamp = timestamp;
 	wake_up_interruptible_all(&lcdc_dev->driver.vsync_info.wait);
-#endif
-
+	
 	return IRQ_HANDLED;
 }
 
@@ -1481,7 +1478,6 @@ static int __devinit rk3188_lcdc_probe(struct platform_device *pdev)
 	       goto err3;
 	}
 
-#ifndef GALLAND_CHANGED //Galland to fix FRAMEBUFFER_CONSOLE on rk30 and rk31
 	if(screen_ctr_info->set_screen_info)
 	{
 		screen_ctr_info->set_screen_info(screen,screen_ctr_info->lcd_info);
@@ -1499,7 +1495,6 @@ static int __devinit rk3188_lcdc_probe(struct platform_device *pdev)
 		ret = -ENODEV;
 		goto err3;
 	}
-#endif
 	
 	ret = rk_fb_register(&(lcdc_dev->driver),&lcdc_driver,lcdc_dev->id);
 	if(ret < 0)
