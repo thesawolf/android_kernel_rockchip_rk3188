@@ -2084,10 +2084,10 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
         {.frequency = 1008 * 1000,      .index = 1050 * 1000},
         {.frequency = 1200 * 1000,      .index = 1125 * 1000},
         {.frequency = 1416 * 1000,      .index = 1225 * 1000},
-        {.frequency = 1608 * 1000,      .index = 1325 * 1000},
-        {.frequency = 1704 * 1000,      .index = 1350 * 1000},
-        {.frequency = 1800 * 1000,      .index = 1375 * 1000},        
-        {.frequency = 1920 * 1000,      .index = 1375 * 1000},
+        {.frequency = 1608 * 1000,      .index = 1300 * 1000},
+        {.frequency = 1704 * 1000,      .index = 1325 * 1000},
+        {.frequency = 1800 * 1000,      .index = 1350 * 1000},        
+        {.frequency = 1920 * 1000,      .index = 1350 * 1000},
 #else
         {.frequency = 312 * 1000,       .index = 900 * 1000},
         {.frequency = 504 * 1000,       .index = 925 * 1000},
@@ -2143,7 +2143,7 @@ static struct cpufreq_frequency_table dvfs_ddr_table[] = {
 void __init board_clock_init(void)
 {
 	rk30_clock_data_init(periph_pll_default, codec_pll_default, RK30_CLOCKS_DEFAULT_FLAGS);
-	//dvfs_set_arm_logic_volt(dvfs_cpu_logic_table, cpu_dvfs_table, dep_cpu2core_table);
+//	dvfs_set_arm_logic_volt(dvfs_cpu_logic_table, cpu_dvfs_table, dep_cpu2core_table);
 	dvfs_set_freq_volt_table(clk_get(NULL, "cpu"), dvfs_arm_table);
 	dvfs_set_freq_volt_table(clk_get(NULL, "gpu"), dvfs_gpu_table);
 	dvfs_set_freq_volt_table(clk_get(NULL, "ddr"), dvfs_ddr_table);

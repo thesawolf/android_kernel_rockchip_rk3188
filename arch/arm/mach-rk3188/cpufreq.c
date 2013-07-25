@@ -51,7 +51,18 @@
 
 /* Frequency table index must be sequential starting at 0 */
 static struct cpufreq_frequency_table default_freq_table[] = {
-	{.frequency = 816 * 1000, .index = 1000 * 1000},
+//	{.frequency = 816 * 1000, .index = 1000 * 1000},
+        {.frequency     = 312 * 1000, .index        = 875 * 1000}, //SAW
+        {.frequency     = 504 * 1000, .index        = 900 * 1000}, //SAW
+        {.frequency     = 816 * 1000, .index        = 1050 * 1000},
+        {.frequency     = 1008 * 1000, .index       = 1050 * 1000},//SAW
+        {.frequency     = 1200 * 1000, .index       = 1125 * 1000},//SAW
+        {.frequency     = 1416 * 1000, .index       = 1225 * 1000},//SAW
+        {.frequency     = 1608 * 1000, .index       = 1300 * 1000},//SAW
+        {.frequency     = 1704 * 1000, .index       = 1325 * 1000},//SAW
+        {.frequency     = 1800 * 1000, .index       = 1350 * 1000},//SAW
+        {.frequency     = 1920 * 1000, .index       = 1350 * 1000},//SAW
+	//{.frequency = 1008 * 1000, .index = 1075 * 1000}, //SAW
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
@@ -151,11 +162,11 @@ static struct cpufreq_frequency_table temp_limits[4][4] = {
 };
 
 static struct cpufreq_frequency_table temp_limits_cpu_perf[] = {
-	{.frequency = 1008 * 1000, .index = 100},
+	{.frequency = 1920 * 1000, .index = 100},
 };
 
 static struct cpufreq_frequency_table temp_limits_gpu_perf[] = {
-	{.frequency = 1008 * 1000, .index = 0},
+	{.frequency = 1920 * 1000, .index = 0},
 };
 
 static int rk3188_get_temp(void)
