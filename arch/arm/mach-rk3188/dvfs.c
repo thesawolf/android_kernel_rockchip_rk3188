@@ -508,9 +508,9 @@ static struct cpufreq_frequency_table cpu_dvfs_table[] = {
 	{.frequency	= 1200 * DVFS_KHZ, .index	= 1125 * DVFS_MV},//SAW
 	{.frequency 	= 1416 * DVFS_KHZ, .index	= 1225 * DVFS_MV},//SAW
 	{.frequency	= 1608 * DVFS_KHZ, .index	= 1300 * DVFS_MV},//SAW
-	{.frequency	= 1704 * DVFS_KHZ, .index	= 1325 * DVFS_MV},//SAW
-	{.frequency	= 1800 * DVFS_KHZ, .index	= 1350 * DVFS_MV},//SAW
-	{.frequency	= 1920 * DVFS_KHZ, .index	= 1350 * DVFS_MV},//SAW
+	{.frequency	= 1704 * DVFS_KHZ, .index	= 1350 * DVFS_MV},//SAW
+	{.frequency	= 1800 * DVFS_KHZ, .index	= 1375 * DVFS_MV},//SAW
+	{.frequency	= 1920 * DVFS_KHZ, .index	= 1400 * DVFS_MV},//SAW
 	{.frequency	= CPUFREQ_TABLE_END},
 };
 
@@ -558,15 +558,15 @@ static struct cpufreq_frequency_table dep_cpu2core_table[] = {
 	// {.frequency = 504 * DVFS_KHZ, .index    = 1025 * DVFS_MV},
         {.frequency     = 312 * DVFS_KHZ, .index        = 875 * DVFS_MV}, //SAW
         {.frequency     = 504 * DVFS_KHZ, .index        = 900 * DVFS_MV}, //SAW
-        {.frequency     = 816 * DVFS_KHZ, .index        = 1050 * DVFS_MV},
+        {.frequency     = 816 * DVFS_KHZ, .index        = 975 * DVFS_MV},
         // {.frequency  = 1008 * DVFS_KHZ, .index       = 1100 * DVFS_MV},
         {.frequency     = 1008 * DVFS_KHZ, .index       = 1050 * DVFS_MV},//SAW
         {.frequency     = 1200 * DVFS_KHZ, .index       = 1125 * DVFS_MV},//SAW
         {.frequency     = 1416 * DVFS_KHZ, .index       = 1225 * DVFS_MV},//SAW
         {.frequency     = 1608 * DVFS_KHZ, .index       = 1300 * DVFS_MV},//SAW
-        {.frequency     = 1704 * DVFS_KHZ, .index       = 1325 * DVFS_MV},//SAW
-        {.frequency     = 1800 * DVFS_KHZ, .index       = 1350 * DVFS_MV},//SAW
-        {.frequency     = 1922 * DVFS_KHZ, .index       = 1350 * DVFS_MV},//SAW
+        {.frequency     = 1704 * DVFS_KHZ, .index       = 1350 * DVFS_MV},//SAW
+        {.frequency     = 1800 * DVFS_KHZ, .index       = 1375 * DVFS_MV},//SAW
+        {.frequency     = 1920 * DVFS_KHZ, .index       = 1400 * DVFS_MV},//SAW
 	// {.frequency = 1008 * DVFS_KHZ,.index    = 1050 * DVFS_MV},
 	// {.frequency = 1200 * DVFS_KHZ,.index    = 1050 * DVFS_MV},
 	// {.frequency = 1272 * DVFS_KHZ,.index    = 1050 * DVFS_MV},//logic 1.050V

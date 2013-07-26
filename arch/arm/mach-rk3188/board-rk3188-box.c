@@ -961,7 +961,7 @@ static struct platform_device rk30_device_remotectl = {
 /*$_rbox_$_modify_$_huangzhibao_end$_20120508_$*/
 #ifdef CONFIG_RK30_PWM_REGULATOR
 static int pwm_voltage_map[] = {
-	800000,825000,850000, 875000,900000, 925000 ,950000, 975000,1000000, 1025000, 1050000, 1075000, 1100000, 1125000, 1150000, 1175000, 1200000, 1225000, 1250000, 1275000, 1300000, 1325000, 1350000,1375000
+	800000,825000,850000, 875000,900000, 925000 ,950000, 975000,1000000, 1025000, 1050000, 1075000, 1100000, 1125000, 1150000, 1175000, 1200000, 1225000, 1250000, 1275000, 1300000, 1325000, 1350000,1375000, 1400000, 1425000
 };
 
 static struct regulator_consumer_supply pwm_dcdc1_consumers[] = {
@@ -994,7 +994,7 @@ static struct pwm_platform_data pwm_regulator_info[1] = {
 		.pwm_voltage = 1100000,
 		.suspend_voltage = 1000000,
 		.min_uV = 800000,
-		.max_uV	= 1375000,
+		.max_uV	= 1425000, //1375000,
 		.coefficient = 575,	//57.5%
 		.pwm_voltage_map = pwm_voltage_map,
 		.init_data	= &pwm_regulator_init_dcdc[0],
@@ -1508,8 +1508,8 @@ static  struct pmu_info  act8846_ldo_info[] = {
 	},
 	{
 		.name          = "act_ldo6",   //vcc_jetta //leolas modded orig 1800000
-		.min_uv          = 1800000,
-		.max_uv         = 1800000,
+		.min_uv          = 3300000,
+		.max_uv         = 3300000,
 	},
 	{
 		.name          = "act_ldo7",   //vcc18
@@ -2085,9 +2085,9 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
         {.frequency = 1200 * 1000,      .index = 1125 * 1000},
         {.frequency = 1416 * 1000,      .index = 1225 * 1000},
         {.frequency = 1608 * 1000,      .index = 1300 * 1000},
-        {.frequency = 1704 * 1000,      .index = 1325 * 1000},
-        {.frequency = 1800 * 1000,      .index = 1350 * 1000},        
-        {.frequency = 1920 * 1000,      .index = 1350 * 1000},
+        {.frequency = 1704 * 1000,      .index = 1350 * 1000},
+        {.frequency = 1800 * 1000,      .index = 1375 * 1000},        
+        {.frequency = 1920 * 1000,      .index = 1400 * 1000},
 #else
         {.frequency = 312 * 1000,       .index = 900 * 1000},
         {.frequency = 504 * 1000,       .index = 925 * 1000},

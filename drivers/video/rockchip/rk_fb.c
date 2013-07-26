@@ -430,19 +430,6 @@ static int rk_fb_blank(int blank_mode, struct fb_info *info)
 #endif
 	{
 		dev_drv->blank(dev_drv,layer_id,blank_mode);
-#if defined(GALLAND_CHANGED)
-/* Galland: the following lines have been removed but were present in prev 3.0.36 kernel (with no rk31)
-		if(strstr(saved_command_line,"charger") == NULL){//ÔÚ·Ç³äµç½çÃæ£¬hdmi ²Å×ß¸ÃÂ·¾¶
-			if(blank_mode == FB_BLANK_NORMAL){
-				if(dev_drv->screen_ctr_info->lcd_disable)
-					dev_drv->screen_ctr_info->lcd_disable();
-			}else{
-				if(dev_drv->screen_ctr_info->lcd_enable)
-					dev_drv->screen_ctr_info->lcd_enable();
-	      }
-		}
-*/
-#endif
 	}
 	return 0;
 }
@@ -468,7 +455,7 @@ static int rk_fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 	#ifdef CONFIG_LCDC_OVERLAY_ENABLE
 	 if( (strcmp(info->fix.id, "fb1") == 0) || (strcmp(info->fix.id, "fb3") == 0) ) { 
 	 if( ((var->xoffset+var->xres) > var->xres_virtual) ||
-	     		((var->yoffset+var->yres) > (var->yres_virtual*2))
+	     		((var->yoffset+var->yres) > var->yres_virtual*2))
 	 {
 		 printk("xoffset:%d>>xres:%d>>xres_vir:%d\n",var->xoffset,var->xres,var->xres_virtual);
 		 printk("yoffset:%d>>yres:%d>>yres_vir:%d\n",var->yoffset,var->yres,var->yres_virtual);

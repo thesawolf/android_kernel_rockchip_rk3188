@@ -54,14 +54,14 @@ static struct cpufreq_frequency_table default_freq_table[] = {
 //	{.frequency = 816 * 1000, .index = 1000 * 1000},
         {.frequency     = 312 * 1000, .index        = 875 * 1000}, //SAW
         {.frequency     = 504 * 1000, .index        = 900 * 1000}, //SAW
-        {.frequency     = 816 * 1000, .index        = 1050 * 1000},
+        {.frequency     = 816 * 1000, .index        = 975 * 1000},
         {.frequency     = 1008 * 1000, .index       = 1050 * 1000},//SAW
         {.frequency     = 1200 * 1000, .index       = 1125 * 1000},//SAW
         {.frequency     = 1416 * 1000, .index       = 1225 * 1000},//SAW
         {.frequency     = 1608 * 1000, .index       = 1300 * 1000},//SAW
-        {.frequency     = 1704 * 1000, .index       = 1325 * 1000},//SAW
-        {.frequency     = 1800 * 1000, .index       = 1350 * 1000},//SAW
-        {.frequency     = 1920 * 1000, .index       = 1350 * 1000},//SAW
+        {.frequency     = 1704 * 1000, .index       = 1350 * 1000},//SAW
+        {.frequency     = 1800 * 1000, .index       = 1375 * 1000},//SAW
+        {.frequency     = 1920 * 1000, .index       = 1400 * 1000},//SAW
 	//{.frequency = 1008 * 1000, .index = 1075 * 1000}, //SAW
 	{.frequency = CPUFREQ_TABLE_END},
 };
@@ -364,7 +364,7 @@ static int rk3188_cpufreq_init_cpu0(struct cpufreq_policy *policy)
 	if (!IS_ERR(gpu_clk)) {
 		clk_enable_dvfs(gpu_clk);
 		if (gpu_is_mali400)
-			dvfs_clk_enable_limit(gpu_clk, 133000000, 600000000);
+			dvfs_clk_enable_limit(gpu_clk, 133000000, 700000000);
 	}
 
 	ddr_clk = clk_get(NULL, "ddr");
