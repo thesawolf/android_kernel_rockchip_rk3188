@@ -786,13 +786,13 @@ static int plus_gpll_clk_set_rate(struct clk *c, unsigned long rate)
 }
 
 #define PLL_FREF_MIN (183*KHZ)
-#define PLL_FREF_MAX (1500*MHZ)
+#define PLL_FREF_MAX (1500*MHZ) //SAW 1500
 
 #define PLL_FVCO_MIN (300*MHZ)
-#define PLL_FVCO_MAX (1500*MHZ)
+#define PLL_FVCO_MAX (1500*MHZ) //SAW 1500
 
-#define PLL_FOUT_MIN (18750*KHZ)
-#define PLL_FOUT_MAX (1500*MHZ)
+#define PLL_FOUT_MIN (18750*KHZ) //18750*KHZ)
+#define PLL_FOUT_MAX (1500*MHZ) //1500
 
 #define PLL_NF_MAX (65536)
 #define PLL_NR_MAX (64)
@@ -998,7 +998,7 @@ struct arm_clks_div_set {
 	|ACLK_PCLK_W_MSK|ACLK_PCLK_##_apb_div\
 	|AHB2APB_W_MSK	|AHB2APB_##_ahb2apb,\
 }
-struct arm_clks_div_set arm_clk_div_tlb[] = {
+struct arm_clks_div_set arm_clk_div_tlb[] = { //SAW -- check into this
 	_arm_clks_div_set(50 ,  2, 11, 11, 11, 11),//25,50,50,50,50
 	_arm_clks_div_set(100 , 4, 11, 21, 21, 11),//25,100,50,50,50
 	_arm_clks_div_set(150 , 4, 11, 21, 21, 11),//37,150,75,75,75
@@ -1196,7 +1196,7 @@ static int plus_arm_pll_clk_set_rate(struct clk *clk, unsigned long rate)
 
 /************************************pll clocks***************************/
 
-static const struct apll_clk_set apll_clks[] = {
+static const struct apll_clk_set apll_clks[] = { //SAW -- up to 2208MHz?
 	//_APLL_SET_CLKS(_mhz, nr, nf, no, _periph_div, 
 	//		_axi_core_div, _axi_div, _ahb_div, _apb_div, _ahb2apb) 	
 	_APLL_SET_CLKS(2208, 1, 92, 1, 8, 	81, 81, 21, 41, 21),

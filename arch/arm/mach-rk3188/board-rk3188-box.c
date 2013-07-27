@@ -1012,7 +1012,7 @@ struct platform_device pwm_regulator_device[1] = {
 };
 #endif
 
-#ifdef CONFIG_RFKILL_RK
+#ifdef CONFIG_RFKILL_RK //SAW -- check here for BT later
 // bluetooth rfkill device, its driver in net/rfkill/rfkill-rk.c
 static struct rfkill_rk_platform_data rfkill_rk_platdata = {
     .type               = RFKILL_TYPE_BLUETOOTH,
@@ -1507,9 +1507,9 @@ static  struct pmu_info  act8846_ldo_info[] = {
 		.max_uv         = 3300000,
 	},
 	{
-		.name          = "act_ldo6",   //vcc_jetta //leolas modded orig 1800000
-		.min_uv          = 3300000,
-		.max_uv         = 3300000,
+		.name          = "act_ldo6",   //vcc_jetta //3300000 1800000
+	 	.min_uv		= 1800000,	
+		.max_uv         = 1800000,
 	},
 	{
 		.name          = "act_ldo7",   //vcc18
@@ -2086,8 +2086,8 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
         {.frequency = 1416 * 1000,      .index = 1225 * 1000},
         {.frequency = 1608 * 1000,      .index = 1300 * 1000},
         {.frequency = 1704 * 1000,      .index = 1350 * 1000},
-        {.frequency = 1800 * 1000,      .index = 1375 * 1000},        
-        {.frequency = 1920 * 1000,      .index = 1400 * 1000},
+        {.frequency = 1800 * 1000,      .index = 1400 * 1000},        
+        {.frequency = 1920 * 1000,      .index = 1425 * 1000},
 #else
         {.frequency = 312 * 1000,       .index = 900 * 1000},
         {.frequency = 504 * 1000,       .index = 925 * 1000},
@@ -2103,8 +2103,8 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
 static struct cpufreq_frequency_table dvfs_gpu_table[] = {
 // other limit need adjusting for this to work
 #ifdef OVERCLOCK_GPU
-       {.frequency = 133 * 1000,       .index = 975 * 1000},
-       {.frequency = 200 * 1000,       .index = 1000 * 1000},  
+//       {.frequency = 133 * 1000,       .index = 975 * 1000},
+//       {.frequency = 200 * 1000,       .index = 1000 * 1000},
        {.frequency = 266 * 1000,       .index = 1025 * 1000},  
        {.frequency = 300 * 1000,       .index = 1050 * 1000},  
        {.frequency = 400 * 1000,       .index = 1100 * 1000},

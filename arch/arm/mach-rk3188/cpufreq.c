@@ -60,8 +60,8 @@ static struct cpufreq_frequency_table default_freq_table[] = {
         {.frequency     = 1416 * 1000, .index       = 1225 * 1000},//SAW
         {.frequency     = 1608 * 1000, .index       = 1300 * 1000},//SAW
         {.frequency     = 1704 * 1000, .index       = 1350 * 1000},//SAW
-        {.frequency     = 1800 * 1000, .index       = 1375 * 1000},//SAW
-        {.frequency     = 1920 * 1000, .index       = 1400 * 1000},//SAW
+        {.frequency     = 1800 * 1000, .index       = 1400 * 1000},//SAW
+        {.frequency     = 1920 * 1000, .index       = 1425 * 1000},//SAW
 	//{.frequency = 1008 * 1000, .index = 1075 * 1000}, //SAW
 	{.frequency = CPUFREQ_TABLE_END},
 };

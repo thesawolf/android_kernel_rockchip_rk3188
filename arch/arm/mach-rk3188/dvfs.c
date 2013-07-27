@@ -187,7 +187,7 @@ static int g_logic_high_arm = 100 * 1000;
 
 #ifdef CONFIG_ARCH_RK3188
 static struct cpufreq_frequency_table arm_high_logic_table[] = {
-	{.frequency = 1008 * DVFS_KHZ, .index = 25 * DVFS_MV},
+   	{.frequency = 1008 * DVFS_KHZ, .index = 25 * DVFS_MV},
         {.frequency = 1416 * DVFS_KHZ, .index = 25 * DVFS_MV},
         {.frequency = 1608 * DVFS_KHZ, .index = 25 * DVFS_MV},
         {.frequency = 1704 * DVFS_KHZ, .index = 25 * DVFS_MV}, //SAW
@@ -200,9 +200,9 @@ static struct cpufreq_frequency_table logic_high_arm_table[] = {
         {.frequency = 1008 * DVFS_KHZ, .index = 150 * DVFS_MV},
 	{.frequency = 1416 * DVFS_KHZ, .index = 125 * DVFS_MV},
         {.frequency = 1608 * DVFS_KHZ, .index = 100 * DVFS_MV},
-	{.frequency = 1704 * DVFS_KHZ, .index = 75 * DVFS_MV}, 
-        {.frequency = 1800 * DVFS_KHZ, .index = 50 * DVFS_MV},
-	{.frequency = 1920 * DVFS_KHZ, .index = 25 * DVFS_MV}, //SAW
+	{.frequency = 1704 * DVFS_KHZ, .index = 100 * DVFS_MV}, 
+        {.frequency = 1800 * DVFS_KHZ, .index = 75 * DVFS_MV},
+	{.frequency = 1920 * DVFS_KHZ, .index = 50 * DVFS_MV}, //SAW
         {.frequency = CPUFREQ_TABLE_END},
 };
 #else
@@ -509,8 +509,8 @@ static struct cpufreq_frequency_table cpu_dvfs_table[] = {
 	{.frequency 	= 1416 * DVFS_KHZ, .index	= 1225 * DVFS_MV},//SAW
 	{.frequency	= 1608 * DVFS_KHZ, .index	= 1300 * DVFS_MV},//SAW
 	{.frequency	= 1704 * DVFS_KHZ, .index	= 1350 * DVFS_MV},//SAW
-	{.frequency	= 1800 * DVFS_KHZ, .index	= 1375 * DVFS_MV},//SAW
-	{.frequency	= 1920 * DVFS_KHZ, .index	= 1400 * DVFS_MV},//SAW
+	{.frequency	= 1800 * DVFS_KHZ, .index	= 1400 * DVFS_MV},//SAW
+	{.frequency	= 1920 * DVFS_KHZ, .index	= 1425 * DVFS_MV},//SAW
 	{.frequency	= CPUFREQ_TABLE_END},
 };
 
@@ -543,7 +543,7 @@ static struct cpufreq_frequency_table gpu_dvfs_table[] = {
 };
 
 static struct cpufreq_frequency_table peri_aclk_dvfs_table[] = {
-	{.frequency = 100 * DVFS_KHZ, .index = 1000 * DVFS_MV},
+	//{.frequency = 100 * DVFS_KHZ, .index = 1000 * DVFS_MV},
 	{.frequency = 200 * DVFS_KHZ, .index = 1050 * DVFS_MV},
 	{.frequency = 300 * DVFS_KHZ, .index = 1070 * DVFS_MV},
 	{.frequency = 500 * DVFS_KHZ, .index = 1100 * DVFS_MV},
@@ -565,8 +565,8 @@ static struct cpufreq_frequency_table dep_cpu2core_table[] = {
         {.frequency     = 1416 * DVFS_KHZ, .index       = 1225 * DVFS_MV},//SAW
         {.frequency     = 1608 * DVFS_KHZ, .index       = 1300 * DVFS_MV},//SAW
         {.frequency     = 1704 * DVFS_KHZ, .index       = 1350 * DVFS_MV},//SAW
-        {.frequency     = 1800 * DVFS_KHZ, .index       = 1375 * DVFS_MV},//SAW
-        {.frequency     = 1920 * DVFS_KHZ, .index       = 1400 * DVFS_MV},//SAW
+        {.frequency     = 1800 * DVFS_KHZ, .index       = 1400 * DVFS_MV},//SAW
+        {.frequency     = 1920 * DVFS_KHZ, .index       = 1425 * DVFS_MV},//SAW
 	// {.frequency = 1008 * DVFS_KHZ,.index    = 1050 * DVFS_MV},
 	// {.frequency = 1200 * DVFS_KHZ,.index    = 1050 * DVFS_MV},
 	// {.frequency = 1272 * DVFS_KHZ,.index    = 1050 * DVFS_MV},//logic 1.050V
