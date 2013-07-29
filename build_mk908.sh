@@ -658,7 +658,7 @@ function scfig
  echo "TCDESC=\"$TCDESC\"" >> $BCFIG
  echo "CROSS_COMPILE=\"$CROSS_COMPILE\"" >> $BCFIG
  echo "DEVICE=\"$DEVICE\"" >> $BCFIG
- echo "OUTLOC=\"$OULOC\"" >> $BCFIG
+ echo "OUTLOC=\"$OUTLOC\"" >> $BCFIG
  echo "OLDESC=\"$OLDESC\"" >> $BCFIG
  echo "KERNPARM1=\"$KERNPARM1\"" >> $BCFIG
  echo "KERNPARM2=\"$KERNPARM2\"" >> $BCFIG
