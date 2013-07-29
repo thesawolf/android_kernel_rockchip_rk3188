@@ -79,7 +79,14 @@ do specific kind of builds since I keep losing track of stuff :P
 - Determined origin of my kernel source finally. it's the original source
 from Rikomagic before alok's linux-centric source changes
 - MAJOUR build script overhaul.. it's grown into quite a lazy-ass beast
+- FINALLY got a working config (TESTCONFIG) with Wifi AND BT working now
+- ALOT of O/C testing, tweaking (thanks to Sam321 for alot of the legwork)
+- Vsync FIX by phjanderson! (suck it Strauzo)
+- New build script version (now supports saving config options for quicker rebuilds!)
 
 **ToDo:**
 - Linaro toolchain build (added 4.6 and 4.8 added, not tested yet tho)
 - YAFFS2 debugging
+- more O/C stuff.. get running more stable and finally unlock GPU O/C
+- isolate issue with cpufreq not reporting to sys properly for apps
+- DDR init issue with improper timings setting and freq init

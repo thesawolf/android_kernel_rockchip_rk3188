@@ -455,7 +455,7 @@ static int rk_fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 	#ifdef CONFIG_LCDC_OVERLAY_ENABLE
 	 if( (strcmp(info->fix.id, "fb1") == 0) || (strcmp(info->fix.id, "fb3") == 0) ) { 
 	 if( ((var->xoffset+var->xres) > var->xres_virtual) ||
-	     		((var->yoffset+var->yres) > var->yres_virtual*2))
+	     		((var->yoffset+var->yres) > var->yres_virtual*2) )
 	 {
 		 printk("xoffset:%d>>xres:%d>>xres_vir:%d\n",var->xoffset,var->xres,var->xres_virtual);
 		 printk("yoffset:%d>>yres:%d>>yres_vir:%d\n",var->yoffset,var->yres,var->yres_virtual);
@@ -805,7 +805,8 @@ static int rk_fb_wait_for_vsync_thread(void *data)
 	while (!kthread_should_stop()) {
 		ktime_t timestamp = dev_drv->vsync_info.timestamp;
 		int ret = wait_event_interruptible(dev_drv->vsync_info.wait,
-			!ktime_equal(timestamp, dev_drv->vsync_info.timestamp) &&
+		// SAW -- testing vsync fix by phjanderson @freaktab
+		//!ktime_equal(timestamp, dev_drv->vsync_info.timestamp) &&
 			dev_drv->vsync_info.active);
 
 		if (!ret) {
