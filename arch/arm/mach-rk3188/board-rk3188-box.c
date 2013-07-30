@@ -465,27 +465,45 @@ static int rk_fb_io_enable(void)
 	return 0;
 }
 
-#if defined(CONFIG_LCDC0_RK3188)
-struct rk29fb_info lcdc0_screen_info = {
-	.prop           = PRMRY, //EXTEND,       //extend display device
-       //.lcd_info  = NULL,
+//SAW -- MK908 uses LCDC0 as primary vs the code defaults of LCDC1 
+#if (defined(CONFIG_LCDC0_RK3188) && !defined(CONFIG_LCDC1_RK3188))
+
+ struct rk29fb_info lcdc0_screen_info = {
+	.prop		= PRMRY,
 	.io_init	= rk_fb_io_init,
 	.io_disable	= rk_fb_io_disable,
 	.io_enable	= rk_fb_io_enable,
-       .set_screen_info = set_lcd_info,
+	.set_screen_info = set_lcd_info,
 
-};
-#endif
+ };
 
-#if defined(CONFIG_LCDC1_RK3188)
-struct rk29fb_info lcdc1_screen_info = {
-	.prop	   = PRMRY,		//primary display device
-	.io_init   = rk_fb_io_init,
-	.io_disable = rk_fb_io_disable,
-	.io_enable = rk_fb_io_enable,
+ struct rk29fb_info lcdc1_screen_info = {
+	.prop		= EXTEND,
+	.lcd_info	= NULL,
+	.set_screen_info = set_lcd_info,
+
+ };
+
+#else
+
+ #if defined(CONFIG_LCDC1_RK3188)
+  struct rk29fb_info lcdc1_screen_info = {
+	.prop	   	= PRMRY,	//primary display device
+	.io_init   	= rk_fb_io_init,
+	.io_disable 	= rk_fb_io_disable,
+	.io_enable 	= rk_fb_io_enable,
 	.set_screen_info = set_lcd_info,
 	
-};
+  };
+ 
+  struct rk29fb_info lcdc0_screen_info = {
+	.prop		= EXTEND,
+	.lcd_info	= NULL,
+	.set_screen_info = set_lcd_info,
+
+  };
+ #endif	
+
 #endif
 
 static struct resource resource_fb[] = {
@@ -1298,7 +1316,12 @@ static int rk_platform_add_display_devices(void)
 //$_rbox_$_modify_$ zhengyang modified for box
 static struct rkdisplay_platform_data hdmi_data = {
 	.property 		= DISPLAY_MAIN,
+//SAW -- MK908 uses LCDC0 as default vs LCDC1 like in other devices
+#if (defined(CONFIG_LCDC0_RK3188) && !defined(CONFIG_LCDC1_RK3188))
 	.video_source 	= DISPLAY_SOURCE_LCDC0,
+#else
+	.video_source 	= DISPLAY_SOURCE_LCDC1,
+#endif
 	.io_pwr_pin 	= INVALID_GPIO,
 	.io_reset_pin 	= RK30_PIN3_PB2,
 };

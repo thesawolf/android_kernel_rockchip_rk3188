@@ -1273,7 +1273,7 @@ static struct clk arm_pll_clk = {
 
 static int ddr_pll_clk_set_rate(struct clk *clk, unsigned long rate)
 {
-	/* do nothing here */
+	/* do nothing here */ //SAW -- why?
 	return 0;
 }
 static struct _pll_data dpll_data = SET_PLL_DATA(DPLL_ID, NULL);
@@ -3001,25 +3001,25 @@ static struct clk_lookup clks[] = {
 static void __init rk30_init_enable_clocks(void)
 {
 	#if 0
-	//clk_enable_nolock(&xin24m);
-	//clk_enable_nolock(&clk_12m);
-	//clk_enable_nolock(&arm_pll_clk);
-	//clk_enable_nolock(&ddr_pll_clk);
-	//clk_enable_nolock(&codec_pll_clk);
-	//clk_enable_nolock(&general_pll_clk);
+	clk_enable_nolock(&xin24m); //SAW
+	clk_enable_nolock(&clk_12m); //SAW
+	clk_enable_nolock(&arm_pll_clk); //SAW
+	clk_enable_nolock(&ddr_pll_clk); //SAW
+	clk_enable_nolock(&codec_pll_clk); //SAW
+	clk_enable_nolock(&general_pll_clk); //SAW
 	#endif
 	clk_enable_nolock(&clk_ddr);
-	//clk_enable_nolock(&clk_core);
+	clk_enable_nolock(&clk_core); //SAW
 	clk_enable_nolock(&clk_cpu_div);
 	clk_enable_nolock(&clk_core_gpll_path);
 	clk_enable_nolock(&clk_l2c);
 	clk_enable_nolock(&clk_core_dbg);
 	clk_enable_nolock(&core_periph);
 	clk_enable_nolock(&aclk_core);
-	//clk_enable_nolock(&aclk_cpu);
-	//clk_enable_nolock(&pclk_cpu);
+	clk_enable_nolock(&aclk_cpu); //SAW
+	clk_enable_nolock(&pclk_cpu); //SAW
 	clk_enable_nolock(&atclk_cpu);
-	//clk_enable_nolock(&hclk_cpu);
+	clk_enable_nolock(&hclk_cpu); //SAW
 	clk_enable_nolock(&ahb2apb_cpu);
 	#if 0
 	 clk_enable_nolock(&clk_gpu);
@@ -3522,20 +3522,20 @@ static void __init rk30_clock_common_init(unsigned long gpll_rate, unsigned long
 	//axi lcdc auto sel
 	clk_set_parent_nolock(&aclk_lcdc0_pre, &general_pll_clk);
 	clk_set_parent_nolock(&aclk_lcdc1_pre, &general_pll_clk);
-	clk_set_rate_nolock(&aclk_lcdc0_pre, 300 * MHZ);
-	clk_set_rate_nolock(&aclk_lcdc1_pre, 300 * MHZ);
+	clk_set_rate_nolock(&aclk_lcdc0_pre, 300 * MHZ); //SAW 300
+	clk_set_rate_nolock(&aclk_lcdc1_pre, 300 * MHZ); //SAW 300
 
 	//axi vepu auto sel
 	//clk_set_parent_nolock(&aclk_vepu, &general_pll_clk);
 	//clk_set_parent_nolock(&aclk_vdpu, &general_pll_clk);
 
-	clk_set_rate_nolock(&aclk_vepu, 300 * MHZ);
-	clk_set_rate_nolock(&aclk_vdpu, 300 * MHZ);
+	clk_set_rate_nolock(&aclk_vepu, 300 * MHZ); //SAW 300
+	clk_set_rate_nolock(&aclk_vdpu, 300 * MHZ); //SAW 300
 	//gpu auto sel
 	clk_set_parent_nolock(&aclk_gpu, &general_pll_clk);
-	clk_set_rate_nolock(&aclk_gpu, 200 * MHZ);
+	clk_set_rate_nolock(&aclk_gpu, 200 * MHZ); //SAW 200
 	
-	clk_set_rate_nolock(&clk_uart0, 49500000);
+	clk_set_rate_nolock(&clk_uart0, 49500000); 
 	clk_set_rate_nolock(&clk_sdmmc, 24750000);
 	clk_set_rate_nolock(&clk_sdio, 24750000);
 
