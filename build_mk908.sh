@@ -174,10 +174,8 @@ function cfgitems
 	echo "   =---------------------------------------------="
 	echo "   1. mk908-720-debug-defconfig   <- Q. menuconfig"
 	echo "   2. mk908-1080-debug-defconfig  <- W. menuconfig"
-	echo "   3. mk908-auto-debug-defconfig  <- E. menuconfig"
-	echo "   4. mk908-720-defconfig         <- R. menuconfig"
-	echo "   5. mk908-1080-defconfig        <- T. menuconfig"
-	echo "   6. mk908-auto-defconfig        <- Y. menuconfig"
+	echo "   3. mk908-720-defconfig         <- E. menuconfig"
+	echo "   4. mk908-1080-defconfig        <- R. menuconfig"
 	echo "   =---------------------------------------------="
 	echo "     9. make menuconfig (with no defconfig set)"
         echo "   =---------------------------------------------="
@@ -207,44 +205,24 @@ function cfgitems
            cp .config $DEVREM
 	   break
 	elif [ "$cfgopt" = "3" ]; then
-           DEVICE=mk908-auto-debug-defconfig
-           break
-	elif [[ "$cfgopt" = "E" || "$cfgopt" = "e" ]]; then
-           DEVREM="mk908-auto-debug-defconfig"
-           poprem
-           cp $DEVREM .config
-	   make ARCH=arm menuconfig
-	   cp .config $DEVREM
-	   break
-	elif [ "$cfgopt" = "4" ]; then
 	   DEVICE=mk908-720-defconfig
 	   break
-	elif [[ "$cfgopt" = "R" || "$cfgopt" = "r" ]]; then
+	elif [[ "$cfgopt" = "E" || "$cfgopt" = "e" ]]; then
 	   DEVREM="mk908-720-defconfig"
 	   poprem
 	   cp $DEVREM .config
 	   make ARCH=arm menuconfig
 	   cp .config $DEVREM
 	   break
-	elif [ "$cfgopt" = "5" ]; then
+	elif [ "$cfgopt" = "4" ]; then
 	   DEVICE=mk908-1080-defconfig
 	   break
-	elif [[ "$cfgopt" = "T" || "$cfgopt" = "t" ]]; then
+	elif [[ "$cfgopt" = "R" || "$cfgopt" = "r" ]]; then
 	   DEVREM="mk908-1080-defconfig"
 	   poprem
 	   cp $DEVREM .config
 	   make ARCH=arm menuconfig
 	   cp .config $DEVREM 
-	   break
-	elif [ "$cfgopt" = "6" ]; then
-	   DEVICE=mk908-auto-defconfig
-	   break
-	elif [[ "$cfgopt" = "Y" || "$cfgopt" = "y" ]]; then
-	   DEVREM="mk908-auto-defconfig"
-	   poprem
-	   cp $DEVREM .config
-	   make ARCH=arm menuconfig 
-	   cp .config $DEVREM
 	   break
         elif [[ "$cfgopt" = "L" || "$cfgopt" = "l" ]]; then
            clear

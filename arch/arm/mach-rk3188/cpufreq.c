@@ -51,7 +51,17 @@
 
 /* Frequency table index must be sequential starting at 0 */
 static struct cpufreq_frequency_table default_freq_table[] = {
-	{.frequency = 816 * 1000, .index = 1000 * 1000},
+	{.frequency = 312 * 1000, .index = 875 * 1000},
+	{.frequency = 504 * 1000, .index = 900 * 1000},
+	{.frequency = 816 * 1000, .index = 975 * 1000},
+	{.frequency = 1008 * 1000, .index = 1050 * 1000},
+	{.frequency = 1200 * 1000, .index = 1125 * 1000},
+	{.frequency = 1416 * 1000, .index = 1225 * 1000},
+	{.frequency = 1608 * 1000, .index = 1325 * 1000},
+	{.frequency = 1704 * 1000, .index = 1350 * 1000},
+	{.frequency = 1800 * 1000, .index = 1375 * 1000},
+	{.frequency = 1920 * 1000, .index = 1400 * 1000},
+	//{.frequency = 816 * 1000, .index = 1000 * 1000}, //SAW default
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
@@ -66,7 +76,7 @@ static struct cpufreq_frequency_table *freq_table = default_freq_table;
 /* With 0x00(NOCHANGE), it depends on the previous "further" status */
 #define CPUFREQ_PRIVATE                 0x100
 static int no_cpufreq_access;
-static unsigned int suspend_freq = 816 * 1000;
+static unsigned int suspend_freq = 1608 * 1000; //SAW 816
 static unsigned int suspend_volt = 1000000; // 1V
 static unsigned int low_battery_freq = 600 * 1000;
 static unsigned int low_battery_capacity = 5; // 5%
@@ -120,13 +130,13 @@ static unsigned int get_freq_from_table(unsigned int max_freq)
 }
 
 /**********************thermal limit**************************/
-//#define CONFIG_RK30_CPU_FREQ_LIMIT_BY_TEMP //SAW - no temp
+#define CONFIG_RK30_CPU_FREQ_LIMIT_BY_TEMP //SAW - no temp
 
 #ifdef CONFIG_RK30_CPU_FREQ_LIMIT_BY_TEMP
 static unsigned int temp_limit_freq = -1;
 module_param(temp_limit_freq, uint, 0444);
 
-// Sam321 changed the last limit index from 75 to 65, applying despite disable
+// Sam321 changed the last limit index from 75 to 65
 static struct cpufreq_frequency_table temp_limits[4][4] = {
 	{
 		{.frequency =          -1, .index = 50},
@@ -152,11 +162,31 @@ static struct cpufreq_frequency_table temp_limits[4][4] = {
 };
 
 static struct cpufreq_frequency_table temp_limits_cpu_perf[] = {
-	{.frequency = 1008 * 1000, .index = 100},
+/*
+	{.frequency = 312 * 1000, .index = 10},
+	{.frequency = 504 * 1000, .index = 20},
+	{.frequency = 816 * 1000, .index = 30},
+	{.frequency = 1008 * 1000, .index = 40},
+	{.frequency = 1200 * 1000, .index = 50},
+	{.frequency = 1416 * 1000, .index = 60},
+	{.frequency = 1608 * 1000, .index = 70},
+	{.frequency = 1704 * 1000, .index = 80},
+	{.frequency = 1800 * 1000, .index = 90},
+	{.frequency = 1920 * 1000, .index = 100}, //SAW 1008, 100
+*/
+	{.frequency = 1704 * 1000, .index = 100},
 };
 
 static struct cpufreq_frequency_table temp_limits_gpu_perf[] = {
-	{.frequency = 1008 * 1000, .index = 0},
+/*
+ 	{.frequency = 266 * 1000, .index = 0},
+	{.frequency = 300 * 1000, .index = 20},
+	{.frequency = 400 * 1000, .index = 40},
+	{.frequency = 600 * 1000, .index = 60},
+	{.frequency = 666 * 1000, .index = 80},	
+	{.frequency = 700 * 1000, .index = 100}, //SAW 1008, 0
+*/
+	{.frequency = 1704 * 1000, .index = 0},
 };
 
 //SAW -- supposedly no temp sensors in rk3188, so someone hardcoded here

@@ -367,8 +367,11 @@ static int ddrfreq_init(void)
 		}
 	}
 	if (!new_version) {
-		ddr.video_rate = 300 * MHZ;
-		ddr.suspend_rate = 200 * MHZ;
+		ddr.normal_rate = 396 * MHZ;//SAW
+		ddr.reboot_rate = 396 * MHZ;//SAW
+		ddr.idle_rate = 396 * MHZ;//SAW
+		ddr.video_rate = 396 * MHZ;//SAW 300
+		ddr.suspend_rate = 396 * MHZ;//SAW 200
 	}
 	for (i = 0; new_version && table && table[i].frequency != CPUFREQ_TABLE_END; i++) {
 		unsigned int mode = table[i].frequency % 1000;

@@ -18,7 +18,7 @@ To be installed into: (android)/kernel/rockchip/rk3188/
 - Kernel .config support (via /proc/config.gz) so you can extract config
 - Module versioning so modules can be ported to other kernels
 - Support for 2TB+ devices/files
-- I/O Schedulers (Noop [default], Deadline, CFQ, SIO, VR, Zen)
+- I/O Schedulers (Noop [default], Deadline, CFQ, SIO, VR, Zen, Row, BFQ)
 - Lastlog support (for debugging, via /proc/last_log)
 - Serial debugging support
 - 4-cores supported in kernel
@@ -83,10 +83,14 @@ from Rikomagic before alok's linux-centric source changes
 - ALOT of O/C testing, tweaking (thanks to Sam321 for alot of the legwork)
 - Vsync FIX by phjanderson! (suck it Strauzo)
 - New build script version (now supports saving config options for quicker rebuilds!)
+- Added ROW I/O Scheduler, preliminary BFQ I/O (still needs tuning)
+- Added Adaptive, BrazilianWax, Hyper, Intellidemand, InteractiveX, Lionheart, LulzActive, MinMax (now working), OnDemandX, and SavagedZen CPU Governors
+- Build script updated (removed auto screen sync defconfigs)
+- Updated defconfigs with latest working TESTCONFIG
 
 **ToDo:**
 - Linaro toolchain build (added 4.6 and 4.8 added, not tested yet tho)
 - YAFFS2 debugging
 - more O/C stuff.. get running more stable and finally unlock GPU O/C
 - isolate issue with cpufreq not reporting to sys properly for apps
-- DDR init issue with improper timings setting and freq init
+- DDR init issue with improper timings setting and freq init (defaults to 300MHz instead of the stock 396MHz)

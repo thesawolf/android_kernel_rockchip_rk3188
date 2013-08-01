@@ -88,6 +88,13 @@ config CPU_FREQ_DEFAULT_GOV_ONDEMAND
 	  governor. If unsure have a look at the help section of the
 	  driver. Fallback governor will be the performance governor.
 
+config CPU_FREQ_DEFAULT_GOV_ONDEMANDX
+	bool "ondemandx"
+	select CPU_FREQ_GOV_ONDEMANDX
+	help
+	  Use the CPUFreq governor 'ondemandx' as default. See 
+	  ondemandx governor help for more details.
+
 config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
 	bool "conservative"
 	select CPU_FREQ_GOV_CONSERVATIVE
@@ -109,9 +116,66 @@ config CPU_FREQ_DEFAULT_GOV_INTERACTIVE
 	  loading your cpufreq low-level hardware driver, using the
 	  'interactive' governor for latency-sensitive workloads.
 
+config CPU_FREQ_DEFAULT_GOV_INTERACTIVEX
+	bool "interactivex"
+	select CPU_FREQ_GOV_INTERACTIVEX
+	help
+	  Use the CPUFreq governor 'interactivex' as default. See
+	  interactivex governor help for more details.
+
+config CPU_FREQ_DEFAULT_GOV_BRAZILIANWAX
+	bool "brazilianwax"
+	select CPU_FREQ_GOV_BRAZILIANWAX
+	help
+	  Use the CPUFreq governor 'brazilianwax' as default. See 
+	  brazilianwax governor help for more details.
+
+config CPU_FREQ_DEFAULT_GOV_SAVAGEDZEN
+	bool "savagedzen"
+	select CPU_FREQ_GOV_SAVAGEDZEN
+	help
+	  Use the CPUFreq governor 'savagedzen' as default. See
+	  savagedzen governor help for more details.
+
+config CPU_FREQ_DEFAULT_GOV_ADAPTIVE
+	bool "adaptive"
+	select CPU_FREQ_GOV_ADAPTIVE
+	help
+	  Use the CPUFreq governor 'adaptive' as default. See adaptive
+	  governor help for more details.
+
+config CPU_FREQ_DEFAULT_GOV_HYPER
+	bool "hyper"
+	select CPU_FREQ_GOV_HYPER
+	help
+	  Use the CPUFreq governor 'hyper' as default. See hyper
+	  governor help for more details.
+
+config CPU_FREQ_DEFAULT_GOV_INTELLIDEMAND
+	bool "intellidemand"
+	select CPU_FREQ_GOV_INTELLIDEMAND
+	help
+	  Use the CPUFreq governor 'intellidemand' as default. See
+	  intellidemand governor help for more details.
+
+config CPU_FREQ_DEFAULT_GOV_LIONHEART
+	bool "lionheart"
+	select CPU_FREQ_GOV_LIONHEART
+	help
+	  Use the CPUFreq governor 'lionheart' as default. See
+	  lionheart governor help for more details.
+
+config CPU_FREQ_DEFAULT_GOV_LULZACTIVE
+	bool "lulzactive"
+	select CPU_FREQ_GOV_LULZACTIVE
+	help
+	  Use the CPUFreq governor 'lulzactive' as default. See
+	  lulzactive governor help for more details.
+
 config CPU_FREQ_DEFAULT_GOV_SMARTASS2
 	bool "smartass2"
 	select CPU_FREQ_GOV_SMARTASS2
+	select CPU_FREQ_GOV_PERFORMANCE
 	help
 	  Use the CPUFreq governor 'smartassV2' as default. See 
 	  smartassV2 governor help for more details.
@@ -180,6 +244,18 @@ config CPU_FREQ_GOV_ONDEMAND
 
 	  If in doubt, say N.
 
+config CPU_FREQ_GOV_ONDEMANDX
+	tristate "'ondemandx' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  Basically an ondemand with suspend and wake profiles. When screen
+	  is off, max frequency is capped at 500MHz. Even though ondemand
+	  is the default governor in many kernels and is considered safe and
+	  stable, the support for this governor depends on CPU capability to
+	  do fast frequency switching which are very low latency frequency
+	  transitions. Performance of ondemand/ondemandx varies for different
+	  io schedulers. Ondemand/ondemandx goes best with SIO io scheduler.
+
 config CPU_FREQ_GOV_INTERACTIVE
 	tristate "'interactive' cpufreq policy governor"
 	help
@@ -196,6 +272,16 @@ config CPU_FREQ_GOV_INTERACTIVE
 	  For details, take a look at linux/Documentation/cpu-freq.
 
 	  If in doubt, say N.
+
+config CPU_FREQ_GOV_INTERACTIVEX
+	tristate "'interactivex' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  Created by kernel developer Imoseyon, the governor is based
+	  heavily on the Interactive governor, enhanced with tuned timer
+	  parameters for better balance. The defining feature is that it
+	  locks the CPU frequency to the users lowest defined speed when
+	  the screen is off.
 
 config CPU_FREQ_GOV_CONSERVATIVE
 	tristate "'conservative' cpufreq governor"
@@ -229,11 +315,69 @@ config CPU_FREQ_GOV_SMARTASS2
 	  up aggressively twards this freq and less aggressive after. The motto
 	  for this governor is a balance between performance and battery.
 
+config CPU_FREQ_GOV_BRAZILIANWAX
+	tristate "'brazilianwax' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  A smartassV2 based governor. More aggressive ramping.
+
+config CPU_FREQ_GOV_SAVAGEDZEN
+	tristate "'savagedzen' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  A smartassV2 based governor. Achieves good balance as compared to
+	  to brazilianwax (another smartassV2 based governor).
+
+config CPU_FREQ_GOV_ADAPTIVE
+	tristate "'adaptive' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  Dynamic governor designed for latency-sensitive workloads and 
+	  also for demanding performance. Attempts to reduce the latency of
+	  clock increases so that the system is more responsive to 
+	  interactive workloads.
+
+config CPU_FREQ_GOV_HYPER
+	tristate "'hyper' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  Formerly known as kenobi. Aggressive smart and smooth, and based on
+	  Ondemand and equipped with several features of Ondemandx. In
+	  suspend mode, the maxium frequency is 500MHz.
+
+config CPU_FREQ_GOV_INTELLIDEMAND
+	tristate "'intellidemand' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  Intellidemand aka Intelligent Ondemand from Faux is based on
+	  ondemand. Enters browsing mode to limit max frequency when GPU is
+	  idling, and exits browsing mode and behaves like ondemand when GPU
+	  is busy to deliver performance for gaming and such. Intellidemand
+	  does not jump to highest frequency when screen is off.
+
+config CPU_FREQ_GOV_LIONHEART
+	tristate "'lionheart' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  Conservative-based governor based on samsung update3 source.
+	  Tunables (such as thresholds and sampling rate) changed so the
+	  governor behaves more like the Performance one, with very
+	  aggressive scaling.
+
+config CPU_FREQ_GOV_LULZACTIVE
+	tristate "'lulzactive' cpufreq governor"
+	depends on CPU_FREQ
+	help
+	  Based on Interactive and Smartass governors. More user control
+	  allowing user to set the threshold at which governor decides to
+	  scale up or down. When screen is off, frequency is locked to 
+	  global scaling minimum frequency.
+
 config CPU_FREQ_GOV_MINMAX
 	tristate "'minmax' cpufreq governor"
 	depends on CPU_FREQ
 	help
-	  Simple governor that makes use of only the min and max frequencies 
+	  Simple governor that makes use of only the min and max frequencies
 	  based on workload, NO intermediate frequencies are used.
 
 menu "x86 CPU frequency scaling drivers"

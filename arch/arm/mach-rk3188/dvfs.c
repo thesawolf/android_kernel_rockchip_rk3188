@@ -207,6 +207,7 @@ static struct cpufreq_frequency_table logic_high_arm_table[] = {
         {.frequency = 816 * DVFS_KHZ,  .index = 200 * DVFS_MV},
         {.frequency = 1416 * DVFS_KHZ, .index = 150 * DVFS_MV},
         {.frequency = 1608 * DVFS_KHZ, .index = 100 * DVFS_MV},
+	{.frequency = CPUFREQ_TABLE_END}, //SAW was missing
 };
 #endif
 

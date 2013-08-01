@@ -2071,6 +2071,7 @@ static void __init rk30_reserve(void)
  * @logic_volt	: logic voltage arm requests depend on frequency
  * comments	: min arm/logic voltage
  */
+
 static struct cpufreq_frequency_table dvfs_arm_table[] = {
 #ifdef OVERCLOCK_CPU //SAW
         {.frequency = 312 * 1000,       .index = 875 * 1000},
@@ -2119,8 +2120,10 @@ static struct cpufreq_frequency_table dvfs_gpu_table[] = {
 
 static struct cpufreq_frequency_table dvfs_ddr_table[] = {
 #ifdef OVERCLOCK_RAM //SAW
-        {.frequency = 400 * 1000 + DDR_FREQ_VIDEO,	.index = 1100 * 1000},
-        {.frequency = 720 * 1000 + DDR_FREQ_NORMAL,	.index = 1200 * 1000},
+	{.frequency = 396 * 1000 + DDR_FREQ_IDLE,	.index = 1100 * 1000},
+	{.frequency = 396 * 1000 + DDR_FREQ_SUSPEND,	.index = 1100 * 1000},
+        {.frequency = 396 * 1000 + DDR_FREQ_VIDEO,	.index = 1100 * 1000},
+        {.frequency = 396 * 1000 + DDR_FREQ_NORMAL,	.index = 1100 * 1000},
 #else
 	//{.frequency = 200 * 1000 + DDR_FREQ_SUSPEND,    .index = 950 * 1000},
 	{.frequency = 300 * 1000 + DDR_FREQ_VIDEO,      .index = 1000 * 1000},
@@ -2129,14 +2132,14 @@ static struct cpufreq_frequency_table dvfs_ddr_table[] = {
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
-//#define DVFS_CPU_TABLE_SIZE	(ARRAY_SIZE(dvfs_cpu_logic_table))
+//#define DVFS_CPU_TABLE_SIZE	(ARRAY_SIZE(dvfs_cpu_logic_table)) //SAW cpu_logic_table))
 //static struct cpufreq_frequency_table cpu_dvfs_table[DVFS_CPU_TABLE_SIZE];
 //static struct cpufreq_frequency_table dep_cpu2core_table[DVFS_CPU_TABLE_SIZE];
 
 void __init board_clock_init(void)
 {
 	rk30_clock_data_init(periph_pll_default, codec_pll_default, RK30_CLOCKS_DEFAULT_FLAGS);
-	//dvfs_set_arm_logic_volt(dvfs_cpu_logic_table, cpu_dvfs_table, dep_cpu2core_table);
+//	dvfs_set_arm_logic_volt(dvfs_cpu_logic_table, cpu_dvfs_table, dep_cpu2core_table); 
 	dvfs_set_freq_volt_table(clk_get(NULL, "cpu"), dvfs_arm_table);
 	dvfs_set_freq_volt_table(clk_get(NULL, "gpu"), dvfs_gpu_table);
 	dvfs_set_freq_volt_table(clk_get(NULL, "ddr"), dvfs_ddr_table);

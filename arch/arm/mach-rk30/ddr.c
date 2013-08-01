@@ -27,7 +27,7 @@
 
 typedef uint32_t uint32;
 
-//#define ENABLE_DDR_CLCOK_GPLL_PATH  //for RK3188
+#define ENABLE_DDR_CLOCK_GPLL_PATH  //for RK3188
 
 #define DDR3_DDR2_DLL_DISABLE_FREQ    (125)
 #define DDR3_DDR2_ODT_DISABLE_FREQ    (333)
@@ -3516,7 +3516,7 @@ uint32_t ddr_change_freq(uint32_t nMHz)
         return ddr_change_freq_sram(gpllvaluel/ddr_select_gpll_div);      
     }
 
-#if defined(ENABLE_DDR_CLCOK_GPLL_PATH) && defined(CONFIG_ARCH_RK3188)
+#if defined(ENABLE_DDR_CLOCK_GPLL_PATH) && defined(CONFIG_ARCH_RK3188)
     return ddr_change_freq_gpll_dpll(nMHz);
 #else
     return ddr_change_freq_sram(nMHz);
@@ -3821,8 +3821,6 @@ int ddr_init(uint32_t dram_speed_bin, uint32_t freq)
     }
 
     clk_set_rate(clk_get(NULL, "ddr_pll"), 0);
-//SAW
-ddr_print("SAW: dpll-stat: %x, freq: %x, val: %x, ddr-cap: %x, per: %x, spd: %x\n", ddr_dpll_status, freq, value, ddr_capability_per_die, die, ddr_speed_bin);   
     ddr_print("init success!!! freq=%luMHz\n", clk_get_rate(clk_get(NULL, "ddr_pll"))/1000000);
 
     for(value=0;value<4;value++)

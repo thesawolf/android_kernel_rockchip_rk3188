@@ -3,7 +3,7 @@ if BLOCK
 menu "IO Schedulers"
 
 config IOSCHED_NOOP
-	bool
+	tristate "No-op I/O scheduler"
 	default y
 	---help---
 	  The no-op I/O scheduler is a minimal scheduler that does basic merging
@@ -74,6 +74,12 @@ config IOSCHED_CFQ
 
 	  Note: If BLK_CGROUP=m, then CFQ can be built only as module.
 
+config IOSCHED_ROW
+	tristate "ROW I/O scheduler"
+	default y
+	---help---
+	  Read over Write scheduler. Optimal for mobile devices.
+
 config CFQ_GROUP_IOSCHED
 	bool "CFQ Group Scheduling support"
 	depends on IOSCHED_CFQ && BLK_CGROUP
@@ -83,7 +89,7 @@ config CFQ_GROUP_IOSCHED
 
 choice
 	prompt "Default I/O scheduler"
-	default DEFAULT_CFQ
+	default DEFAULT_NOOP
 	help
 	  Select the I/O scheduler which will be used by default for all
 	  block devices.
@@ -102,9 +108,12 @@ choice
 
 	config DEFAULT_ZEN
                 bool "ZEN" if IOSCHED_ZEN=y
+
+	config DEFAULT_ROW
+		bool "ROW" if IOSCHED_ROW=y
 	
         config DEFAULT_NOOP
-		bool "No-op"
+		bool "No-op" if IOSCHED_NOOP=y
 
 endchoice
 
@@ -116,6 +125,7 @@ config DEFAULT_IOSCHED
 	default "sio" if DEFAULT_SIO
 	default "vr" if DEFAULT_VR
 	default "zen" if DEFAULT_ZEN
+	default "row" if DEFAULT_ROW
 
 endmenu
 

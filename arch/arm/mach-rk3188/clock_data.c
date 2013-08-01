@@ -788,7 +788,7 @@ static int plus_gpll_clk_set_rate(struct clk *c, unsigned long rate)
 #define PLL_FREF_MIN (183*KHZ)
 #define PLL_FREF_MAX (1500*MHZ)
 
-#define PLL_FVCO_MIN (300*MHZ)
+#define PLL_FVCO_MIN (300*MHZ)//SAW 300
 #define PLL_FVCO_MAX (1500*MHZ)
 
 #define PLL_FOUT_MIN (18750*KHZ)
@@ -1415,7 +1415,7 @@ static int core_clksel_set_parent(struct clk *clk, struct clk *new_prt)
 	old_prt = clk->parent;
 
 	if(clk->parents[0] == new_prt) {
-		new_prt->set_rate(new_prt, 300 * MHZ);
+		new_prt->set_rate(new_prt, 300 * MHZ);//SAW 300
 		set_cru_bits_w_msk(0, clk->div_mask, clk->div_shift, clk->clksel_con);
 	} else if(clk->parents[1] == new_prt) {
 
@@ -1424,7 +1424,7 @@ static int core_clksel_set_parent(struct clk *clk, struct clk *new_prt)
 			set_cru_bits_w_msk(temp_div - 1, clk->div_mask, clk->div_shift, clk->clksel_con);
 		}
 		set_cru_bits_w_msk(1, clk->src_mask, clk->src_shift, clk->clksel_con);
-		new_prt->set_rate(new_prt, 300 * MHZ);
+		new_prt->set_rate(new_prt, 300 * MHZ);//SAW 300
 	} else
 		return -1;
 
@@ -3001,25 +3001,25 @@ static struct clk_lookup clks[] = {
 static void __init rk30_init_enable_clocks(void)
 {
 	#if 0
-	clk_enable_nolock(&xin24m); //SAW
-	clk_enable_nolock(&clk_12m); //SAW
-	clk_enable_nolock(&arm_pll_clk); //SAW
-	clk_enable_nolock(&ddr_pll_clk); //SAW
-	clk_enable_nolock(&codec_pll_clk); //SAW
-	clk_enable_nolock(&general_pll_clk); //SAW
+	//clk_enable_nolock(&xin24m); //SAW
+	//clk_enable_nolock(&clk_12m); //SAW
+	//clk_enable_nolock(&arm_pll_clk); //SAW
+	//clk_enable_nolock(&ddr_pll_clk); //SAW
+	//clk_enable_nolock(&codec_pll_clk); //SAW
+	//clk_enable_nolock(&general_pll_clk); //SAW
 	#endif
 	clk_enable_nolock(&clk_ddr);
-	clk_enable_nolock(&clk_core); //SAW
+	//clk_enable_nolock(&clk_core); //SAW
 	clk_enable_nolock(&clk_cpu_div);
 	clk_enable_nolock(&clk_core_gpll_path);
 	clk_enable_nolock(&clk_l2c);
 	clk_enable_nolock(&clk_core_dbg);
 	clk_enable_nolock(&core_periph);
 	clk_enable_nolock(&aclk_core);
-	clk_enable_nolock(&aclk_cpu); //SAW
-	clk_enable_nolock(&pclk_cpu); //SAW
+	//clk_enable_nolock(&aclk_cpu); //SAW
+	//clk_enable_nolock(&pclk_cpu); //SAW
 	clk_enable_nolock(&atclk_cpu);
-	clk_enable_nolock(&hclk_cpu); //SAW
+	//clk_enable_nolock(&hclk_cpu); //SAW
 	clk_enable_nolock(&ahb2apb_cpu);
 	#if 0
 	 clk_enable_nolock(&clk_gpu);
@@ -3533,7 +3533,7 @@ static void __init rk30_clock_common_init(unsigned long gpll_rate, unsigned long
 	clk_set_rate_nolock(&aclk_vdpu, 300 * MHZ); //SAW 300
 	//gpu auto sel
 	clk_set_parent_nolock(&aclk_gpu, &general_pll_clk);
-	clk_set_rate_nolock(&aclk_gpu, 200 * MHZ); //SAW 200
+	clk_set_rate_nolock(&aclk_gpu, 600 * MHZ); //SAW 200
 	
 	clk_set_rate_nolock(&clk_uart0, 49500000); 
 	clk_set_rate_nolock(&clk_sdmmc, 24750000);
@@ -3922,7 +3922,7 @@ void hsadc_test(void)
 	clk_set_rate_nolock(hsadc_clk, 297 * MHZ / 2);
 	printk("****end %s parent is %s\n", hsadc_clk->name, test_get_parent(hsadc_clk)->name);
 
-	clk_set_rate_nolock(hsadc_clk, 300 * MHZ / 2);
+	clk_set_rate_nolock(hsadc_clk, 300 * MHZ / 2);//SAW 300
 
 	clk_set_rate_nolock(hsadc_clk, 296 * MHZ / 2);
 
@@ -4027,10 +4027,10 @@ static void __init rk30_clock_test_init(unsigned long ppll_rate)
 	printk("common %s parent is %s\n", aclk_lcdc0.name, test_get_parent(&aclk_lcdc0)->name);
 	//axi vepu
 	clk_enable_nolock(&aclk_vepu);
-	clk_set_rate_nolock(&aclk_vepu, 300 * MHZ);
+	clk_set_rate_nolock(&aclk_vepu, 300 * MHZ);//SAW 300
 	printk("common %s parent is %s\n", aclk_vepu.name, test_get_parent(&aclk_vepu)->name);
 
-	clk_set_rate_nolock(&hclk_vepu, 300 * MHZ);
+	clk_set_rate_nolock(&hclk_vepu, 300 * MHZ);//SAW 300
 	printk("common %s parent is %s\n", hclk_vepu.name, test_get_parent(&hclk_vepu)->name);
 
 	printk("test end\n");
