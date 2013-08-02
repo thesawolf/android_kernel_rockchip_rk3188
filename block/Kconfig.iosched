@@ -78,7 +78,13 @@ config IOSCHED_ROW
 	tristate "ROW I/O scheduler"
 	default y
 	---help---
-	  Read over Write scheduler. Optimal for mobile devices.
+	  READ over WRITE scheduler. Optimal for mobile devices. Favour
+	  user experience over everything else, thus given READ IO requests
+	  as much priority as possible. In mobile devices, it will not have
+	  AS much parallel threads as on desktops. Usually it is a single 
+	  thread or at most 2 simultaneous working threads for read and
+	  write. Favouring READ requests over WRITEs decreases the READ
+	  latency greatly.
 
 config CFQ_GROUP_IOSCHED
 	bool "CFQ Group Scheduling support"

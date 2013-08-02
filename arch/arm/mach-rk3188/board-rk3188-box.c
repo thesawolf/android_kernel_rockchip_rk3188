@@ -102,6 +102,12 @@ static struct rk29_keys_button key_button[] = {
 		.active_low = PRESS_LEV_LOW,
 		.wakeup	= 1,
 	},
+	{
+		.desc	= "esc",
+		.code	= KEY_BACK,	
+		.gpio	= INVALID_GPIO,
+		.active_low = PRESS_LEV_LOW,
+	},
 };
 struct rk29_keys_platform_data rk29_keys_pdata = {
 	.buttons	= key_button,
@@ -402,7 +408,7 @@ static struct sensor_platform_data cm3217_info = {
 #define LCD_CS_PIN         INVALID_GPIO
 #define LCD_CS_VALUE       GPIO_HIGH
 
-#define LCD_EN_PIN         RK30_PIN0_PB0
+#define LCD_EN_PIN         INVALID_GPIO //SAW RK30_PIN0_PB0
 #define LCD_EN_VALUE       GPIO_LOW
 
 static int rk_fb_io_init(struct rk29_fb_setting_info *fb_setting)
@@ -1464,7 +1470,7 @@ static struct pmu_info  act8846_dcdc_info[] = {
 		#endif
 	},
 	{
-		.name          = "act_dcdc4",   //vccio
+		.name          = "act_dcdc4",   //vccio 
 		.min_uv          = 3300000,
 		.max_uv         = 3300000,
 		#ifdef CONFIG_ACT8846_SUPPORT_RESET

@@ -1,0 +1,22 @@
+Version 1.1.0p0 (2012-02-10)
+==========
+* Initial version
+
+
+Version 1.1.0p1 (2012-04-02)
+==========
+* mount option으로 allow_utime 및 errors 옵션 추가
+* Kernel version 2.6.36 이상에서 발생하는 exfat_setattr() bug 수정
+* Filesystem 볼륨별 lock 변수를 fs_info에서 fs_struct 자료구조로 이동
+* fs_error() 함수 추가 구현
+	mount option에 따라 fatal error 처리
+
+
+Version 1.1.0p2 (2012-06-07)
+==========
+* Incorrect filename bug 수정
+	exfat_get_uni_name_from_ext_entry() function에서 file name dentry의
+        시작 index를 1에서 2로 변경
+* Buffer overrun bug 수정
+        my_itoa() function에서 buf[10] array에 가능한 index는 0~9이지만,
+        잠재적으로 index 10을 허용하고 있어서 이를 방지하는 코드를 추가함.

@@ -169,18 +169,23 @@ function cfgitems
  do
 	clear 
 	echo
-	echo "   ================[ CONFIGS MENU ]==============="
+	echo "   ==================[ CONFIGS MENU ]=================="
 	echo "    Current: $DEVICE"
-	echo "   =---------------------------------------------="
-	echo "   1. mk908-720-debug-defconfig   <- Q. menuconfig"
-	echo "   2. mk908-1080-debug-defconfig  <- W. menuconfig"
-	echo "   3. mk908-720-defconfig         <- E. menuconfig"
-	echo "   4. mk908-1080-defconfig        <- R. menuconfig"
-	echo "   =---------------------------------------------="
+	echo "   =--------------------------------------------------="
+	echo "   1. mk908-720-debug-defconfig        <- Q. menuconfig"
+	echo "   2. mk908-1080-debug-defconfig       <- W. menuconfig"
+	echo "   3. mk908-720-defconfig              <- E. menuconfig"
+	echo "   4. mk908-1080-defconfig             <- R. menuconfig"
+        echo "   =--(DDR O/C kernels)-------------------------------="
+	echo "   5. mk908-720-DDROC-debug-defconfig  <- T. menuconfig"
+	echo "   6. mk908-1080-DDROC-debug-defconfig <- Y. menuconfig"
+	echo "   7. mk908-720-DDROC-defconfig        <- U. menuconfig"
+	echo "   8. mk908-1080-DDROC-defconfig       <- I. menuconfig"
+	echo "   =--------------------------------------------------="
 	echo "     9. make menuconfig (with no defconfig set)"
-        echo "   =---------------------------------------------="
+        echo "   =--------------------------------------------------="
         echo "     L. load your own specified defconfig"
-	echo "   ==============================================="
+	echo "   ===================================================="
 	echo "   >> 0. EXIT"
 	echo
 	read -n 1 -p "   Select Option: " cfgopt
@@ -219,6 +224,46 @@ function cfgitems
 	   break
 	elif [[ "$cfgopt" = "R" || "$cfgopt" = "r" ]]; then
 	   DEVREM="mk908-1080-defconfig"
+	   poprem
+	   cp $DEVREM .config
+	   make ARCH=arm menuconfig
+	   cp .config $DEVREM 
+	   break
+	elif [ "$cfgopt" = "5" ]; then
+	   DEVICE=mk908-720-DDROC-debug-defconfig
+	   break
+	elif [[ "$cfgopt" = "T" || "$cfgopt" = "t" ]]; then
+	   DEVREM="mk908-720-DDROC-debug-defconfig"
+	   poprem
+	   cp $DEVREM .config
+	   make ARCH=arm menuconfig
+	   cp .config $DEVREM 
+	   break
+	elif [ "$cfgopt" = "6" ]; then
+	   DEVICE=mk908-1080-DDROC-debug-defconfig
+	   break
+	elif [[ "$cfgopt" = "Y" || "$cfgopt" = "y" ]]; then
+	   DEVREM="mk908-1080-DDROC-debug-defconfig"
+	   poprem
+	   cp $DEVREM .config
+	   make ARCH=arm menuconfig
+	   cp .config $DEVREM 
+	   break
+	elif [ "$cfgopt" = "7" ]; then
+	   DEVICE=mk908-720-DDROC-defconfig
+	   break
+	elif [[ "$cfgopt" = "U" || "$cfgopt" = "u" ]]; then
+	   DEVREM="mk908-720-DDROC-defconfig"
+	   poprem
+	   cp $DEVREM .config
+	   make ARCH=arm menuconfig
+	   cp .config $DEVREM 
+	   break
+	elif [ "$cfgopt" = "8" ]; then
+	   DEVICE=mk908-1080-DDROC-defconfig
+	   break
+	elif [[ "$cfgopt" = "I" || "$cfgopt" = "i" ]]; then
+	   DEVREM="mk908-1080-DDROC-defconfig"
 	   poprem
 	   cp $DEVREM .config
 	   make ARCH=arm menuconfig

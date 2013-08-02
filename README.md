@@ -23,7 +23,7 @@ To be installed into: (android)/kernel/rockchip/rk3188/
 - Serial debugging support
 - 4-cores supported in kernel
 - CPU Governors (Interactive [default], Performance, Powersave, Userspace,
-OnDemand, Conservative, SmartAssV2, MinMax)
+OnDemand, Conservative, SmartAssV2, MinMax, Adaptive, BrazilianWax, Hyper, Intellidemand, InteractiveX, OnDemandX, SavagedZen, Lionheart, LulzActive)
 - NEON extension support
 - TCP/IPv4-v6 networking with multicasting, routing, tunneling, IPsec, 
 filtering and L2TP support
@@ -53,6 +53,7 @@ proc, NFS, CIFS filesystem support
 - UPDATE: YAFFS2 disabled for code debugging (for now)
 - UPDATE: exFAT support removed from kernel, moved to fuse-exfat
 - CPU/GPU overclocking support (not a kernel config option, built-in)
+- UPDATE: a better exFAT driver added (see fs/exfat for more details tho!)
 
 **Revision History:**
 - Initial commit, honestly have no idea of the source as it was sent to me
@@ -87,10 +88,14 @@ from Rikomagic before alok's linux-centric source changes
 - Added Adaptive, BrazilianWax, Hyper, Intellidemand, InteractiveX, Lionheart, LulzActive, MinMax (now working), OnDemandX, and SavagedZen CPU Governors
 - Build script updated (removed auto screen sync defconfigs)
 - Updated defconfigs with latest working TESTCONFIG
+- Figured out the DDR init issue (somewhat). Can't seem to init frequency in userspace but can init in kernel config. Setting via kernel for now. Will come back to it later. Can change suspend and video freqs in board-rk3188-box.c but normal and reboot not affected.
+- Added exFAT support again from better source (see fs/exfat for details tho!)
 
 **ToDo:**
 - Linaro toolchain build (added 4.6 and 4.8 added, not tested yet tho)
 - YAFFS2 debugging
 - more O/C stuff.. get running more stable and finally unlock GPU O/C
 - isolate issue with cpufreq not reporting to sys properly for apps
-- DDR init issue with improper timings setting and freq init (defaults to 300MHz instead of the stock 396MHz)
+- </del>DDR init issue with improper timings setting and freq init (defaults to 300MHz instead of the stock 396MHz)</del>
+- I want my blue power on light back (mk908) :(
+- test the new exFAT driver
