@@ -123,12 +123,12 @@ int hdmi_set_lcdc(struct hdmi *hdmi)
 {
 	int rc = 0;
 	struct rk29fb_screen screen;
-//	printk("%s vic is %d\n", __FUNCTION__, hdmi->vic);
+	printk("%s vic is %d\n", __FUNCTION__, hdmi->vic);
 	if(hdmi->autoset)
 		hdmi->vic = hdmi_find_best_mode(hdmi, 0);
 	else
 	hdmi->vic = hdmi_find_best_mode(hdmi, hdmi->vic);
-//	printk("%s selected vic is %d\n", __FUNCTION__, hdmi->vic);
+	printk("%s selected vic is %d\n", __FUNCTION__, hdmi->vic);
 	if(hdmi->vic == 0)
 		hdmi->vic = HDMI_VIDEO_DEFAULT_MODE;
 				

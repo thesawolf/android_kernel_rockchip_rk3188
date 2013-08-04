@@ -28,3 +28,21 @@ config MACH_RK3188_BOX
 	bool "RK3188 box board"
 	
 endchoice
+
+menu "RK3188 OVERCLOCK"
+
+comment "Selecting anything below will enable it"
+
+config OVERCLOCK_CPU
+	bool "CPU Overclock"
+
+config OVERCLOCK_GPU
+	bool "GPU Overclock"
+
+config OVERCLOCK_RAM
+	bool "RAM Overclock"
+
+config OVERVOLT_CPU
+	bool "CPU Overvolting"
+
+endmenu

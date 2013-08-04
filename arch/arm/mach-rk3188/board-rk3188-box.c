@@ -49,10 +49,11 @@
 #include <linux/regulator/rk29-pwm-regulator.h>
 
 // thanks to Sam321 (@freaktab) for O/C work!
-#define OVERCLOCK_CPU
-#define OVERCLOCK_RAM
-#define OVERCLOCK_GPU
-#define OVERVOLT_CPU
+//SAW -- moved these to kernel config options to turn O/C on/off
+//#define OVERCLOCK_CPU is now CONFIG_OVERCLOCK_CPU
+//#define OVERCLOCK_RAM .. etc. etc..
+//#define OVERCLOCK_GPU
+//#define OVERVOLT_CPU
 
 #if defined(CONFIG_CT36X_TS)
 #include <linux/ct36x.h>
@@ -408,7 +409,7 @@ static struct sensor_platform_data cm3217_info = {
 #define LCD_CS_PIN         INVALID_GPIO
 #define LCD_CS_VALUE       GPIO_HIGH
 
-#define LCD_EN_PIN         INVALID_GPIO //SAW RK30_PIN0_PB0
+#define LCD_EN_PIN         RK30_PIN0_PB0
 #define LCD_EN_VALUE       GPIO_LOW
 
 static int rk_fb_io_init(struct rk29_fb_setting_info *fb_setting)
@@ -667,7 +668,7 @@ static struct rk_hdmi_platform_data rk_hdmi_pdata = {
 };
 #endif
 #ifdef CONFIG_ION
-#define ION_RESERVE_SIZE        (120 * SZ_1M)
+#define ION_RESERVE_SIZE        (120 * SZ_1M) //SAW increase from 80
 static struct ion_platform_data rk30_ion_pdata = {
 	.nr = 1,
 	.heaps = {
@@ -960,9 +961,8 @@ static struct platform_device rk30_device_remotectl = {
 /*$_rbox_$_modify_$_huangzhibao_end$_20120508_$*/
 #ifdef CONFIG_RK30_PWM_REGULATOR
 static int pwm_voltage_map[] = {
-#ifdef OVERVOLT_CPU
+#ifdef CONFIG_OVERVOLT_CPU
 //Set max voltage from 1375000 to 1450000 OC CPU < 2.16GHz - Sam321
-// SAW -- I tried to push for higher voltage tests before this.. 1425/1450 was most stable I could get too
 	800000, 825000, 850000, 875000, 900000, 925000, 950000, 975000, 1000000, 1025000, 1050000, 1075000, 1100000, 1125000, 1150000, 1175000, 1200000, 1225000, 1250000, 1275000, 1300000, 1325000, 1350000, 1375000, 1400000, 1425000, 1450000
 #else
 	800000, 825000, 850000, 875000, 900000, 925000, 950000, 975000, 1000000, 1025000, 1050000, 1075000, 1100000, 1125000, 1150000, 1175000, 1200000, 1225000, 1250000, 1275000, 1300000, 1325000, 1350000, 1375000
@@ -1000,7 +1000,7 @@ static struct pwm_platform_data pwm_regulator_info[1] = {
 		.pwm_voltage = 1100000,
 		.suspend_voltage = 1000000,
 		.min_uV = 800000,
-#ifdef OVERVOLT_CPU
+#ifdef CONFIG_OVERVOLT_CPU
 //SAW -- max voltage setting - Sam321 
 		.max_uV	= 1450000,
 #else
@@ -2079,17 +2079,20 @@ static void __init rk30_reserve(void)
  */
 
 static struct cpufreq_frequency_table dvfs_arm_table[] = {
-#ifdef OVERCLOCK_CPU //SAW
-        {.frequency = 312 * 1000,       .index = 875 * 1000},
-        {.frequency = 504 * 1000,       .index = 900 * 1000},
-        {.frequency = 816 * 1000,       .index = 975 * 1000},
-        {.frequency = 1008 * 1000,      .index = 1050 * 1000},
-        {.frequency = 1200 * 1000,      .index = 1125 * 1000},
-        {.frequency = 1416 * 1000,      .index = 1225 * 1000},
+#ifdef CONFIG_OVERCLOCK_CPU //SAW
+//on MK908, I cannot get anything over 1.7 running properly, 1.7 is cap for now
+        {.frequency = 312 * 1000,       .index = 900 * 1000},
+        {.frequency = 504 * 1000,       .index = 925 * 1000},
+        {.frequency = 816 * 1000,       .index = 1000 * 1000},
+        {.frequency = 1008 * 1000,      .index = 1075 * 1000},
+        {.frequency = 1200 * 1000,      .index = 1150 * 1000},
+        {.frequency = 1416 * 1000,      .index = 1250 * 1000},
         {.frequency = 1608 * 1000,      .index = 1325 * 1000},
         {.frequency = 1704 * 1000,	.index = 1350 * 1000},
-        {.frequency = 1800 * 1000,	.index = 1375 * 1000},
-        {.frequency = 1920 * 1000,	.index = 1400 * 1000},
+//      {.frequency = 1776 * 1000,	.index = 1350 * 1000},
+//	{.frequency = 1896 * 1000,	.index = 1375 * 1000},
+//      {.frequency = 1920 * 1000,	.index = 1400 * 1000},
+//	{.frequency = 2016 * 1000,	.index = 1450 * 1000},
 #else
         {.frequency = 312 * 1000,       .index = 900 * 1000},
         {.frequency = 504 * 1000,       .index = 925 * 1000},
@@ -2103,42 +2106,45 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
 };
 
 static struct cpufreq_frequency_table dvfs_gpu_table[] = {
-#ifdef OVERCLOCK_GPU //SAW
-//       {.frequency = 133 * 1000,       .index = 975 * 1000},
-//       {.frequency = 200 * 1000,       .index = 1000 * 1000},
-       {.frequency = 266 * 1000,       .index = 1025 * 1000},
-       {.frequency = 300 * 1000,       .index = 1050 * 1000},
-       {.frequency = 400 * 1000,       .index = 1100 * 1000},
-       {.frequency = 600 * 1000,       .index = 1150 * 1000},
-       {.frequency = 666 * 1000,       .index = 1200 * 1000},
-       {.frequency = 700 * 1000,       .index = 1250 * 1000},
+#ifdef CONFIG_OVERCLOCK_GPU //SAW -- Sam321 tweaks below
+//on MK908, 800MHz works, but get lots of artifacting, disabling for now
+       	{.frequency = 133 * 1000,       .index = 975 * 1000},
+       	{.frequency = 200 * 1000,       .index = 1000 * 1000},
+       	{.frequency = 266 * 1000,       .index = 1025 * 1000},
+	{.frequency = 297 * 1000,	.index = 1050 * 1000},
+       	{.frequency = 399 * 1000,       .index = 1100 * 1000},
+	{.frequency = 594 * 1000,	.index = 1250 * 1000},
+//	{.frequency = 798 * 1000,	.index = 1325 * 1000},
 #else
-       {.frequency = 133 * 1000,       .index = 975 * 1000},
-       //{.frequency = 150 * 1000,       .index = 975 * 1000},
-       {.frequency = 200 * 1000,       .index = 1000 * 1000},  
-       {.frequency = 266 * 1000,       .index = 1025 * 1000},  
-       {.frequency = 300 * 1000,       .index = 1050 * 1000},  
-       {.frequency = 400 * 1000,       .index = 1100 * 1000},
-       {.frequency = 600 * 1000,       .index = 1250 * 1000},
+       	{.frequency = 133 * 1000,       .index = 975 * 1000},
+       	{.frequency = 200 * 1000,       .index = 1000 * 1000},  
+       	{.frequency = 266 * 1000,       .index = 1025 * 1000},  
+       	{.frequency = 297 * 1000,       .index = 1050 * 1000},  
+       	{.frequency = 399 * 1000,       .index = 1100 * 1000},
+       	{.frequency = 594 * 1000,       .index = 1225 * 1000},
 #endif
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
 static struct cpufreq_frequency_table dvfs_ddr_table[] = {
-#ifdef OVERCLOCK_RAM //SAW
+#ifdef CONFIG_OVERCLOCK_RAM //SAW -- Sam321 tweaks
+//on MK908, setting NORMAL here does not work, has to be config defined
 	{.frequency = 396 * 1000 + DDR_FREQ_IDLE,	.index = 1100 * 1000},
 	{.frequency = 396 * 1000 + DDR_FREQ_SUSPEND,	.index = 1100 * 1000},
-        {.frequency = 396 * 1000 + DDR_FREQ_VIDEO,	.index = 1100 * 1000},
-        {.frequency = 396 * 1000 + DDR_FREQ_NORMAL,	.index = 1100 * 1000},
-#else
-	//{.frequency = 200 * 1000 + DDR_FREQ_SUSPEND,    .index = 950 * 1000},
+//	{.frequency = 396 * 1000 + DDR_FREQ_VIDEO,	.index = 1100 * 1000},
+//	{.frequency = 396 * 1000 + DDR_FREQ_NORMAL,	.index = 1100 * 1000},
+	{.frequency = 492 * 1000 + DDR_FREQ_VIDEO,	.index = 1150 * 1000},
+	{.frequency = 792 * 1000 + DDR_FREQ_NORMAL,	.index = 1250 * 1000},
+#else //SAW stock settings below
+	{.frequency = 300 * 1000 + DDR_FREQ_IDLE,	.index = 1000 * 1000},
+	{.frequency = 300 * 1000 + DDR_FREQ_SUSPEND,    .index = 1000 * 1000},
 	{.frequency = 300 * 1000 + DDR_FREQ_VIDEO,      .index = 1000 * 1000},
-	{.frequency = 360 * 1000 + DDR_FREQ_NORMAL,     .index = 1100 * 1000},
+	{.frequency = 396 * 1000 + DDR_FREQ_NORMAL,     .index = 1100 * 1000},
 #endif
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
-//#define DVFS_CPU_TABLE_SIZE	(ARRAY_SIZE(dvfs_cpu_logic_table)) //SAW cpu_logic_table))
+//#define DVFS_CPU_TABLE_SIZE	(ARRAY_SIZE(dvfs_cpu_logic_table))
 //static struct cpufreq_frequency_table cpu_dvfs_table[DVFS_CPU_TABLE_SIZE];
 //static struct cpufreq_frequency_table dep_cpu2core_table[DVFS_CPU_TABLE_SIZE];
 

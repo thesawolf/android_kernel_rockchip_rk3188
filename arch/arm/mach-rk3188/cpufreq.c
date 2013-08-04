@@ -51,7 +51,7 @@
 
 /* Frequency table index must be sequential starting at 0 */
 static struct cpufreq_frequency_table default_freq_table[] = {
-	{.frequency = 312 * 1000, .index = 875 * 1000},
+/*	{.frequency = 312 * 1000, .index = 875 * 1000},
 	{.frequency = 504 * 1000, .index = 900 * 1000},
 	{.frequency = 816 * 1000, .index = 975 * 1000},
 	{.frequency = 1008 * 1000, .index = 1050 * 1000},
@@ -60,8 +60,8 @@ static struct cpufreq_frequency_table default_freq_table[] = {
 	{.frequency = 1608 * 1000, .index = 1325 * 1000},
 	{.frequency = 1704 * 1000, .index = 1350 * 1000},
 	{.frequency = 1800 * 1000, .index = 1375 * 1000},
-	{.frequency = 1920 * 1000, .index = 1400 * 1000},
-	//{.frequency = 816 * 1000, .index = 1000 * 1000}, //SAW default
+	{.frequency = 1920 * 1000, .index = 1400 * 1000}, */
+	{.frequency = 816 * 1000, .index = 1000 * 1000}, //SAW default
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
@@ -76,7 +76,7 @@ static struct cpufreq_frequency_table *freq_table = default_freq_table;
 /* With 0x00(NOCHANGE), it depends on the previous "further" status */
 #define CPUFREQ_PRIVATE                 0x100
 static int no_cpufreq_access;
-static unsigned int suspend_freq = 1608 * 1000; //SAW 816
+static unsigned int suspend_freq = 816 * 1000;
 static unsigned int suspend_volt = 1000000; // 1V
 static unsigned int low_battery_freq = 600 * 1000;
 static unsigned int low_battery_capacity = 5; // 5%
@@ -136,28 +136,28 @@ static unsigned int get_freq_from_table(unsigned int max_freq)
 static unsigned int temp_limit_freq = -1;
 module_param(temp_limit_freq, uint, 0444);
 
-// Sam321 changed the last limit index from 75 to 65
+// Sam321 changed the last limit index from 75 to 70
 static struct cpufreq_frequency_table temp_limits[4][4] = {
 	{
 		{.frequency =          -1, .index = 50},
 		{.frequency =          -1, .index = 55},
 		{.frequency =          -1, .index = 60},
-		{.frequency = 1608 * 1000, .index = 65},
+		{.frequency = 1608 * 1000, .index = 70},
 	}, {
 		{.frequency = 1800 * 1000, .index = 50},
 		{.frequency = 1608 * 1000, .index = 55},
 		{.frequency = 1416 * 1000, .index = 60},
-		{.frequency = 1200 * 1000, .index = 65},
+		{.frequency = 1200 * 1000, .index = 70},
 	}, {
 		{.frequency = 1704 * 1000, .index = 50},
 		{.frequency = 1512 * 1000, .index = 55},
 		{.frequency = 1296 * 1000, .index = 60},
-		{.frequency = 1104 * 1000, .index = 65},
+		{.frequency = 1104 * 1000, .index = 70},
 	}, {
 		{.frequency = 1608 * 1000, .index = 50},
 		{.frequency = 1416 * 1000, .index = 55},
 		{.frequency = 1200 * 1000, .index = 60},
-		{.frequency = 1008 * 1000, .index = 65},
+		{.frequency = 1008 * 1000, .index = 70},
 	}
 };
 
@@ -174,7 +174,7 @@ static struct cpufreq_frequency_table temp_limits_cpu_perf[] = {
 	{.frequency = 1800 * 1000, .index = 90},
 	{.frequency = 1920 * 1000, .index = 100}, //SAW 1008, 100
 */
-	{.frequency = 1704 * 1000, .index = 100},
+	{.frequency = 1008 * 1000, .index = 100},
 };
 
 static struct cpufreq_frequency_table temp_limits_gpu_perf[] = {
@@ -186,7 +186,7 @@ static struct cpufreq_frequency_table temp_limits_gpu_perf[] = {
 	{.frequency = 666 * 1000, .index = 80},	
 	{.frequency = 700 * 1000, .index = 100}, //SAW 1008, 0
 */
-	{.frequency = 1704 * 1000, .index = 0},
+	{.frequency = 1008 * 1000, .index = 0},
 };
 
 //SAW -- supposedly no temp sensors in rk3188, so someone hardcoded here
@@ -382,10 +382,10 @@ static int rk3188_cpufreq_init_cpu0(struct cpufreq_policy *policy)
 	gpu_is_mali400 = cpu_is_rk3188();
 	gpu_clk = clk_get(NULL, "gpu");
 	if (!IS_ERR(gpu_clk)) {
-		clk_enable_dvfs(gpu_clk);
-		if (gpu_is_mali400)
-			//SAW -- trying to get gpu o/c working
-			dvfs_clk_enable_limit(gpu_clk, 133000000, 700000000);
+	clk_enable_dvfs(gpu_clk);
+//	if (gpu_is_mali400)
+//		//SAW -- trying to get gpu o/c working
+//		dvfs_clk_enable_limit(gpu_clk, 133000000, 700000000);
 	}
 
 	ddr_clk = clk_get(NULL, "ddr");

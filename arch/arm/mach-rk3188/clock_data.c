@@ -3533,7 +3533,7 @@ static void __init rk30_clock_common_init(unsigned long gpll_rate, unsigned long
 	clk_set_rate_nolock(&aclk_vdpu, 300 * MHZ); //SAW 300
 	//gpu auto sel
 	clk_set_parent_nolock(&aclk_gpu, &general_pll_clk);
-	clk_set_rate_nolock(&aclk_gpu, 600 * MHZ); //SAW 200
+	clk_set_rate_nolock(&aclk_gpu, 200 * MHZ); //SAW 200
 	
 	clk_set_rate_nolock(&clk_uart0, 49500000); 
 	clk_set_rate_nolock(&clk_sdmmc, 24750000);

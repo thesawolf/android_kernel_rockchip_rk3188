@@ -77,11 +77,12 @@ static void hdmi_wq_set_video(struct hdmi *hdmi)
 	if(hdmi->edid.sink_hdmi == 0)
 		video.color_output = HDMI_COLOR_RGB;
 	else {
-//		if(hdmi->edid.ycbcr444)
-//			video.color_output = HDMI_COLOR_YCbCr444;
-//		else if(hdmi->edid.ycbcr422)
-//			video.color_output = HDMI_COLOR_YCbCr422;
-//		else
+//SAW -- this whole section was commented out
+		if(hdmi->edid.ycbcr444)
+			video.color_output = HDMI_COLOR_YCbCr444;
+		else if(hdmi->edid.ycbcr422)
+			video.color_output = HDMI_COLOR_YCbCr422;
+		else
 			video.color_output = HDMI_COLOR_RGB;
 	}
 	if(hdmi->ops->setVideo)
