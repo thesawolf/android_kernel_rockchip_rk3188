@@ -29,20 +29,83 @@ config MACH_RK3188_BOX
 	
 endchoice
 
-menu "RK3188 OVERCLOCK"
+choice
+	prompt "RK3188 Device"
+	depends on MACH_RK3188_BOX
 
-comment "Selecting anything below will enable it"
+config DEV_MK908
+	bool "Tronsmart MK908"
+	select LCDC0_RK3188
+	select RK_VOLT1
+	select RKWIFI
+	select RK_CFG80211
+	select AP6210
+	help
+	  uses LCDC0
+	  uses 1.8 instead of 3.3 for Wifi/BT
+	  uses AP6210 Wifi/BT
+config DEV_T428
+	bool "Tronsmart T428"
+	select LCDC1_RK3188
+	select RKWIFI
+	select RK_CFG80211
+	select AP6330
+	help
+	  Just an starting example for T428
+	  uses LCDC1
+	  uses AP6330 for Wifi/BT
+config DEV_EXAMPLE
+	bool "Some other RK3188 example"
+	select LCDC1_RK3188	
+	select RKWIFI
+	select RK_CFG80211
+	help
+	  uses LCDC1
+endchoice
+
+menu "RK3188 OVERCLOCK"
 
 config OVERCLOCK_CPU
 	bool "CPU Overclock"
+	help
+	  Standard CPU (over)clocking (up to 1.7GHz)
+
+config EXTREME_OCCPU
+	bool "- Extreme CPU O/C"
+	help 
+	  Does not work well on some devices (i.e. MK908)
+	  Opens up overclocking to 2+ GHz
 
 config OVERCLOCK_GPU
 	bool "GPU Overclock"
+	help 
+	  Standard GPU (over)clocking (up to 600MHz)
+
+config EXTERME_OCGPU
+	bool "- Extreme GPU O/C"
+	help
+	  Does not work well on some devices (i.e. MK908)
+	  Opens up overclocking step to 800MHz
 
 config OVERCLOCK_RAM
 	bool "RAM Overclock"
+	help
+	  Standard RAM (over)clocking (up to 800MHz)
+
+config EXTREME_OCRAM
+	bool "- Extreme RAM O/C"
+	help
+	  Open up overclocking DDR to XXXXMHz
 
 config OVERVOLT_CPU
 	bool "CPU Overvolting"
+	help
+	  This just opens up a little more voltage. 
+	  This option can be tied into to various O/C features
+	  later, as it is right now.. it just bumps standard voltage
+	  from 1.375 to 1.450 
 
 endmenu
+
+config RK_VOLT1
+	bool 

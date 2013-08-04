@@ -48,13 +48,6 @@
 #include <linux/regulator/act8846.h>
 #include <linux/regulator/rk29-pwm-regulator.h>
 
-// thanks to Sam321 (@freaktab) for O/C work!
-//SAW -- moved these to kernel config options to turn O/C on/off
-//#define OVERCLOCK_CPU is now CONFIG_OVERCLOCK_CPU
-//#define OVERCLOCK_RAM .. etc. etc..
-//#define OVERCLOCK_GPU
-//#define OVERVOLT_CPU
-
 #if defined(CONFIG_CT36X_TS)
 #include <linux/ct36x.h>
 #endif
@@ -1509,8 +1502,15 @@ static  struct pmu_info  act8846_ldo_info[] = {
 	},
 	{
 		.name          = "act_ldo6",   //vcc_jetta
-		.min_uv          = 1800000, //SAW -- 3300000, 1800000,
-		.max_uv         = 1800000, //SAW -- 3300000, 1800000,
+//SAW volt set via kernel config, default 3300000, mk908 and some others
+//need 1800000 to get wifi/bt working properly
+#ifdef CONFIG_RK_VOLT1
+		.min_uv         = 1800000, 
+		.max_uv         = 1800000, 
+#else
+		.min_uv		= 3300000,
+		.max_uv		= 3300000,
+#endif
 	},
 	{
 		.name          = "act_ldo7",   //vcc18
@@ -2089,10 +2089,12 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
         {.frequency = 1416 * 1000,      .index = 1250 * 1000},
         {.frequency = 1608 * 1000,      .index = 1325 * 1000},
         {.frequency = 1704 * 1000,	.index = 1350 * 1000},
-//      {.frequency = 1776 * 1000,	.index = 1350 * 1000},
-//	{.frequency = 1896 * 1000,	.index = 1375 * 1000},
-//      {.frequency = 1920 * 1000,	.index = 1400 * 1000},
-//	{.frequency = 2016 * 1000,	.index = 1450 * 1000},
+#ifdef CONFIG_EXTREME_OCCPU //SAW
+	{.frequency = 1776 * 1000,	.index = 1350 * 1000},
+	{.frequency = 1896 * 1000,	.index = 1375 * 1000},
+	{.frequency = 1920 * 1000,	.index = 1400 * 1000},
+	{.frequency = 2016 * 1000,	.index = 1450 * 1000},
+#endif
 #else
         {.frequency = 312 * 1000,       .index = 900 * 1000},
         {.frequency = 504 * 1000,       .index = 925 * 1000},
@@ -2114,7 +2116,9 @@ static struct cpufreq_frequency_table dvfs_gpu_table[] = {
 	{.frequency = 297 * 1000,	.index = 1050 * 1000},
        	{.frequency = 399 * 1000,       .index = 1100 * 1000},
 	{.frequency = 594 * 1000,	.index = 1250 * 1000},
-//	{.frequency = 798 * 1000,	.index = 1325 * 1000},
+#ifdef CONFIG_EXTREME_OCGPU //SAW
+	{.frequency = 798 * 1000,	.index = 1325 * 1000},
+#endif
 #else
        	{.frequency = 133 * 1000,       .index = 975 * 1000},
        	{.frequency = 200 * 1000,       .index = 1000 * 1000},  
@@ -2131,10 +2135,13 @@ static struct cpufreq_frequency_table dvfs_ddr_table[] = {
 //on MK908, setting NORMAL here does not work, has to be config defined
 	{.frequency = 396 * 1000 + DDR_FREQ_IDLE,	.index = 1100 * 1000},
 	{.frequency = 396 * 1000 + DDR_FREQ_SUSPEND,	.index = 1100 * 1000},
-//	{.frequency = 396 * 1000 + DDR_FREQ_VIDEO,	.index = 1100 * 1000},
-//	{.frequency = 396 * 1000 + DDR_FREQ_NORMAL,	.index = 1100 * 1000},
+#ifdef CONFIG_EXTREME_OCRAM //SAW
+	{.frequency = XXX * 1000 + DDR_FREQ_VIDEO, 	.index = XXXX * 1000},
+	{.frequency = XXX * 1000 + DDR_FREQ_NORMAL,	.index = XXXX * 1000},
+#else
 	{.frequency = 492 * 1000 + DDR_FREQ_VIDEO,	.index = 1150 * 1000},
 	{.frequency = 792 * 1000 + DDR_FREQ_NORMAL,	.index = 1250 * 1000},
+#endif
 #else //SAW stock settings below
 	{.frequency = 300 * 1000 + DDR_FREQ_IDLE,	.index = 1000 * 1000},
 	{.frequency = 300 * 1000 + DDR_FREQ_SUSPEND,    .index = 1000 * 1000},

@@ -42,7 +42,8 @@ config LCDC_OVERLAY_ENABLE
 	select NO_DUAL_DISP
 	select BOX_FB_1080P
 	help
-		Enable overlay mode: win1 is used for display ui and win0 is used for display video.
+	  Enable overlay mode: win1 is used for display ui and 
+          win0 is used for display video.
 
 config FB_ROTATE
 	bool"FB rotate support"
