@@ -58,25 +58,21 @@ config RK3066B_LCDC1_IO_18V
         help
          LCDC1 io voltage is 1.8V if you say y here,the default voltage is 3.3V
 
+
 config LCDC_RK3188
-	bool "rk3188 lcdc support"
+        bool "rk3188 lcdc support"
         depends on FB_ROCKCHIP && ARCH_RK3188
         help
           Driver for rk3188 lcdc.There are two lcd controllers on rk3188
-
-choice 
-	prompt "RK3188 LCDC support"
-	depends on LCDC_RK3188
-
 config LCDC0_RK3188
         bool "lcdc0 support"
         depends on LCDC_RK3188
         help
           Support rk3188 lcdc0 if you say y here
-
-config LCDC0_IO_18v
+config LCDC0_IO_18V
 	bool "lcdc0 1.8v io support"
 	depends on LCDC0_RK3188
+	default n
 	help
 	 LCDC0 io voltage is 1.8V if you say y here,the default voltage is 3.3V
 
@@ -89,7 +85,7 @@ config LCDC1_RK3188
 config LCDC1_IO_18V
         bool "lcdc1 1.8v io support"
         depends on LCDC1_RK3188
+	default n
         help
          LCDC1 io voltage is 1.8V if you say y here,the default voltage is 3.3V
 
-endchoice
