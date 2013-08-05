@@ -52,8 +52,9 @@ devices support via regular usb port and OTG
 proc, NFS, CIFS filesystem support
 - UPDATE: YAFFS2 disabled for code debugging (for now)
 - UPDATE: exFAT support removed from kernel, moved to fuse-exfat
-- CPU/GPU overclocking support (not a kernel config option, built-in)
+- CPU/GPU overclocking support (thanks to Sam321 @freaktab)
 - UPDATE: a better exFAT driver added (see fs/exfat for more details tho!)
+- Frame skipping fix (thanks to phjanderson @freaktab)
 
 **Revision History:**
 - Initial commit, honestly have no idea of the source as it was sent to me
@@ -81,21 +82,36 @@ do specific kind of builds since I keep losing track of stuff :P
 from Rikomagic before alok's linux-centric source changes
 - MAJOUR build script overhaul.. it's grown into quite a lazy-ass beast
 - FINALLY got a working config (TESTCONFIG) with Wifi AND BT working now
-- ALOT of O/C testing, tweaking (thanks to Sam321 for alot of the legwork)
-- Vsync FIX by phjanderson! (suck it Strauzo)
+- ALOT of O/C testing, tweaking (thanks to Sam321 @freaktab)
+- Vsync FIX by phjanderson @freaktab (suck it Strauzo)
 - New build script version (now supports saving config options for quicker rebuilds!)
 - Added ROW I/O Scheduler, preliminary BFQ I/O (still needs tuning)
 - Added Adaptive, BrazilianWax, Hyper, Intellidemand, InteractiveX, Lionheart, LulzActive, MinMax (now working), OnDemandX, and SavagedZen CPU Governors
 - Build script updated (removed auto screen sync defconfigs)
 - Updated defconfigs with latest working TESTCONFIG
 - Figured out the DDR init issue (somewhat). Can't seem to init frequency in userspace but can init in kernel config. Setting via kernel for now. Will come back to it later. Can change suspend and video freqs in board-rk3188-box.c but normal and reboot not affected.
-- Added exFAT support again from better source (see fs/exfat for details tho!)
+- Added exFAT support again from better source (see fs/exfat for details tho!), tested with small files read/write to exFAT-formatted USB flash drive, works.
+- Toolchains added for convenience and build script
+- Updated Linaro 4.8 toolchain to 2013.07 release, tested. 
+- Device building script forked from build_mk908 (now called buildit)
 
 **ToDo:**
-- Linaro toolchain build (added 4.6 and 4.8 added, not tested yet tho)
 - YAFFS2 debugging
-- more O/C stuff.. get running more stable and finally unlock GPU O/C
+- <del>more O/C stuff.. get running more stable and finally unlock GPU O/C</del>
 - isolate issue with cpufreq not reporting to sys properly for apps
-- </del>DDR init issue with improper timings setting and freq init (defaults to 300MHz instead of the stock 396MHz)</del>
+- <del>DDR init issue with improper timings setting and freq init (defaults to 300MHz instead of the stock 396MHz)</del>
 - I want my blue power on light back (mk908) :(
-- test the new exFAT driver
+- <del>test the new exFAT driver</del>
+
+**Thanks:**
+- Finless for preparing the way
+- neomode for freaktab and making all the info available
+- leolas for all your help along the way
+- Sam321 for your o/c work
+- phjanderson for your frameskipping/vsync fix
+- linuxium for the kernel sources
+- galland and omegamoon for various kernel fixes
+- crewrktablets for various models and tools to work from/with
+- hoabycsr for various tips/tricks along the way
+- and misc others that contributed to making all this happen
+(if I forgot anyone specific, sorry.. remind me, I don't mind giving credit where credit is due)

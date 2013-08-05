@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERS="1.5"
+VERS="2.0"
 # LAZY-ASS BUILD SCRIPT (LABS) by
 # Thesawolf (thesawolf [at] gmail [d0t] com)
 #
@@ -8,10 +8,11 @@ VERS="1.5"
 # this and rebrand it as YOUR own or don't mention *I*
 # created it, then YOU are a scumbag and karma's a bitch
 # --------------------------------------------------------
-# NOTE: This build script is tailoured to *MY* build
-# environment, some options may not work for you unless
-# you are using a similar setup or one pulled specifically
-# from my githubs (kernel, device, toolchains, etc.)
+# NOTE: This build script is anchored to a few settings
+# specific to my kernel source tree (namely the files 
+# located in arch/arm/mach-rk3188) If you want to use this
+# for your own kernel source look for the SAW comments
+# and copy them to your own accordingly.
 #
 # UPDATE (04AUG2013): Attempting to make this build script
 # more device-friendly per a community suggestion by 
@@ -40,8 +41,11 @@ VERS="1.5"
 # - added in config options file for easy rebuilding
 # - reload/save config options from file
 # - commandline arguments (help, version, build)
+# Built off my mk908_build script -> now version 2.0
 # - device-neutral build system (hopefully)
 # - create configs on the fly for building, no more storage
+# - moved toolchains locally to kernel dirs, updated options
+# - device build menus in place
 
 # initialize default settings 
 function initdef 
@@ -52,10 +56,11 @@ if [ -z "$THREADS" ]; then
  THREADS=$(($THREADS*2))
 fi
 
-# set defaults if not set in env
+# set defaults if not set in env (just in case, mainly)
+# this is needed especially if someone skipping around through the system
 if [ -z $TOOLCHAIN ]; then 
  TOOLCHAIN=1
- TCDESC="System (arm-linux-gnueabi)"
+ TCDESC="System"
 fi
 
 if [ -z $CROSS_COMPILE ]; then
@@ -63,7 +68,7 @@ if [ -z $CROSS_COMPILE ]; then
 fi
 
 if [ -z $DEVICE ]; then
- DEVICE=mk908-720-debug-defconfig
+ DEVICE="mk908-720-defconfig"
 fi
 
 if [ -z $OUTLOC ]; then
@@ -71,7 +76,6 @@ if [ -z $OUTLOC ]; then
   KERNPARM2="./NEW"
   OLDESC="kernel.img > KERNEL/MODULES dirs"
   OUTLOC=5
-#  RKCRC="no"
 fi
 
 if [ -z $LOGIT ]; then
@@ -87,15 +91,32 @@ if [ -z $CUTIME ]; then
    CUDESC="FULL clean-up (make mrproper)"
    CUPARM="make ARCH=arm mrproper"
 fi
+
+if [ -z $DEVNAME ]; then
+   DEVNAME="NOT SPECIFIED"
+   SETHDMI="NOT SPECIFIED"
+   SETLCD="NOT SPECIFIED"
+   SETWIFI="NOT SPECIFIED"
+   SETBT="NOT SPECIFIED"
+   SETPMU="NOT SPECIFIED"
+   SETOC="OFF"
+   CPUOC="OFF"
+   CPUOCX="OFF"
+   GPUOC="OFF"
+   GPUOCX="OFF"
+   DDROC="OFF"
+   DDROCX="OFF"
+   OVOLT="OFF"
+fi
 }
 
 # import config file options, if found
 # turned into function so can be called from menu or cmdline
 function icfig
 {
- if [ -e build_mk908.cfg ]; then
+ if [ -e buildit.cfg ]; then
     echo "Config file found, importing..."
-    . build_mk908.cfg
+    . buildit.cfg
  else
     echo "No config file found, skipping..."
  fi
@@ -108,7 +129,7 @@ function outtahere
  echo
  echo "Thanks for using my Lazy-Ass Build Script :) Hope it helped! - Thesawolf"
  echo 
- break
+ exit
 }
 
 # devices menu, this will be updated with new devices *after* device 
@@ -116,28 +137,399 @@ function outtahere
 function devitems
 {
  devopt=""
- while [[ "$devopt" != "X" || "$devopt" != "x" ]]
+ while [[ "$devopt" != "X" || "$devopt" != "x" || "$devopt" != "0" ]]
  do
 	clear
 	echo
 	echo "   =============[ DEVICES MENU ]============="
 	echo "   1. MK908"
+	echo "   2. T428 (in progress)"
 	echo "   =----------------------------------------="
 	echo "     (don't see your device? get it added!)"
-	echo "   =----------------------------------------="
-	echo "   0. Continue to LABS"
+	echo "   ==========================================="
+	echo "   0. Continue to LABS (without specifying)"
         echo 
 	echo "   >> X. I'm confused, get me out of here!"
 	echo 
 	read -n 1 -p "   Choose device building for: " devopt
 	if [ "$devopt" = "1" ]; then
-		break
+		echo "Setting MK908 kernel options..."
+		DEVNAME="MK908"
+		SETHDMI="720"
+		SETLCD="LCDC0"
+		SETWIFI="AP6210"
+		SETBT="AP6210"
+		SETPMU="ACT8846"
+		mainopt
+	elif [ "$devopt" = "2" ]; then
+		echo "Setting T428 kernel options..."
+		DEVNAME="T428"
+		SETHDMI="720"
+		SETLCD="LCDC1"
+		SETWIFI="AP6330"
+		SETBT="AP6330"
+		SETPMU=""
+		mainopt
 	elif [ "$devopt" = "0" ]; then
-		break
+		mainopt
 	elif [[ "$devopt" = "X" || "$devopt" = "x" ]]; then
 		outtahere
 	fi
  done
+}
+
+# HDMI settings menu
+function hdmiitems
+{
+ hdmiopt=""
+ while [ "$hdmiopt" != "0" ]
+ do
+ 	clear
+ 	echo
+ 	echo "   ==[ HDMI SETTINGS ]=="	
+ 	echo "       Current: $SETHDMI"
+ 	echo "   =-------------------="
+ 	echo "   1. 480p"
+ 	echo "   2. 720p"
+ 	echo "   3. 1080p"
+ 	echo "   ====================="
+ 	echo "   >> 0. EXIT"
+ 	echo 
+ 	read -n 1 -p "   Select resolution: " hdmiopt
+ 	if [ "$hdmiopt" = "1" ]; then
+ 	   HDMISET="480"
+ 	   break
+ 	elif [ "$hdmiopt" = "2" ]; then
+ 	   HDMISET="720"
+ 	   break
+ 	elif [ "$hdmiopt" = "3" ]; then
+ 	   HDMISET="1080"
+ 	   break
+	fi 	 
+ done
+}
+
+# LCD Settings menu
+function lcditems
+{
+ lcdopt=""
+ while [ "$lcdopt" != "0" ]
+ do
+ 	clear
+ 	echo
+ 	echo "   ====[ LCD SETTING ]===="	
+ 	echo "        Current: $SETLCD"
+ 	echo "   =---------------------="
+ 	echo "   1. LCDC0 (like MK908)"
+ 	echo "   2. LCDC1 (most devices)"
+ 	echo "   ======================="
+ 	echo "   >> 0. EXIT"
+ 	echo 
+ 	read -n 1 -p "   Select LCD: " lcdopt
+ 	if [ "$lcdopt" = "1" ]; then
+ 	   SETLCD="LCDC0"
+ 	   break
+ 	elif [ "$lcdopt" = "2" ]; then
+ 	   SETLCD="LCDC1"
+ 	   break
+	fi 	 
+ done
+}
+
+# Wifi Settings menu
+# This needs to be added to as we identify what chipset is needed with
+# which device
+function wifiitems
+{
+ wifiopt=""
+ while [ "$wifiopt" != "0" ]
+ do
+ 	clear
+ 	echo
+ 	echo "   ======[ WIFI CHIPSET ]======"	
+ 	echo "           Current: $SETWIFI"
+ 	echo "   =--------------------------="
+ 	echo "   1. AP6210 combo (like MK908)"
+ 	echo "   2. AP6330 combo (like T428)"
+ 	echo "   ============================"
+ 	echo "   >> 0. EXIT"
+ 	echo 
+ 	read -n 1 -p "   Select Wifi Chipset: " wifiopt
+ 	if [ "$wifiopt" = "1" ]; then
+ 	   SETWIFI="AP6210"
+ 	   SETBT="AP6210"
+ 	   break
+ 	elif [ "$wifiopt" = "2" ]; then
+ 	   SETWIFI="AP6330"
+ 	   SETBT="AP6330"
+ 	   break
+	fi 	 
+ done
+}
+
+# Bluetooth Settings menu
+# This needs to be added to as we identify what chipset is needed with
+# which device
+function btitems
+{
+ btopt=""
+ while [ "$btopt" != "0" ]
+ do
+ 	clear
+ 	echo
+ 	echo "   ====[ BLUETOOTH CHIPSET ]===="	
+ 	echo "          Current: $SETBT"
+ 	echo "   =---------------------------="
+ 	echo "   1. AP6210 combo (like MK908)"
+ 	echo "   2. AP6330 combo (like T428)"
+ 	echo "   ============================="
+ 	echo "   >> 0. EXIT"
+ 	echo 
+ 	read -n 1 -p "   Select Bluetooth Chipset: " btopt
+ 	if [ "$btopt" = "1" ]; then
+ 	   SETBT="AP6210"
+ 	   SETWIFI="AP6210"
+ 	   break
+ 	elif [ "$btopt" = "2" ]; then
+ 	   SETBT="AP6210"
+ 	   SETWIFI="AP6210"
+ 	   break
+	fi 	 
+ done
+}
+
+# PMU Settings menu
+# This needs to be added to as we identify what pmu is needed with
+# which device
+function pmuitems
+{
+ pmuopt=""
+ while [ "$pmuopt" != "0" ]
+ do
+ 	clear
+ 	echo
+ 	echo "   ====[ PMU CHIPSET ]===="	
+ 	echo "       Current: $SETPMU"
+ 	echo "   =---------------------="
+ 	echo "   1. ACT8846 (like MK908)"
+ 	echo "   ======================="
+ 	echo "   >> 0. EXIT"
+ 	echo 
+ 	read -n 1 -p "   Select PMU: " pmuopt
+ 	if [ "$pmuopt" = "1" ]; then
+ 	   SETPMU="ACT8846"
+ 	   break
+ 	elif [ "$pmuopt" = "2" ]; then
+ 	   SETPMU="EXAMPLE"
+ 	   break
+	fi 	 
+ done
+}
+
+# OC Check function
+function checkoc
+{
+ if [[ "$OVOLT" = "ON" || "$CPUOC" = "ON" || "$GPUOC" = "ON" || "$DDROC" = "ON" ]]; then
+  SETOC="ON"
+ else
+  SETOC="OFF"
+ fi
+}
+
+# CPU OC Submenu
+function subcpu
+{
+ scpu=""
+ while [ "$scpu" != "0" ]
+ do
+  clear
+  echo
+  echo "   ====[ OVERCLOCK CPU ]===="
+  echo "   1. Overclock CPU: $CPUOC"
+  echo "   2. Extreme CPU O/C: $CPUOCX"
+  echo "   =-----------------------="
+  echo "   9. Turn OFF CPU overclock"
+  echo "   ========================="
+  echo "   >> 0. EXIT"
+  echo
+  read -n 1 -p "   Select CPU O/C: " scpu
+  if [ "$scpu" = "1" ]; then
+	if [ "$CPUOC" = "OFF" ]; then
+	 CPUOC="ON"
+	 checkoc
+	else
+	 CPUOC="OFF"
+	 checkoc
+	fi
+  elif [ "$scpu" = "2" ]; then
+	if [ "$CPUOCX" = "OFF" ]; then  
+	 CPUOC="ON"
+	 CPUOCX="ON"
+	 checkoc
+	else
+	 CPUOCX="OFF"
+	 checkoc
+	fi
+  elif [ "$scpu" = "9" ]; then
+  	CPUOC="OFF"
+  	CPUOCX="OFF"
+  	checkoc
+  fi
+ done
+}
+
+# GPU OC Submenu
+function subgpu
+{
+ sgpu=""
+ while [ "$sgpu" != "0" ]
+ do
+  clear
+  echo
+  echo "   ====[ OVERCLOCK GPU ]===="
+  echo "   1. Overclock GPU: $GPUOC"
+  echo "   2. Extreme GPU O/C: $GPUOCX"
+  echo "   =-----------------------="
+  echo "   9. Turn OFF GPU overclock"
+  echo "   ========================="
+  echo "   >> 0. EXIT"
+  echo
+  read -n 1 -p "   Select GPU O/C: " sgpu
+  if [ "$sgpu" = "1" ]; then
+	if [ "$GPUOC" = "OFF" ]; then
+	 GPUOC="ON"
+	 checkoc
+	else
+	 GPUOC="OFF"
+	 checkoc
+	fi
+  elif [ "$sgpu" = "2" ]; then
+	if [ "$GPUOCX" = "OFF" ]; then  
+	 GPUOC="ON"
+	 GPUOCX="ON"
+	 checkoc
+	else
+	 GPUOCX="OFF"
+	 checkoc
+	fi
+  elif [ "$sgpu" = "9" ]; then
+  	GPUOC="OFF"
+  	GPUOCX="OFF"
+  	checkoc
+  fi
+ done
+}
+
+# RAM OC Submenu
+function subddr
+{
+ sddr=""
+ while [ "$sddr" != "0" ]
+ do
+  clear
+  echo
+  echo "   ====[ OVERCLOCK RAM ]===="
+  echo "   1. Overclock RAM: $DDROC"
+  echo "   2. Extreme RAM O/C: $DDROCX"
+  echo "   =-----------------------="
+  echo "   9. Turn OFF RAM overclock"
+  echo "   ========================="
+  echo "   >> 0. EXIT"
+  echo
+  read -n 1 -p "   Select RAM O/C: " sddr
+  if [ "$sddr" = "1" ]; then
+	if [ "$DDROC" = "OFF" ]; then
+	 DDROC="ON"
+	 checkoc
+	else
+	 DDROC="OFF"
+	 checkoc
+	fi
+  elif [ "$sddr" = "2" ]; then
+	if [ "$DDROCX" = "OFF" ]; then  
+	 DDROC="ON"
+	 DDROCX="ON"
+	 checkoc
+	else
+	 DDROCX="OFF"
+	 checkoc
+	fi
+  elif [ "$sddr" = "9" ]; then
+  	DDROC="OFF"
+  	DDROCX="OFF"
+  	checkoc
+  fi
+ done
+}
+
+# Overclock Settings menu
+function ocitems
+{
+ ocopt=""
+ while [ "$ocopt" != "0" ]
+ do
+ 	clear
+ 	echo
+ 	echo "   =====[ OVERCLOCK OPTIONS ]====="	
+	echo "           Current: $SETOC"
+ 	echo "   =-----------------------------="
+ 	echo -n "   1. Overclock CPU: $CPUOC"
+ 	if [ "$CPUOCX" = "ON" ]; then
+ 		echo " (+Extreme)"
+        else
+         echo
+	fi
+ 	echo -n "   2. Overclock GPU: $GPUOC"
+ 	if [ "$GPUOCX" = "ON" ]; then
+ 		echo " (+Extreme)"
+ 	else
+ 	 echo
+ 	fi
+ 	echo -n "   3. Overclock RAM: $DDROC"
+ 	if [ "$DDROCX" = "ON" ]; then
+ 		echo " (+Extreme)"
+ 	else
+ 	 echo
+ 	fi
+ 	echo "   4. Overvolt: $OVOLT"
+ 	echo "   =-----------------------------="
+ 	echo "   9. Turn OFF overclock options"
+ 	echo "   ==============================="
+ 	echo "   >> 0. EXIT"
+ 	echo 
+ 	read -n 1 -p "   Select O/C options: " ocopt
+ 	if [ "$ocopt" = "1" ]; then
+ 	   subcpu
+ 	elif [ "$ocopt" = "2" ]; then
+ 	   subgpu
+ 	elif [ "$ocopt" = "3" ]; then
+ 	   subddr
+ 	elif [ "$ocopt" = "4" ]; then
+ 	   if [ "$OVOLT" = "ON" ]; then
+	    OVOLT="OFF"
+	    checkoc
+	   else
+	    SETOC="ON"
+	    OVOLT="ON"
+	   fi 	   
+	elif [ "$ocopt" = "9" ]; then
+	   SETOC="OFF"
+	   CPUOC="OFF"
+	   CPUOCX="OFF"
+	   GPUOC="OFF"
+	   GPUOCX="OFF"
+	   DDROC="OFF"
+	   DDROCX="OFF"
+	   OVOLT="OFF"
+	fi 	 
+ done
+}
+
+# CONFIG BUILDER
+# This will be modified as kernel components are determined for devices
+function cfgbuild
+{
+ echo
 }
 
 # toolchains menu, you can change this to different ones you might have
@@ -152,44 +544,42 @@ function tcitems
  do
 	clear
 	echo
-	echo "   ===========[ TOOLCHAINS MENU ]==========="
-	echo "    Current: $TOOLCHAIN"
-	echo "   =---------------------------------------="
+	echo "   ===========[ TOOLCHAINS MENU ]================"
+	echo "    Current: $TOOLCHAIN ($TCDESC)"
+	echo "   =--------------------------------------------="
 	echo "   1. System (arm-linux-gnueabi via apt-get)"
 	echo "   2. Default Android (arm-eabi-4.4.3)"
 	echo "   3. Linaro 4.6.2 (arm-eabi-linaro-4.6.2)"
-	echo "   4. Linaro 4.8 (android-toolchain-eabi)"
+	echo "   4. Linaro 4.8 2013.07 (android-toolchain-eabi)"
 	echo "   5. Google (arm-linux-androideabi-4.7)"
-	echo "   ========================================="
+	echo "   =============================================="
 	echo "   >> 0. EXIT"
 	echo
 	read -n 1 -p "   Select Option: " tcopt
 	if [ "$tcopt" = "1" ]; then
 	    TOOLCHAIN=1
 	    CROSS_COMPILE=arm-linux-gnueabi-
-	    TCDESC="System (arm-linux-gnueabi)"
+	    TCDESC="System"
 	   break
 	elif [ "$tcopt" = "2" ]; then
 	    TOOLCHAIN=2
-	    CROSS_COMPILE=../../../device/rockchip/rk3188/toolchains/arm-eabi-4.4.3/bin/arm-eabi-
-	    TCDESC="Android (arm-eabi-4.4.3)"
+	    CROSS_COMPILE=./toolchains/arm-eabi-4.4.3/bin/arm-eabi-
+	    TCDESC="Android"
 	   break
 	elif [ "$tcopt" = "3" ]; then
 	    TOOLCHAIN=3
-	    CROSS_COMPILE=../../../device/rockchip/rk3188/toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-
-	    TCDESC="Linaro 4.6.2 (arm-eabi-linaro-4.6.2)"
+	    CROSS_COMPILE=./toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-
+	    TCDESC="Linaro 4.6.2"
 	   break
 	elif [ "$tcopt" = "4" ]; then
 	    TOOLCHAIN=4
-	    CROSS_COMPILE=../../../device/rockchip/rk3188/toolchains/android-toolchain-eabi/bin/arm-eabi-
-	    TCDESC="Linaro 4.8 (android-toolchain-eabi)"
+	    CROSS_COMPILE=./toolchains/android-toolchain-eabi/bin/arm-eabi-
+	    TCDESC="Linaro 4.8 2013.07"
 	   break
 	elif [ "$tcopt" = "5" ]; then
 	    TOOLCHAIN=5
-	    CROSS_COMPILE=../../../device/rockchip/rk3188/toolchains/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-
-	    TCDESC="Google (arm-linux-androideabi-4.7)"
-	   break
-	elif [ "$tcopt" = "0" ]; then
+	    CROSS_COMPILE=./toolchains/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-
+	    TCDESC="Google"
 	   break
 	fi
  done
@@ -327,8 +717,6 @@ function cfgitems
            fi           
 	elif [ "$cfgopt" = "9" ]; then
 	   make ARCH=arm menuconfig
-	elif [ "$cfgopt" = "0" ]; then
-	   break
 	fi
  done
 }
@@ -369,7 +757,6 @@ function outitems
 	echo
 	echo "   ============[ OUTPUTS MENU ]============="
 	echo "   Current: $OUTLOC (see option below)  "
-# dont need right now --- RKCRC: $RKCRC"
 	echo "   =---------------------------------------="
 	echo "   1. zImage to default compile location"
 	echo "   2. zImage to KERNEL/MODULES directories"
@@ -384,8 +771,6 @@ function outitems
 	else
 	 echo "   9. specify your own type/directory"
 	fi
-        # echo "   =---------------------------------------="
-        # echo "   R. RKCRC it? (for flashing)"
 	echo "   ========================================="
 	echo "   >> 0. EXIT"
 	echo
@@ -482,8 +867,6 @@ function outitems
          #  rkit
         #elif [[ "$outopt" = "R" || "$outopt" = "r" ]]; then
 	#   rkit
-	elif [ "$outopt" = "0" ]; then
-	   break
 	fi
  done
 }
@@ -527,8 +910,6 @@ function logitems
             LOGPARMB="echo '------------------------NEW-MODULES--------------------' >>BUILD.LOG"
 	   LIDESC="BUILD.LOG/screen output (append)"
 	   break
-        elif [ "$logopt" = "0" ]; then
-	   break
 	fi
  done
 }
@@ -566,8 +947,6 @@ function cuitems
 	   CUTIME=3
            CUPARM="make ARCH=arm mrproper"
 	   CUDESC="FULL prior clean-up (make mrproper)"
-	   break
-        elif [ "$cuopt" = "0" ]; then
 	   break
 	fi
  done
@@ -705,7 +1084,6 @@ function mihc
 	echo "    OUTPUT: $OLDESC"
 	echo "    LOGS: $LIDESC"
 	echo "    THREADS: $THREADS                   "
-# no need for this right now -- RKCRC: $RKCRC"
 	echo "   =---------------------------------------="
 	echo
         read -n 1 -p "   Proceed with Build? [y|n] : " doit
@@ -721,10 +1099,10 @@ function mihc
 
 # saves current build settings to config file (for reuse)
 # so you don't have to go through all the options for rebuilds
-# (will overwrite any existing build_mk908.cfg file)
+# (will overwrite any existing buildit.cfg file)
 function scfig
 {
- BCFIG="build_mk908.cfg"
+ BCFIG="buildit.cfg"
  echo "THREADS=\"$THREADS\"" > $BCFIG
  echo "TOOLCHAIN=\"$TOOLCHAIN\"" >> $BCFIG
  echo "TCDESC=\"$TCDESC\"" >> $BCFIG
@@ -750,19 +1128,17 @@ function scfig
 # fasttrack option
 function fasttrack
 {
- if [ -s build_mk908.cfg ]; then
+ if [ -s buildit.cfg ]; then
   icfig
   buildit
  else
   echo
-  echo " ERROR: build_mk908.cfg empty or does not exist!"
+  echo " ERROR: buildit.cfg empty or does not exist!"
   echo "	Configure the build settings and then save it!"
   echo
   break
  fi
 }
-
-
 
 # main menu
 function mainopt
@@ -771,28 +1147,55 @@ function mainopt
  while [ "$choice" != "0" ]
  do
  	clear
- 	echo
-	echo "   ===================[ BUILD MENU ]=================="
-	echo "   1. TOOLCHAIN: $TCDESC"
-	echo "   2. CONFIG: $DEVICE"
-	echo -n "   3. OUTPUT: $OLDESC"
-	if [ "$RKCRC" = "yes" ]; then
-	 echo " + RKCRC"
+	echo
+        echo " +-=============( LABS v$VERS - THESAWOLF )=============="
+	echo "B| 1. TOOLCHAIN: $TCDESC"
+	echo "U| 2. CONFIG: $DEVICE"
+	echo "I| 3. OUTPUT: $OLDESC"
+	echo "L| 4. LOG: $LIDESC"
+        echo "D| 5. CLEAN-UP: $CUDESC"
+	echo "S| 6. THREADS: $THREADS"
+        echo " |-=-------------------------------------------------="
+	echo "D| A. Device Selection: $DEVNAME"
+	echo "E| B. HDMI RESOLUTION: $SETHDMI"
+	echo "V| C. LCD SETTING: $SETLCD"
+	echo "I| D. WIFI: $SETWIFI"
+	echo "C| E. BLUETOOTH: $SETBT"
+	echo "E| F. PMU: $SETPMU"
+	echo -n " | O. OVERCLOCK: $SETOC"
+	if [ "$SETOC" != "OFF" ]; then
+         echo -n " ["
+	 if [ "$CPUOC" = "ON" ]; then
+	  echo -n " CPU"
+	 fi
+	 if [ "$CPUOCX" = "ON" ]; then
+	  echo -n "(+X)"
+	 fi
+	 if [ "$GPUOC" = "ON" ]; then
+	  echo -n " GPU"
+	 fi
+	 if [ "$GPUOCX" = "ON" ]; then
+	  echo -n "(+X)"
+	 fi
+	 if [ "$DDROC" = "ON" ]; then
+	  echo -n " RAM"
+	 fi
+	 if [ "$DDROCX" = "ON" ]; then
+	  echo -n "(+X)"
+	 fi
+	 if [ "$OVOLT" = "ON" ]; then
+	  echo -n " OVERVOLT"
+	 fi
+	 echo " ]"
 	else
 	 echo
 	fi
-	echo "   4. LOG: $LIDESC"
-        echo "   5. CLEAN-UP: $CUDESC"
-	echo "   6. THREADS: $THREADS"
-	echo "   =-------------------------------------------------="
+	echo " +-=-------------------------------------------------="
 	echo "   9. BUILD IT! (and they will come...)"
 	echo "   =-------------------------------------------------="
-	echo "   R. Reload saved build settings (mess up much?)"
-        echo "   S. Save current build settings (for reuse)"
-        echo "   =============( LABS v$VERS - THESAWOLF )============="
-	echo "   >> 0. EXIT"
-	echo
-	read -n 1 -p "   Enter your choice : " choice
+	echo "   R. Reload build settings     S. Save build settings"
+        echo "   ==================================================="
+	read -n 1 -p "   Enter your choice (0 = Exit) : " choice
 	if [ "$choice" = "1" ]; then
 		tcitems
 	elif [ "$choice" = "2" ]; then
@@ -811,6 +1214,20 @@ function mainopt
 		icfig
 	elif [[ "$choice" = "s" || "$choice" = "S" ]]; then
 		scfig
+	elif [[ "$choice" = "a" || "$choice" = "A" ]]; then
+		devitems
+	elif [[ "$choice" = "b" || "$choice" = "B" ]]; then
+		hdmiitems
+	elif [[ "$choice" = "c" || "$choice" = "C" ]]; then
+		lcditems
+	elif [[ "$choice" = "d" || "$choice" = "D" ]]; then
+		wifiitems	
+	elif [[ "$choice" = "e" || "$choice" = "E" ]]; then
+		btitems		
+	elif [[ "$choice" = "f" || "$choice" = "F" ]]; then
+		pmuitems
+	elif [[ "$choice" = "o" || "$choice" = "O" ]]; then
+		ocitems
 	elif [ "$choice" = "0" ]; then
 		outtahere
 	fi
@@ -858,6 +1275,4 @@ done
 initdef
 icfig
 devitems
-mainopt
-
-
+outtahere
