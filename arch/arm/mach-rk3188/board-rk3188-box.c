@@ -1213,7 +1213,12 @@ static struct platform_device rockchip_hdmi_audio = {
 static struct tcc_bt_platform_data tcc_bt_platdata = {
 
     .power_gpio   = { // ldoon
-        .io             =  RK30_PIN3_PC7,
+//SAW QX1 setting thanks to Leolas
+#ifdef CONFIG_RK_VOLT2
+	.io		= RK30_PIN3_PD1,
+#else
+        .io             = RK30_PIN3_PC7,
+#endif
         .enable         = GPIO_HIGH,
         .iomux          = {
             .name       = NULL,
@@ -1464,8 +1469,14 @@ static struct pmu_info  act8846_dcdc_info[] = {
 	},
 	{
 		.name          = "act_dcdc4",   //vccio 
-		.min_uv          = 3300000,
+//SAW special voltage for QX1, from Leolas
+#ifdef CONFIG_RK_VOLT2
+		.min_uv		= 3000000,
+		.max_uv		= 3000000,
+#else
+		.min_uv         = 3300000,
 		.max_uv         = 3300000,
+#endif
 		#ifdef CONFIG_ACT8846_SUPPORT_RESET
 		.suspend_vol  =  3000000,
 		#else

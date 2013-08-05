@@ -76,3 +76,8 @@ endmenu
 
 config RK_VOLT1
 	bool 
+	default n
+
+config RK_VOLT2
+	bool
+	default n

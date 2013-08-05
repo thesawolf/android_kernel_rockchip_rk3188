@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERS="2.0"
+VERS="2.2"
 # LAZY-ASS BUILD SCRIPT (LABS) by
 # Thesawolf (thesawolf [at] gmail [d0t] com)
 #
@@ -46,6 +46,10 @@ VERS="2.0"
 # - create configs on the fly for building, no more storage
 # - moved toolchains locally to kernel dirs, updated options
 # - device build menus in place
+# - more device options, some new checkers and template store
+# - T428, QX1 added
+# - changed special volts into a special settings area
+# - moved overclocking into a special options area
 
 # initialize default settings 
 function initdef 
@@ -94,7 +98,7 @@ fi
 
 if [ -z $DEVNAME ]; then
    DEVNAME="NOT SPECIFIED"
-   SETHDMI="NOT SPECIFIED"
+   SETHDMI="720"
    SETLCD="NOT SPECIFIED"
    SETWIFI="NOT SPECIFIED"
    SETBT="NOT SPECIFIED"
@@ -107,6 +111,9 @@ if [ -z $DEVNAME ]; then
    DDROC="OFF"
    DDROCX="OFF"
    OVOLT="OFF"
+   SETSPEC="OFF"
+   SSPEC1="OFF"
+   SSPEC2="OFF"
 fi
 }
 
@@ -132,6 +139,68 @@ function outtahere
  exit
 }
 
+
+
+# Change device name option
+function cdev
+{
+ checkspec
+ clear
+ echo
+ echo "   ================[ DEVICE BUILD ]================="
+ echo "   Enter a device name (this is mainly for reference"
+ echo "   and setting a hostname based on that device name)"
+ echo
+ echo "   Using device template where: (can change later)"
+ echo "             HDMI RESOLUTION: $SETHDMI"
+ echo "             LCD SETTING: $SETLCD"
+ echo "             WIFI CHIPSET: $SETWIFI"
+ echo "             BLUETOOTH CHIPSET: $SETBT"
+ echo "             PMU CHIPSET: $SETPMU"
+ echo "             SPECIAL SETTINGS: $SETSPEC"
+ echo "   ================================================="
+ read -e -p "   Device name, no spaces [Blank to RETURN]: " DEVNAME
+ if [ "$DEVNAME" = "" ]; then
+	devitems
+ else
+	mainopt 
+ fi
+}
+
+# device template selector
+# since we have some device with similar chipsets, let's inject
+# options from here rather than repetitive all over the place
+function devtemp
+{
+ case $DEVTEMPLATE in
+ 1)
+	SETLCD="LCDC0";
+	SETWIFI="AP6210";
+	SETBT="AP6210";
+	SETPMU="ACT8846";
+	SSPEC1="ON";
+	SSPEC2="OFF";
+ 	;;
+ 2)
+	SETLCD="LCDC1";
+	SETWIFI="AP6330";
+	SETBT="AP6330";
+	SETPMU="ACT8846";
+	SSPEC1="OFF";
+	SSPEC2="OFF";
+	;;
+  3)	
+	SETLCD="LCDC1";
+	SETWIFI="RTL8188eu";
+	SETBT="RDA58";
+	SETPMU="ACT8846";
+	SSPEC1="OFF";
+	SSPEC2="ON";
+	;;
+ esac
+ cdev
+}
+
 # devices menu, this will be updated with new devices *after* device 
 # requirements have been verified *and* tested
 function devitems
@@ -142,10 +211,11 @@ function devitems
 	clear
 	echo
 	echo "   =============[ DEVICES MENU ]============="
-	echo "   1. MK908"
-	echo "   2. T428 (in progress)"
+	echo "   1. Tronsmart MK908"
+	echo "   2. Tronsmart T428"
+	echo "   3. Imito QX-1"
 	echo "   =----------------------------------------="
-	echo "     (don't see your device? get it added!)"
+	echo "   A. (don't see your device? get it added!)"
 	echo "   ==========================================="
 	echo "   0. Continue to LABS (without specifying)"
         echo 
@@ -153,23 +223,38 @@ function devitems
 	echo 
 	read -n 1 -p "   Choose device building for: " devopt
 	if [ "$devopt" = "1" ]; then
-		echo "Setting MK908 kernel options..."
-		DEVNAME="MK908"
-		SETHDMI="720"
-		SETLCD="LCDC0"
-		SETWIFI="AP6210"
-		SETBT="AP6210"
-		SETPMU="ACT8846"
-		mainopt
+		DEVTEMPLATE="1"
+		devtemp
 	elif [ "$devopt" = "2" ]; then
-		echo "Setting T428 kernel options..."
-		DEVNAME="T428"
-		SETHDMI="720"
-		SETLCD="LCDC1"
-		SETWIFI="AP6330"
-		SETBT="AP6330"
-		SETPMU=""
-		mainopt
+		DEVTEMPLATE="2"
+		devtemp
+	elif [ "$devopt" = "3" ]; then
+		DEVTEMPLATE="3"
+		devtemp
+	elif [[ "$devopt" = "A" || "$devopt" = "a" ]]; then
+		clear
+		echo "   Have a RK3188 device not listed here and you want"
+		echo "   to get it added? Contact thesawolf on freaktab"
+		echo "   with the following information:"
+		echo
+		echo "      - Device Name"
+		echo "      - LCD option (if it uses LCDC0 or LCDC1)"
+		echo "      - WiFi chipset (ie AP6210)"
+		echo "      - Bluetooth chipset (ie AP6330)"
+		echo "      - PMU chipset (ie ACT8846)"
+		echo "      - any special requirements (GPIOs, volts, etc.)"
+		echo
+		echo "   If you can't provide any of this information, don't"
+		echo "   expect it to get added. I really don't have time to"
+		echo "   research your device. Sorry."
+		echo
+		echo "   You can still use this build script to work off"
+		echo "   common RK3188 settings and go from there. Once you"
+		echo "   have built a config that works for you, feel free"
+		echo "   to send me your config and I can diff it and get it"
+		echo "   added into the build system."
+		echo
+		read -n 1 -p "           [ Press any key to return to LABS ]"
 	elif [ "$devopt" = "0" ]; then
 		mainopt
 	elif [[ "$devopt" = "X" || "$devopt" = "x" ]]; then
@@ -193,17 +278,15 @@ function hdmiitems
  	echo "   2. 720p"
  	echo "   3. 1080p"
  	echo "   ====================="
- 	echo "   >> 0. EXIT"
- 	echo 
- 	read -n 1 -p "   Select resolution: " hdmiopt
+ 	read -n 1 -p "   Select RES [0=EXIT]: " hdmiopt
  	if [ "$hdmiopt" = "1" ]; then
- 	   HDMISET="480"
+ 	   SETHDMI="480"
  	   break
  	elif [ "$hdmiopt" = "2" ]; then
- 	   HDMISET="720"
+ 	   SETHDMI="720"
  	   break
  	elif [ "$hdmiopt" = "3" ]; then
- 	   HDMISET="1080"
+ 	   SETHDMI="1080"
  	   break
 	fi 	 
  done
@@ -223,9 +306,7 @@ function lcditems
  	echo "   1. LCDC0 (like MK908)"
  	echo "   2. LCDC1 (most devices)"
  	echo "   ======================="
- 	echo "   >> 0. EXIT"
- 	echo 
- 	read -n 1 -p "   Select LCD: " lcdopt
+ 	read -n 1 -p "   Select LCD [0=EXIT]: " lcdopt
  	if [ "$lcdopt" = "1" ]; then
  	   SETLCD="LCDC0"
  	   break
@@ -251,10 +332,9 @@ function wifiitems
  	echo "   =--------------------------="
  	echo "   1. AP6210 combo (like MK908)"
  	echo "   2. AP6330 combo (like T428)"
+ 	echo "   3. RTL8188EU (like QX-1)"
  	echo "   ============================"
- 	echo "   >> 0. EXIT"
- 	echo 
- 	read -n 1 -p "   Select Wifi Chipset: " wifiopt
+ 	read -n 1 -p "   Select WiFi [0=EXIT]: " wifiopt
  	if [ "$wifiopt" = "1" ]; then
  	   SETWIFI="AP6210"
  	   SETBT="AP6210"
@@ -263,6 +343,9 @@ function wifiitems
  	   SETWIFI="AP6330"
  	   SETBT="AP6330"
  	   break
+	elif [ "$wifiopt" = "3" ]; then
+	   SETWIFI="RTL8188EU"
+	   break
 	fi 	 
  done
 }
@@ -282,10 +365,9 @@ function btitems
  	echo "   =---------------------------="
  	echo "   1. AP6210 combo (like MK908)"
  	echo "   2. AP6330 combo (like T428)"
+ 	echo "   3. RDA58 (like QX-1)"
  	echo "   ============================="
- 	echo "   >> 0. EXIT"
- 	echo 
- 	read -n 1 -p "   Select Bluetooth Chipset: " btopt
+ 	read -n 1 -p "   Select BT [0=EXIT]: " btopt
  	if [ "$btopt" = "1" ]; then
  	   SETBT="AP6210"
  	   SETWIFI="AP6210"
@@ -294,6 +376,9 @@ function btitems
  	   SETBT="AP6210"
  	   SETWIFI="AP6210"
  	   break
+	elif [ "$btopt" = "3" ]; then
+	   SETBT="RDA58"
+	   break
 	fi 	 
  done
 }
@@ -313,14 +398,9 @@ function pmuitems
  	echo "   =---------------------="
  	echo "   1. ACT8846 (like MK908)"
  	echo "   ======================="
- 	echo "   >> 0. EXIT"
- 	echo 
- 	read -n 1 -p "   Select PMU: " pmuopt
+ 	read -n 1 -p "   Select PMU [0=EXIT]: " pmuopt
  	if [ "$pmuopt" = "1" ]; then
  	   SETPMU="ACT8846"
- 	   break
- 	elif [ "$pmuopt" = "2" ]; then
- 	   SETPMU="EXAMPLE"
  	   break
 	fi 	 
  done
@@ -350,9 +430,7 @@ function subcpu
   echo "   =-----------------------="
   echo "   9. Turn OFF CPU overclock"
   echo "   ========================="
-  echo "   >> 0. EXIT"
-  echo
-  read -n 1 -p "   Select CPU O/C: " scpu
+  read -n 1 -p "   Select CPU O/C [0=EXIT]: " scpu
   if [ "$scpu" = "1" ]; then
 	if [ "$CPUOC" = "OFF" ]; then
 	 CPUOC="ON"
@@ -392,9 +470,7 @@ function subgpu
   echo "   =-----------------------="
   echo "   9. Turn OFF GPU overclock"
   echo "   ========================="
-  echo "   >> 0. EXIT"
-  echo
-  read -n 1 -p "   Select GPU O/C: " sgpu
+  read -n 1 -p "   Select GPU O/C [0=EXIT]: " sgpu
   if [ "$sgpu" = "1" ]; then
 	if [ "$GPUOC" = "OFF" ]; then
 	 GPUOC="ON"
@@ -434,9 +510,7 @@ function subddr
   echo "   =-----------------------="
   echo "   9. Turn OFF RAM overclock"
   echo "   ========================="
-  echo "   >> 0. EXIT"
-  echo
-  read -n 1 -p "   Select RAM O/C: " sddr
+  read -n 1 -p "   Select RAM O/C [0=EXIT]: " sddr
   if [ "$sddr" = "1" ]; then
 	if [ "$DDROC" = "OFF" ]; then
 	 DDROC="ON"
@@ -462,6 +536,56 @@ function subddr
  done
 }
 
+# Specials Check function
+# if more special requirement get added, expand on this checker
+function checkspec
+{
+ if [[ "$SSPEC1" = "ON" || "$SSPEC2" = "ON" ]]; then
+  SETSPEC="ON"
+ else
+  SETSPEC="OFF"
+ fi
+}
+
+# Special REQUIREMENTS Settings menu
+# this started out as special volts, but just morphed into special
+# requirements. No need to change variables/names really.
+function specitems
+{
+ specopt=""
+ while [ "$specopt" != "0" ]
+ do
+ 	checkspec
+	clear
+	echo
+	echo "   ===============[ SPECIAL REQUIREMENTS ]================"
+	echo "                        Current: $SETSPEC"
+	echo "   =-----------------------------------------------------="
+	echo "   1. $SSPEC1 : WiFi/BT Volt 1 [1.8 ldo6] (MK908)"
+	echo "   2. $SSPEC2 : WiFi/BT Volt 2 [3.0 dcdc4, BT GPIO PD1] (QX-1)"
+	echo "   =-----------------------------------------------------="
+	echo "   X. Clear all special requirements"
+	echo "   ======================================================="
+	read -n 1 -p "   Select any specials [0=EXIT] : " specopt
+	if [ "$specopt" = "1" ]; then
+	   if [ "$SSPEC1" = "ON" ]; then
+		SSPEC1="OFF"	   
+	   else
+		SSPEC1="ON"
+	   fi
+	elif [ "$specopt" = "2" ]; then
+	   if [ "$SSPEC2" = "ON" ]; then
+		SSPEC2="OFF"
+	   else
+		SSPEC2="ON"
+	   fi
+	elif [[ "$specopt" = "X" || "$specopt" = "x" ]]; then
+	   SSPEC1="OFF"
+	   SSPEC2="OFF"
+	fi
+ done
+}
+
 # Overclock Settings menu
 function ocitems
 {
@@ -470,34 +594,39 @@ function ocitems
  do
  	clear
  	echo
- 	echo "   =====[ OVERCLOCK OPTIONS ]====="	
-	echo "           Current: $SETOC"
- 	echo "   =-----------------------------="
+ 	echo "   ===============[ OVERCLOCK OPTIONS ]================"	
+	echo "                      Current: $SETOC"
+	echo "   =--------------------------------------------------="
+	echo "   Please be aware that enabling ANY of these options"
+	echo "   will most certainly cause devices to get hot and"
+	echo "   proper cooling methods should be recommended to"
+	echo "   users! Also, overclocking is touchy and may need"
+	echo "   to be adjusted for specific devices (in board files)"
+	echo "   Selecting extreme O/C WILL NOT work on some devices."
+ 	echo "   =--------------------------------------------------="
  	echo -n "   1. Overclock CPU: $CPUOC"
  	if [ "$CPUOCX" = "ON" ]; then
- 		echo " (+Extreme)"
+ 		echo " (+ Extreme)"
         else
          echo
 	fi
  	echo -n "   2. Overclock GPU: $GPUOC"
  	if [ "$GPUOCX" = "ON" ]; then
- 		echo " (+Extreme)"
+ 		echo " (+ Extreme)"
  	else
  	 echo
  	fi
  	echo -n "   3. Overclock RAM: $DDROC"
  	if [ "$DDROCX" = "ON" ]; then
- 		echo " (+Extreme)"
+ 		echo " (+ Extreme)"
  	else
  	 echo
  	fi
  	echo "   4. Overvolt: $OVOLT"
- 	echo "   =-----------------------------="
+ 	echo "   =--------------------------------------------------="
  	echo "   9. Turn OFF overclock options"
- 	echo "   ==============================="
- 	echo "   >> 0. EXIT"
- 	echo 
- 	read -n 1 -p "   Select O/C options: " ocopt
+ 	echo "   ===================================================="
+ 	read -n 1 -p "   Select O/C options [0=EXIT]: " ocopt
  	if [ "$ocopt" = "1" ]; then
  	   subcpu
  	elif [ "$ocopt" = "2" ]; then
@@ -509,11 +638,10 @@ function ocitems
 	    OVOLT="OFF"
 	    checkoc
 	   else
-	    SETOC="ON"
 	    OVOLT="ON"
+	    checkoc
 	   fi 	   
 	elif [ "$ocopt" = "9" ]; then
-	   SETOC="OFF"
 	   CPUOC="OFF"
 	   CPUOCX="OFF"
 	   GPUOC="OFF"
@@ -521,7 +649,54 @@ function ocitems
 	   DDROC="OFF"
 	   DDROCX="OFF"
 	   OVOLT="OFF"
+	   checkoc
 	fi 	 
+ done
+}
+
+# options menu, currently just contains overclock submenu, but will look
+# into making peripherals optionally built via this menu
+function optitems
+{
+ optopt=""
+ while [ "$optopt" != "0" ]
+ do
+ 	clear
+ 	echo
+ 	echo "   ===================[ OPTIONS MENU ]==================="
+ 	echo -n "   1. Overclock : $SETOC"
+	if [ "$SETOC" != "OFF" ]; then
+         echo -n " ["
+	 if [ "$CPUOC" = "ON" ]; then
+	  echo -n " CPU"
+	 fi
+	 if [ "$CPUOCX" = "ON" ]; then
+	  echo -n "(+X)"
+	 fi
+	 if [ "$GPUOC" = "ON" ]; then
+	  echo -n " GPU"
+	 fi
+	 if [ "$GPUOCX" = "ON" ]; then
+	  echo -n "(+X)"
+	 fi
+	 if [ "$DDROC" = "ON" ]; then
+	  echo -n " RAM"
+	 fi
+	 if [ "$DDROCX" = "ON" ]; then
+	  echo -n "(+X)"
+	 fi
+	 if [ "$OVOLT" = "ON" ]; then
+	  echo -n " OVERVOLT"
+	 fi
+	 echo " ]"
+	else
+	 echo
+	fi
+	echo "   ======================================================"
+	read -n 1 -p "   Select an option [0=EXIT]: " optopt
+	if [ "$optopt" = "1" ]; then
+	   ocitems
+	fi
  done
 }
 
@@ -553,9 +728,7 @@ function tcitems
 	echo "   4. Linaro 4.8 2013.07 (android-toolchain-eabi)"
 	echo "   5. Google (arm-linux-androideabi-4.7)"
 	echo "   =============================================="
-	echo "   >> 0. EXIT"
-	echo
-	read -n 1 -p "   Select Option: " tcopt
+	read -n 1 -p "   Select Toolchains [0=EXIT]: " tcopt
 	if [ "$tcopt" = "1" ]; then
 	    TOOLCHAIN=1
 	    CROSS_COMPILE=arm-linux-gnueabi-
@@ -625,9 +798,7 @@ function cfgitems
         echo "   =--------------------------------------------------="
         echo "     L. load your own specified defconfig"
 	echo "   ===================================================="
-	echo "   >> 0. EXIT"
-	echo
-	read -n 1 -p "   Select Option: " cfgopt
+	read -n 1 -p "   Select Option [0=EXIT]: " cfgopt
 	if [ "$cfgopt" = "1" ]; then
 	   DEVICE=mk908-720-debug-defconfig
 	   break
@@ -772,9 +943,7 @@ function outitems
 	 echo "   9. specify your own type/directory"
 	fi
 	echo "   ========================================="
-	echo "   >> 0. EXIT"
-	echo
-	read -n 1 -p "Select Option: " outopt
+	read -n 1 -p "   Select Output [0=EXIT]: " outopt
 	if [ "$outopt" = "1" ]; then
 	   OUTLOC=1
 	   KERNPARM1=""
@@ -820,9 +989,7 @@ function outitems
            echo " 2. kernel.img - direct to image"
            echo " 3. zkernel.img - compressed direct to image"
            echo " ----------------------------------------------"
-           echo " >> 0. Exit the custom option"
-           echo
-           read -n 1 -p " Kernel type : " KTYPE
+           read -n 1 -p " Kernel type [0=EXIT]: " KTYPE
            if [ "$KTYPE" = "1" ]; then
             KERNPARM1=""           
             OLDESC="zImage > CUSTOM dirs"
@@ -886,9 +1053,7 @@ function logitems
 	echo "   2. Output to BUILD.LOG & screen (replace)"
 	echo "   3. Output to BUILD.LOG & screen (append)"
 	echo "   ========================================="
-	echo "   >> 0. EXIT"
-	echo
-	read -n 1 -p "   Select Option: " logopt
+	read -n 1 -p "   Select Logging [0=EXIT]: " logopt
 	if [ "$logopt" = "1" ]; then
 	    LOGIT=1
 	    LOGPARMA=""
@@ -930,9 +1095,7 @@ function cuitems
 	echo "   2. Prior clean-up (make clean)"
 	echo "   3. FULL prior clean-up (make mrproper)"
 	echo "   ========================================="
-	echo "   >> 0. EXIT"
-	echo
-	read -n 1 -p "   Select Option: " cuopt
+	read -n 1 -p "   Select Clean-up [0=EXIT]: " cuopt
 	if [ "$cuopt" = "1" ]; then
 	   CUTIME=1
 	   CUPARM=""
@@ -969,9 +1132,7 @@ function thrditems
         echo "   Entering 0 will exit this menu using the"
         echo "   CURRENTLY SET THREADS count above"
         echo "   ========================================="
-        echo "   >> 0. Exit"
-        echo
-        read -e -p "   Select Threads: " thrdopt
+        read -e -p "   Select Threads [0=EXIT]: " thrdopt
         if [ "$thrdopt" = "0" ]; then
            THREADS=$THREADS
 	   break           
@@ -1147,7 +1308,6 @@ function mainopt
  while [ "$choice" != "0" ]
  do
  	clear
-	echo
         echo " +-=============( LABS v$VERS - THESAWOLF )=============="
 	echo "B| 1. TOOLCHAIN: $TCDESC"
 	echo "U| 2. CONFIG: $DEVICE"
@@ -1162,40 +1322,14 @@ function mainopt
 	echo "I| D. WIFI: $SETWIFI"
 	echo "C| E. BLUETOOTH: $SETBT"
 	echo "E| F. PMU: $SETPMU"
-	echo -n " | O. OVERCLOCK: $SETOC"
-	if [ "$SETOC" != "OFF" ]; then
-         echo -n " ["
-	 if [ "$CPUOC" = "ON" ]; then
-	  echo -n " CPU"
-	 fi
-	 if [ "$CPUOCX" = "ON" ]; then
-	  echo -n "(+X)"
-	 fi
-	 if [ "$GPUOC" = "ON" ]; then
-	  echo -n " GPU"
-	 fi
-	 if [ "$GPUOCX" = "ON" ]; then
-	  echo -n "(+X)"
-	 fi
-	 if [ "$DDROC" = "ON" ]; then
-	  echo -n " RAM"
-	 fi
-	 if [ "$DDROCX" = "ON" ]; then
-	  echo -n "(+X)"
-	 fi
-	 if [ "$OVOLT" = "ON" ]; then
-	  echo -n " OVERVOLT"
-	 fi
-	 echo " ]"
-	else
-	 echo
-	fi
+	echo "S| G. SPECIALS SETTINGS: $SETSPEC"
+	echo " | O. SPECIAL OPTIONS (ie Overclock)" 
 	echo " +-=-------------------------------------------------="
 	echo "   9. BUILD IT! (and they will come...)"
 	echo "   =-------------------------------------------------="
 	echo "   R. Reload build settings     S. Save build settings"
         echo "   ==================================================="
-	read -n 1 -p "   Enter your choice (0 = Exit) : " choice
+	read -n 1 -p "   Enter your choice [0=Exit]: " choice
 	if [ "$choice" = "1" ]; then
 		tcitems
 	elif [ "$choice" = "2" ]; then
@@ -1226,8 +1360,10 @@ function mainopt
 		btitems		
 	elif [[ "$choice" = "f" || "$choice" = "F" ]]; then
 		pmuitems
+	elif [[ "$choice" = "g" || "$choice" = "G" ]]; then
+		specitems
 	elif [[ "$choice" = "o" || "$choice" = "O" ]]; then
-		ocitems
+		optitems
 	elif [ "$choice" = "0" ]; then
 		outtahere
 	fi
