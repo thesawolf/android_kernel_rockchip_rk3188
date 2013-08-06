@@ -2146,9 +2146,9 @@ static struct cpufreq_frequency_table dvfs_ddr_table[] = {
 //on MK908, setting NORMAL here does not work, has to be config defined
 	{.frequency = 396 * 1000 + DDR_FREQ_IDLE,	.index = 1100 * 1000},
 	{.frequency = 396 * 1000 + DDR_FREQ_SUSPEND,	.index = 1100 * 1000},
-#ifdef CONFIG_EXTREME_OCRAM //SAW
-	{.frequency = XXX * 1000 + DDR_FREQ_VIDEO, 	.index = XXXX * 1000},
-	{.frequency = XXX * 1000 + DDR_FREQ_NORMAL,	.index = XXXX * 1000},
+#ifdef CONFIG_EXTREME_OCRAM //SAW -- fill with extreme stuff later
+	{.frequency = 492 * 1000 + DDR_FREQ_VIDEO, 	.index = 1150 * 1000},
+	{.frequency = 792 * 1000 + DDR_FREQ_NORMAL,	.index = 1250 * 1000},
 #else
 	{.frequency = 492 * 1000 + DDR_FREQ_VIDEO,	.index = 1150 * 1000},
 	{.frequency = 792 * 1000 + DDR_FREQ_NORMAL,	.index = 1250 * 1000},

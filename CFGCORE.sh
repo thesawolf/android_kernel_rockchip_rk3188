@@ -15,6 +15,10 @@
 if [ "$CFGFILE" = "" ]; then
  CFGFILE="EXAMPLE-CONFIG"
  DEVNAME="EXAMPLE"
+ SETLCD="LCDC1"
+ SETWIFI="AP6210"
+ SETBT="AP6210"
+ SETPMU="ACT8846"
  clear
  echo
  echo "   Normally this script is not supposed to be run as a standalone"
@@ -109,9 +113,16 @@ CONFIG_RCU_FANOUT=32
 CONFIG_IKCONFIG=y
 CONFIG_IKCONFIG_PROC=y
 CONFIG_LOG_BUF_SHIFT=19
-CONFIG_CGROUPS=y
-CONFIG_CGROUP_DEBUG=y
-CONFIG_CGROUP_FREEZER=y
+CONFIG_CGROUPS=y" >> ${CFGFILE}
+
+# SAW - debug flag
+if [ "$SDBG" = "ON" ]; then
+ echo "CONFIG_CGROUP_DEBUG=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_CGROUP_DEBUG is not set" >> ${CFGFILE}
+fi
+
+echo "CONFIG_CGROUP_FREEZER=y
 # CONFIG_CGROUP_DEVICE is not set
 # CONFIG_CPUSETS is not set
 CONFIG_CGROUP_CPUACCT=y
@@ -389,9 +400,16 @@ CONFIG_CLK_SWITCH_TO_32K=y
 CONFIG_WIFI_CONTROL_FUNC=y
 # CONFIG_WIFI_COMBO_MODULE_CONTROL_FUNC is not set
 CONFIG_RK29_LAST_LOG=y
-CONFIG_RK_EARLY_PRINTK=y
-CONFIG_RK_DEBUG_UART=2
-CONFIG_RK_USB_UART=y
+CONFIG_RK_EARLY_PRINTK=y" >> ${CFGFILE}
+
+# SAW - debug flag
+if [ "$SDBG" = "ON" ]; then
+ echo "CONFIG_RK_DEBUG_UART=2" >> ${CFGFILE}
+else
+ echo "CONFIG_RK_DEBUG_UART=-1" >> ${CFGFILE}
+fi
+
+echo "CONFIG_RK_USB_UART=y
 # CONFIG_RK_SRAM_DMA is not set
 CONFIG_RK_PL330_DMA=y
 # CONFIG_RK_PL330_DMA_TEST is not set
@@ -415,7 +433,7 @@ if [ "$SETOC" = "OFF" ]; then
 # CONFIG_OVERCLOCK_CPU is not set
 # CONFIG_EXTREME_OCCPU is not set
 # CONFIG_OVERCLOCK_GPU is not set
-# CONFIG_EXTERME_OCGPU is not set
+# CONFIG_EXTREME_OCGPU is not set
 # CONFIG_OVERCLOCK_RAM is not set
 # CONFIG_EXTREME_OCRAM is not set
 # CONFIG_OVERVOLT_CPU is not set" >> ${CFGFILE}
@@ -626,7 +644,7 @@ CONFIG_CPU_FREQ_STAT=y
 # SAW - I have a number of governors installed in my kernel source
 # need to check for them in this source and add or omit them accordingly
 if [ -e drivers/cpufreq/cpufreq_ondemandx.c ]; then
- echo"# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMANDX is not set" >> ${CFGFILE}
+ echo "# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMANDX is not set" >> ${CFGFILE}
 fi
 if [ -e drivers/cpufreq/cpufreq_conservative.c ]; then
  echo "# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set" >> ${CFGFILE}
@@ -1316,9 +1334,16 @@ CONFIG_APANIC_PLABEL=\"kpanic\"
 # CONFIG_FM580X is not set
 # CONFIG_RK29_SC8800 is not set
 # CONFIG_TDSC8800 is not set
-# CONFIG_MODEM_SOUND is not set
-# CONFIG_TCC_BT_DEV is not set
-# CONFIG_C2PORT is not set
+# CONFIG_MODEM_SOUND is not set" >> ${CFGFILE}
+
+# SAW - BT for QX1
+if [ "$SETBT" = "ON" ]; then
+ echo "CONFIG_TCC_BT_DEV=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_TCC_BT_DEV is not set" >> ${CFGFILE}
+fi
+
+echo "# CONFIG_C2PORT is not set
 
 #
 # EEPROM support
@@ -1464,8 +1489,16 @@ CONFIG_WLAN_80211=y
 # CONFIG_MV8686 is not set
 # CONFIG_MT5931 is not set
 # CONFIG_MT5931_MT6622 is not set
-# CONFIG_RTL8192CU is not set
-# CONFIG_RTL8188EU is not set
+# CONFIG_RTL8192CU is not set" >> ${CFGFILE}
+
+# SAW - WIFI FOR QX1 OR ALT RKWIFI (AP6210/6330)
+if [ "$SETWIFI" = "RTL8188EU" ]; then
+ echo "CONFIG_RTL8188EU=y
+# CONFIG_RT5370 is not set
+# CONFIG_AR6003 is not set
+# CONFIG_RKWIFI is not set" >> ${CFGFILE}
+elif [[ "$SETWIFI" = "AP6210" || "$SETWIFI" = "AP6330" ]]; then
+ echo "# CONFIG_RTL8188EU is not set
 # CONFIG_RT5370 is not set
 # CONFIG_AR6003 is not set
 CONFIG_RKWIFI=y
@@ -1473,12 +1506,19 @@ CONFIG_RK_CFG80211=y
 # CONFIG_BCM4330 is not set
 # CONFIG_RK903 is not set
 # CONFIG_RK901 is not set
-# CONFIG_AP6181 is not set
-CONFIG_AP6210=y
-# CONFIG_AP6330 is not set
-# CONFIG_AP6476 is not set
-# CONFIG_AP6494 is not set
+# CONFIG_AP6181 is not set" >> ${CFGFILE}
+ if [ "$SETWIFI" = "AP6210" ]; then
+  echo "CONFIG_AP6210=y
+# CONFIG_AP6330 is not set" >> ${CFGFILE}
+ elif [ "$SETWIFI" = "AP6330" ]; then
+  echo "# CONFIG_AP6210 is not set
+CONFIG_AP6330=y" >> ${CFGFILE}
+ fi
+ echo "# CONFIG_AP6476 is not set
+# CONFIG_AP6494 is not set" >> ${CFGFILE}
+fi
 
+echo "
 #
 # Enable WiMAX (Networking options) to see the WiMAX drivers
 #
@@ -1792,9 +1832,16 @@ CONFIG_ADC_RK30=y
 # Enable Device Drivers -> PPS to see the PTP clock options.
 #
 CONFIG_ARCH_REQUIRE_GPIOLIB=y
-CONFIG_GPIOLIB=y
-CONFIG_DEBUG_GPIO=y
-CONFIG_GPIO_SYSFS=y
+CONFIG_GPIOLIB=y" >> ${CFGFILE}
+
+# SAW - debug flag
+if [ "$SDBG" = "ON" ]; then
+ echo "CONFIG_DEBUG_GPIO=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_DEBUG_GPIO is not set" >> ${CFGFILE}
+fi
+
+echo "CONFIG_GPIO_SYSFS=y
 
 #
 # Memory mapped GPIO drivers:
@@ -2008,10 +2055,18 @@ CONFIG_REGULATOR_USERSPACE_CONSUMER=y
 # CONFIG_RK2818_REGULATOR_CHARGE is not set
 # CONFIG_RK2818_REGULATOR_LP8725 is not set
 # CONFIG_REGULATOR_ACT8891 is not set
-# CONFIG_REGULATOR_ACT8931 is not set
-CONFIG_REGULATOR_ACT8846=y
-CONFIG_ACT8846_SUPPORT_RESET=y
-# CONFIG_RK29_PWM_REGULATOR is not set
+# CONFIG_REGULATOR_ACT8931 is not set" >> ${CFGFILE}
+
+# SAW - PMU option (only 1 right now)
+if [ "$SETPMU" = "ACT8846" ]; then
+ echo "CONFIG_REGULATOR_ACT8846=y
+CONFIG_ACT8846_SUPPORT_RESET=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_REGULATOR_ACT8846 is not set
+# CONFIG_ACT8846_SUPPORT_RESET is not set" >> ${CFGFILE}
+fi
+
+echo "# CONFIG_RK29_PWM_REGULATOR is not set
 # CONFIG_RK30_PWM_REGULATOR is not set
 # CONFIG_REGULATOR_ISL6271A is not set
 # CONFIG_REGULATOR_AD5398 is not set
@@ -2252,6 +2307,7 @@ CONFIG_MALI400=m" >> ${CFGFILE}
   fi
   echo "CONFIG_MALI400_PROFILING=y
 CONFIG_MALI400_INTERNAL_PROFILING=y
+CONFIG_MALI400_UMP=y
 # CONFIG_MALI_SHARED_INTERRUPTS is not set
 CONFIG_UMP=m" >> ${CFGFILE}
   if [ "$SDBG" = "ON" ]; then
@@ -2265,6 +2321,7 @@ CONFIG_UMP=m" >> ${CFGFILE}
 # CONFIG_MALI400_DEBUG is not set
 # CONFIG_MALI400_PROFILING is not set
 # CONFIG_MALI400_INTERNAL_PROFILING is not set
+# CONFIG_MALI400_UMP is not set
 # CONFIG_MALI_SHARED_INTERRUPTS is not set
 # CONFIG_UMP is not set
 # CONFIG_UMP_DEBUG is not set" >> ${CFGFILE} 
@@ -2361,11 +2418,26 @@ CONFIG_DISPLAY_SUPPORT=y
 # CONFIG_LCD_I30_800X480 is not set
 # CONFIG_LCD_TL5001_MIPI is not set
 # CONFIG_LCD_LP097QX1 is not set
-# CONFIG_LCD_DS1006H is not set
-# CONFIG_BOX_FB_480P is not set
-CONFIG_BOX_FB_720P=y
-# CONFIG_BOX_FB_1080P is not set
-CONFIG_NO_TRSM=y
+# CONFIG_LCD_DS1006H is not set" >> ${CFGFILE}
+
+# SAW - HDMI resolution options
+if [ "$SETHDMI" = "480" ]; then
+ echo "CONFIG_BOX_FB_480P=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_BOX_FB_480P is not set" >> ${CFGFILE}
+fi
+if [ "$SETHDMI" = "720" ]; then
+ echo "CONFIG_BOX_FB_720P=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_BOX_FB_720P is not set" >> ${CFGFILE}
+fi
+if [ "$SETHDMI" = "1080" ]; then
+ echo "CONFIG_BOX_FB_1080P=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_BOX_FB_1080P is not set" >> ${CFGFILE}
+fi
+
+echo "CONFIG_NO_TRSM=y
 # CONFIG_DP_ANX6345 is not set
 # CONFIG_DP501 is not set
 # CONFIG_MIPI_DSI is not set
@@ -2382,16 +2454,32 @@ CONFIG_NO_DUAL_DISP=y
 # CONFIG_LCDC_OVERLAY_ENABLE is not set
 # CONFIG_FB_ROTATE is not set
 CONFIG_THREE_FB_BUFFER=y
-CONFIG_LCDC_RK3188=y
-CONFIG_LCDC0_RK3188=y
+CONFIG_LCDC_RK3188=y" >> ${CFGFILE}
+
+# SAW - LCD selection option
+if [ "$SETLCD" = "LCDC0" ]; then
+ echo "CONFIG_LCDC0_RK3188=y
 # CONFIG_LCDC0_IO_18V is not set
-# CONFIG_LCDC1_RK3188 is not set
-CONFIG_RK_HDMI=y
+# CONFIG_LCDC1_RK3188 is not set" >> ${CFGFILE}
+elif [ "$SETLCD" = "LCDC1" ]; then
+ echo "# CONFIG_LCDC0_RK3188 is not set
+CONFIG_LCDC1_RK3188=y
+# CONFIG_LCDC1_IO_18V is not set" >> ${CFGFILE}
+fi
+
+echo "CONFIG_RK_HDMI=y
 # CONFIG_SII902XA is not set
 CONFIG_IT66121=y
-# CONFIG_RK_HDMI_GPIO_CEC is not set
-CONFIG_RK_HDMI_DEBUG=y
-# CONFIG_RK_HDMI_CTL_CODEC is not set
+# CONFIG_RK_HDMI_GPIO_CEC is not set" >> ${CFGFILE}
+
+# SAW - debug flag
+if [ "$SDBG" = "ON" ]; then
+ echo "CONFIG_RK_HDMI_DEBUG=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_RK_HDMI_DEBUG is not set" >> ${CFGFILE}
+fi
+
+echo "# CONFIG_RK_HDMI_CTL_CODEC is not set
 
 #
 # RGA
@@ -3171,14 +3259,28 @@ CONFIG_MAGIC_SYSRQ=y
 # CONFIG_UNUSED_SYMBOLS is not set
 CONFIG_DEBUG_FS=y
 # CONFIG_HEADERS_CHECK is not set
-# CONFIG_DEBUG_SECTION_MISMATCH is not set
-CONFIG_DEBUG_KERNEL=y
-# CONFIG_DEBUG_SHIRQ is not set
+# CONFIG_DEBUG_SECTION_MISMATCH is not set" >> ${CFGFILE}
+
+# SAW - debug flag
+if [ "$SDBG" = "ON" ]; then
+ echo "CONFIG_DEBUG_KERNEL=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_DEBUG_KERNEL is not set" >> ${CFGFILE}
+fi
+
+echo "# CONFIG_DEBUG_SHIRQ is not set
 # CONFIG_LOCKUP_DETECTOR is not set
 # CONFIG_HARDLOCKUP_DETECTOR is not set
-# CONFIG_DETECT_HUNG_TASK is not set
-CONFIG_SCHED_DEBUG=y
-CONFIG_SCHEDSTATS=y
+# CONFIG_DETECT_HUNG_TASK is not set" >> ${CFGFILE}
+
+# SAW - debug flag
+if [ "$SDBG" = "ON" ]; then
+ echo "CONFIG_SCHED_DEBUG=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_SCHED_DEBUG is not set" >> ${CFGFILE}
+fi
+
+echo "CONFIG_SCHEDSTATS=y
 # CONFIG_TIMER_STATS is not set
 # CONFIG_DEBUG_OBJECTS is not set
 # CONFIG_SLUB_STATS is not set
@@ -3197,9 +3299,16 @@ CONFIG_SCHEDSTATS=y
 CONFIG_STACKTRACE=y
 # CONFIG_DEBUG_STACK_USAGE is not set
 # CONFIG_DEBUG_KOBJECT is not set
-# CONFIG_DEBUG_HIGHMEM is not set
-CONFIG_DEBUG_BUGVERBOSE=y
-# CONFIG_DEBUG_INFO is not set
+# CONFIG_DEBUG_HIGHMEM is not set" >> ${CFGFILE}
+
+# SAW - debug flag
+if [ "$SDBG" = "ON" ]; then
+ echo "CONFIG_DEBUG_BUGVERBOSE=y" >> ${CFGFILE}
+else
+ echo "# CONFIG_DEBUG_BUGVERBOSE is not set" >> ${CFGFILE}
+fi
+
+echo "# CONFIG_DEBUG_INFO is not set
 # CONFIG_DEBUG_VM is not set
 # CONFIG_DEBUG_WRITECOUNT is not set
 # CONFIG_DEBUG_MEMORY_INIT is not set

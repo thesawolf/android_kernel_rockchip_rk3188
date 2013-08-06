@@ -74,13 +74,16 @@ achieve the same results (for now, anyways)
 - (2.4) added in debugging, Mali and exFAT kernel options (if available)
 - major fleshing out in the config builder (CFGCORE.sh) and running it by itself
  will cause the script to generate an example defconfig (EXAMPLE-CONFIG)
+- (2.5) config builder pretty much finished and made alot of attempts to make
+it kernel source neutral where I could
+- Build routines (unattended and in script working properly now)
 
 **TODO:**
 - config builder mailer. If you customize your device config for a device 
 not on the list, have it email to me for inclusion in the script or you can
 just take the generated defconfig and get it to me
-- finish tweaking config builder to reflect builder options
-- get unattended building working under new system
+- <del>finish tweaking config builder to reflect builder options</del>
+- <del>get unattended building working under new system</del>
 
 **CREDITS:**
 - Me (duh)

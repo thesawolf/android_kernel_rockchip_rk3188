@@ -96,6 +96,7 @@ from Rikomagic before alok's linux-centric source changes
 - Device building script forked from build_mk908 (now called buildit)
 - Added in 2.4 version of LABS (BUILDIT.sh/CFGCORE.sh) to replace build_mk908
 - Stashed away old files in temp directory as LABS is almost ready to roll
+- Added in final 2.5 version of LABS
 
 **ToDo:**
 - YAFFS2 debugging

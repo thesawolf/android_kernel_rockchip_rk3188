@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERS="2.4"
+VERS="2.5"
 # LAZY-ASS BUILD SCRIPT (LABS) by
 # Thesawolf (thesawolf [at] gmail [d0t] com)
 #
@@ -49,6 +49,9 @@ VERS="2.4"
 # (2.3) config builder created and linked and config menu updated accordingly
 # - renamed scripts.. just because (now BUILDIT.sh and CFGCORE.sh)
 # (2.4) added in debugging, Mali and exFAT kernel options (if available)
+# (2.5) config builder pretty much finished and made alot of attempts to
+# make it kernel source neutral where I could
+# - Build routines (unattended and in script working properly now)
 
 # initialize default settings 
 function initdef 
@@ -194,7 +197,7 @@ function devtemp
 	;;
   3)	
 	SETLCD="LCDC1";
-	SETWIFI="RTL8188eu";
+	SETWIFI="RTL8188EU";
 	SETBT="RDA58";
 	SETPMU="ACT8846";
 	SSPEC1="OFF";
@@ -987,6 +990,9 @@ function cfgitems
  cfgopt=""
  while [ "$cfgopt" != "0" ]
  do
+ 	if [ "$DEVICE" = "TEMPCONFIG" ]; then
+ 		DEVICE="(Auto-Generated TEMPCONFIG)"
+ 	fi
 	clear 
 	echo "   ===========================[ CONFIGS MENU ]==========================="
 	echo "                    Current: $DEVICE"
@@ -1007,10 +1013,13 @@ else
 	if [ "$SETOC" = "ON" ]; then
 		OCFLAG="OC-"
 	fi
-	DEVFILE="${DEVNAME}-${SETHDMI}-${OCFLAG}defconfig"
+        if [ "$SDBG" = "ON" ]; then
+        	DBFLAG="DEBUG-"
+        fi
+	DEVFILE="${DEVNAME}-${SETHDMI}-${OCFLAG}${DBFLAG}defconfig"
 fi
 	echo "   =--------------------------------------------------------------------="
-	echo "     1. Build a TEMPCONFIG (based on device settings) for viewing"
+	echo "     1. Build a TEMPCONFIG (based on device settings)"
 	echo "       Q. menuconfig >> TEMPCONFIG"
         echo "     2. Build a permanent config (from device settings) for usage"
         echo "       W. menuconfig >> $DEVFILE"
@@ -1027,7 +1036,7 @@ fi
 	    . CFGCORE.sh
 	    echo
 	    echo
-	    read -n 1 -p " TEMPCONFIG created for viewing.. [ Press any key to continue ]"
+	    read -n 1 -p " ${CFGFILE} created and set.. [ Press any key to continue ]"
 	   else
 	    echo
 	    echo
@@ -1350,6 +1359,9 @@ function buildit
 {
  echo
  echo -e "\n-------------------[ CLEANING UP BEFORE BUILD ]-----------------------\n"
+ if [ -e .config ]; then
+  mv .config SOMEOLD.config
+ fi
  if [ "$CUTIME" = "1" ]; then
   echo "NO clean-up selected, skipping..."
  else
@@ -1357,7 +1369,13 @@ function buildit
   eval $CUPARM
  fi
  echo -e "\n-------------------[ SETTING KERNEL DEFCONFIG ]---------------------\n"
- cp -v ./$DEVICE ./.config
+ if [ "$DEVICE" = "(Auto-Generated TEMPCONFIG)" ]; then
+   CFGFILE="TEMPCONFIG"
+ else
+   CFGFILE="${DEVICE}"
+ fi
+ . CFGCORE.sh 
+ cp -v $CFGFILE .config
  echo -e "\n-------------------[ BEGINNING KERNEL BUILD ]-----------------------\n"
 
  eval $LOGPARMA
@@ -1371,7 +1389,7 @@ function buildit
  eval $NLOG
  NLOG="echo '    LOGS: $LIDESC' $LOGPARM1"
  eval $NLOG
- NLOG="echo '    THEADS: $THREADS' $LOGPARM1"
+ NLOG="echo '    THREADS: $THREADS' $LOGPARM1"
  eval $NLOG
  NLOG="echo '   =---------------------------------------=' $LOGPARM1"
  eval $NLOG
@@ -1424,6 +1442,9 @@ function buildit
   echo -n "KERNEL: "
   du -ach $KERNPARM2/*
   echo -e "\n===============================================================\n"
+  if [ -e TEMPCONFIG ]; then
+   rm TEMPCONFIG
+  fi  
   echo "NOTICE: Everything looks good! Happy flashing (your AMP, not people)!"
   echo
   exit
@@ -1503,7 +1524,15 @@ function scfig
  echo "SDBG=\"$SDBG\"" >> $BCFIG
  echo "SMALI=\"$SMALI\"" >> $BCFIG
  echo "SFAT=\"$SFAT\"" >> $BCFIG
+ clear
  echo
+ echo " Now that you have saved a build config, you can run unattended"
+ echo " builds that will auto-load your saved build config by running"
+ echo
+ echo "                    ./BUILDIT.sh -b"
+ echo
+ echo " Save yourself alot of time and energy instead of navigating"
+ echo " through the LABS each time. Hope it helps!"
  echo
  read -n1 -p "   Builder config saved... (press any key to continue)"
 }

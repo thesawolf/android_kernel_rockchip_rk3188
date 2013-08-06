@@ -48,7 +48,7 @@ config OVERCLOCK_GPU
 	help 
 	  Standard GPU (over)clocking (up to 600MHz)
 
-config EXTERME_OCGPU
+config EXTREME_OCGPU
 	bool "- Extreme GPU O/C"
 	help
 	  Does not work well on some devices (i.e. MK908)
