@@ -94,6 +94,8 @@ from Rikomagic before alok's linux-centric source changes
 - Toolchains added for convenience and build script
 - Updated Linaro 4.8 toolchain to 2013.07 release, tested. 
 - Device building script forked from build_mk908 (now called buildit)
+- Added in 2.4 version of LABS (BUILDIT.sh/CFGCORE.sh) to replace build_mk908
+- Stashed away old files in temp directory as LABS is almost ready to roll
 
 **ToDo:**
 - YAFFS2 debugging
