@@ -954,8 +954,8 @@ static struct platform_device rk30_device_remotectl = {
 /*$_rbox_$_modify_$_huangzhibao_end$_20120508_$*/
 #ifdef CONFIG_RK30_PWM_REGULATOR
 static int pwm_voltage_map[] = {
-#ifdef CONFIG_OVERVOLT_CPU
-//Set max voltage from 1375000 to 1450000 OC CPU < 2.16GHz - Sam321
+#ifdef CONFIG_OVERVOLT
+// SAW - Set max voltage from 1375000 to 1450000 for OC later
 	800000, 825000, 850000, 875000, 900000, 925000, 950000, 975000, 1000000, 1025000, 1050000, 1075000, 1100000, 1125000, 1150000, 1175000, 1200000, 1225000, 1250000, 1275000, 1300000, 1325000, 1350000, 1375000, 1400000, 1425000, 1450000
 #else
 	800000, 825000, 850000, 875000, 900000, 925000, 950000, 975000, 1000000, 1025000, 1050000, 1075000, 1100000, 1125000, 1150000, 1175000, 1200000, 1225000, 1250000, 1275000, 1300000, 1325000, 1350000, 1375000
@@ -993,7 +993,7 @@ static struct pwm_platform_data pwm_regulator_info[1] = {
 		.pwm_voltage = 1100000,
 		.suspend_voltage = 1000000,
 		.min_uV = 800000,
-#ifdef CONFIG_OVERVOLT_CPU
+#ifdef CONFIG_OVERVOLT
 //SAW -- max voltage setting - Sam321 
 		.max_uV	= 1450000,
 #else
@@ -1214,7 +1214,7 @@ static struct tcc_bt_platform_data tcc_bt_platdata = {
 
     .power_gpio   = { // ldoon
 //SAW QX1 setting thanks to Leolas
-#ifdef CONFIG_RK_VOLT2
+#ifdef CONFIG_TCC_BT_DEV_POWER_PIN3_PD1
 	.io		= RK30_PIN3_PD1,
 #else
         .io             = RK30_PIN3_PC7,
@@ -1470,7 +1470,7 @@ static struct pmu_info  act8846_dcdc_info[] = {
 	{
 		.name          = "act_dcdc4",   //vccio 
 //SAW special voltage for QX1, from Leolas
-#ifdef CONFIG_RK_VOLT2
+#ifdef CONFIG_ACT8846_DCDC4_30V
 		.min_uv		= 3000000,
 		.max_uv		= 3000000,
 #else
@@ -1515,7 +1515,7 @@ static  struct pmu_info  act8846_ldo_info[] = {
 		.name          = "act_ldo6",   //vcc_jetta
 //SAW volt set via kernel config, default 3300000, mk908 and some others
 //need 1800000 to get wifi/bt working properly
-#ifdef CONFIG_RK_VOLT1
+#ifdef CONFIG_ACT8846_LDO6_18V
 		.min_uv         = 1800000, 
 		.max_uv         = 1800000, 
 #else
@@ -2089,9 +2089,23 @@ static void __init rk30_reserve(void)
  * comments	: min arm/logic voltage
  */
 
+// SAW - these are GENERIC normal, overclock and "extreme" (w/attached
+// overvolt and undervolt), you may want to tweak the settings for your AMP
+// i.e on my MK908, I cannot get anything over 1.7 running properly
+// since 1.6 is stock, left as normal, made 1.7 my o/c cap for now and
+// put the higher freqs I can't reach as "extreme". 
+
 static struct cpufreq_frequency_table dvfs_arm_table[] = {
-#ifdef CONFIG_OVERCLOCK_CPU //SAW
-//on MK908, I cannot get anything over 1.7 running properly, 1.7 is cap for now
+#if defined(CONFIG_OVERCLOCK_CPU) && defined(CONFIG_UNDERVOLT) // CPU OC+UV
+        {.frequency = 312 * 1000,       .index = 850 * 1000},
+        {.frequency = 504 * 1000,       .index = 875 * 1000},
+        {.frequency = 816 * 1000,       .index = 950 * 1000},
+        {.frequency = 1008 * 1000,      .index = 1025 * 1000},
+        {.frequency = 1200 * 1000,      .index = 1100 * 1000},
+        {.frequency = 1416 * 1000,      .index = 1200 * 1000},
+        {.frequency = 1608 * 1000,      .index = 1275 * 1000},
+        {.frequency = 1704 * 1000,	.index = 1300 * 1000},
+#elif defined(CONFIG_OVERCLOCK_CPU) && defined(CONFIG_OVERVOLT) // CPU OC+OV
         {.frequency = 312 * 1000,       .index = 900 * 1000},
         {.frequency = 504 * 1000,       .index = 925 * 1000},
         {.frequency = 816 * 1000,       .index = 1000 * 1000},
@@ -2100,13 +2114,16 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
         {.frequency = 1416 * 1000,      .index = 1250 * 1000},
         {.frequency = 1608 * 1000,      .index = 1325 * 1000},
         {.frequency = 1704 * 1000,	.index = 1350 * 1000},
-#ifdef CONFIG_EXTREME_OCCPU //SAW
-	{.frequency = 1776 * 1000,	.index = 1350 * 1000},
-	{.frequency = 1896 * 1000,	.index = 1375 * 1000},
-	{.frequency = 1920 * 1000,	.index = 1400 * 1000},
-	{.frequency = 2016 * 1000,	.index = 1450 * 1000},
-#endif
-#else
+#elif defined(CONFIG_OVERCLOCK_CPU) // CPU OC
+        {.frequency = 312 * 1000,       .index = 875 * 1000},
+        {.frequency = 504 * 1000,       .index = 900 * 1000},
+        {.frequency = 816 * 1000,       .index = 975 * 1000},
+        {.frequency = 1008 * 1000,      .index = 1050 * 1000},
+        {.frequency = 1200 * 1000,      .index = 1125 * 1000},
+        {.frequency = 1416 * 1000,      .index = 1225 * 1000},
+        {.frequency = 1608 * 1000,      .index = 1300 * 1000},
+        {.frequency = 1704 * 1000,	.index = 1325 * 1000},
+#else // NORMAL CPU
         {.frequency = 312 * 1000,       .index = 900 * 1000},
         {.frequency = 504 * 1000,       .index = 925 * 1000},
         {.frequency = 816 * 1000,       .index = 1000 * 1000},
@@ -2114,23 +2131,42 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
         {.frequency = 1200 * 1000,      .index = 1150 * 1000},
         {.frequency = 1416 * 1000,      .index = 1250 * 1000},
         {.frequency = 1608 * 1000,      .index = 1350 * 1000},
+#endif	
+#if defined(CONFIG_EXTREME_OCCPU) && defined(CONFIG_UNDERVOLT) // CPU OCX+UV
+	{.frequency = 1776 * 1000,	.index = 1300 * 1000},
+	{.frequency = 1896 * 1000,	.index = 1325 * 1000},
+	{.frequency = 1920 * 1000,	.index = 1350 * 1000},
+	{.frequency = 2016 * 1000,	.index = 1400 * 1000},
+#elif defined(CONFIG_EXTREME_OCCPU) && defined(CONFIG_OVERVOLT) // CPU OCX+OV
+	{.frequency = 1776 * 1000,	.index = 1350 * 1000},
+	{.frequency = 1896 * 1000,	.index = 1375 * 1000},
+	{.frequency = 1920 * 1000,	.index = 1400 * 1000},
+	{.frequency = 2016 * 1000,	.index = 1450 * 1000},
+#elif defined(CONFIG_EXTREME_OCCPU) // CPU OCX
+	{.frequency = 1776 * 1000,	.index = 1325 * 1000},
+	{.frequency = 1896 * 1000,	.index = 1350 * 1000},
+	{.frequency = 1920 * 1000,	.index = 1375 * 1000},
+	{.frequency = 2016 * 1000,	.index = 1425 * 1000},
 #endif
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
+// SAW - on MK908, 800MHz OC works, but get lots of artifacting
+// this table will be adjusted if anything over 800 is found
+// if 800 gets stable for MK908, will move it into regular OC
+
 static struct cpufreq_frequency_table dvfs_gpu_table[] = {
-#ifdef CONFIG_OVERCLOCK_GPU //SAW -- Sam321 tweaks below
-//on MK908, 800MHz works, but get lots of artifacting, disabling for now
+#ifdef CONFIG_OVERCLOCK_GPU // GPU OC
        	{.frequency = 133 * 1000,       .index = 975 * 1000},
        	{.frequency = 200 * 1000,       .index = 1000 * 1000},
        	{.frequency = 266 * 1000,       .index = 1025 * 1000},
 	{.frequency = 297 * 1000,	.index = 1050 * 1000},
        	{.frequency = 399 * 1000,       .index = 1100 * 1000},
 	{.frequency = 594 * 1000,	.index = 1250 * 1000},
-#ifdef CONFIG_EXTREME_OCGPU //SAW
+#ifdef CONFIG_EXTREME_OCGPU // GPU OCX
 	{.frequency = 798 * 1000,	.index = 1325 * 1000},
 #endif
-#else
+#else // NORMAL GPU
        	{.frequency = 133 * 1000,       .index = 975 * 1000},
        	{.frequency = 200 * 1000,       .index = 1000 * 1000},  
        	{.frequency = 266 * 1000,       .index = 1025 * 1000},  
@@ -2141,19 +2177,21 @@ static struct cpufreq_frequency_table dvfs_gpu_table[] = {
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
+// SAW - on MK908, setting NORMAL here does not work, has to be config defined
+// but will define here for devices that can utilize it
+
 static struct cpufreq_frequency_table dvfs_ddr_table[] = {
-#ifdef CONFIG_OVERCLOCK_RAM //SAW -- Sam321 tweaks
-//on MK908, setting NORMAL here does not work, has to be config defined
+#ifdef CONFIG_OVERCLOCK_RAM // RAM OC IDLE/SUSPEND for both OC/OCX
 	{.frequency = 396 * 1000 + DDR_FREQ_IDLE,	.index = 1100 * 1000},
 	{.frequency = 396 * 1000 + DDR_FREQ_SUSPEND,	.index = 1100 * 1000},
-#ifdef CONFIG_EXTREME_OCRAM //SAW -- fill with extreme stuff later
+#ifdef CONFIG_EXTREME_OCRAM // RAM OCX, change this to HIGHER freqs later
 	{.frequency = 492 * 1000 + DDR_FREQ_VIDEO, 	.index = 1150 * 1000},
 	{.frequency = 792 * 1000 + DDR_FREQ_NORMAL,	.index = 1250 * 1000},
-#else
+#else // RAM OC, this is what DDR is RATED at
 	{.frequency = 492 * 1000 + DDR_FREQ_VIDEO,	.index = 1150 * 1000},
 	{.frequency = 792 * 1000 + DDR_FREQ_NORMAL,	.index = 1250 * 1000},
 #endif
-#else //SAW stock settings below
+#else // NORMAL, this is what is set in STOCK
 	{.frequency = 300 * 1000 + DDR_FREQ_IDLE,	.index = 1000 * 1000},
 	{.frequency = 300 * 1000 + DDR_FREQ_SUSPEND,    .index = 1000 * 1000},
 	{.frequency = 300 * 1000 + DDR_FREQ_VIDEO,      .index = 1000 * 1000},

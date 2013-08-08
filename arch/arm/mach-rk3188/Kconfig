@@ -64,20 +64,31 @@ config EXTREME_OCRAM
 	help
 	  Open up overclocking DDR to XXXXMHz
 
-config OVERVOLT_CPU
-	bool "CPU Overvolting"
+config OVERVOLT
+	bool "Overvolting"
 	help
 	  This just opens up a little more voltage. 
 	  This option can be tied into to various O/C features
 	  later, as it is right now.. it just bumps standard voltage
 	  from 1.375 to 1.450 
 
+config UNDERVOLT
+	bool "Undervolting"
+	help
+	  This reduces voltage some to help reduce heat generated with
+          some of the clocking options
+
 endmenu
 
-config RK_VOLT1
-	bool 
-	default n
-
-config RK_VOLT2
+config TCC_BT_DEV_POWER_PIN3_PD1
 	bool
 	default n
+
+config ACT8846_DCDC4_30V
+	bool
+	default n
+
+config ACT8846_LDO6_18V
+	bool
+	default n
+

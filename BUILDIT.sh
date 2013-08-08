@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERS="2.5"
+VERS="2.6"
 # LAZY-ASS BUILD SCRIPT (LABS) by
 # Thesawolf (thesawolf [at] gmail [d0t] com)
 #
@@ -52,39 +52,42 @@ VERS="2.5"
 # (2.5) config builder pretty much finished and made alot of attempts to
 # make it kernel source neutral where I could
 # - Build routines (unattended and in script working properly now)
+# (2.6) quick typo fix, toolchain detection and allow you to input your own
+# - Undervolting support added (in framework, needs tuning)
+# - redefined some defines for kernel (recommendation by phjanderson)
+# - improved some variable and redundancy checkers
 
+# initialize default settigns if not set in env (just in case, mainly)
+# this is needed especially if someone skipping around through the system
+# or we don't have a builder config to work from
 # initialize default settings 
 function initdef 
 {
+
 # determine threads using count cpu/cores x 2
 if [ -z "$THREADS" ]; then
  THREADS=$(nproc)
  THREADS=$(($THREADS*2))
 fi
 
-# set defaults if not set in env (just in case, mainly)
-# this is needed especially if someone skipping around through the system
-if [ -z $TOOLCHAIN ]; then 
+if [ -z "$TOOLCHAIN" ]; then 
  TOOLCHAIN=1
  TCDESC="System"
-fi
-
-if [ -z $CROSS_COMPILE ]; then
  CROSS_COMPILE=arm-linux-gnueabi-
 fi
 
-if [ -z $DEVICE ]; then
+if [ -z "$DEVICE" ]; then
  DEVICE="(Auto-Generated TEMPCONFIG)"
 fi
 
-if [ -z $OUTLOC ]; then
+if [ -z "$OUTLOC" ]; then
   KERNPARM1="kernel.img"
   KERNPARM2="./NEW"
   OLDESC="kernel.img > KERNEL/MODULES dirs"
   OUTLOC=5
 fi
 
-if [ -z $LOGIT ]; then
+if [ -z "$LOGIT" ]; then
   LOGIT=2
   LOGPARMA="echo '------------------------NEW-KERNEL---------------------' >BUILD.LOG"
   LOGPARM1='2>&1 | tee -a BUILD.LOG'
@@ -92,20 +95,20 @@ if [ -z $LOGIT ]; then
   LIDESC="BUILD.LOG/screen output (replace)"
 fi
 
-if [ -z $CUTIME ]; then
+if [ -z "$CUTIME" ]; then
    CUTIME=3
    CUDESC="FULL clean-up (make mrproper)"
    CUPARM="make ARCH=arm mrproper"
 fi
 
-if [ -z $DEVNAME ]; then
+if [ -z "$DEVNAME" ]; then
    DEVNAME=""
    SETHDMI="720"
    SETLCD="NOT SPECIFIED"
    SETWIFI="NOT SPECIFIED"
    SETBT="NOT SPECIFIED"
    SETPMU="NOT SPECIFIED"
-   SETOC="OFF"
+   SETCL="OFF"
    CPUOC="OFF"
    CPUOCX="OFF"
    GPUOC="OFF"
@@ -116,9 +119,11 @@ if [ -z $DEVNAME ]; then
    SETSPEC="OFF"
    SSPEC1="OFF"
    SSPEC2="OFF"
+   SSPEC3="OFF"
    SDBG="ON"
    SMALI="OFF"
    SFAT="OFF"
+   UVOLT="OFF"
 fi
 }
 
@@ -126,7 +131,7 @@ fi
 # turned into function so can be called from menu or cmdline
 function icfig
 {
- if [ -e buildit.cfg ]; then
+ if [ -e "buildit.cfg" ]; then
     echo "Config file found, importing..."
     . buildit.cfg
  else
@@ -154,6 +159,7 @@ function cdev
   echo "   ================[ DEVICE BUILD ]================="
   echo "   Enter a device name (this is mainly for reference"
   echo "   and setting a hostname based on that device name)"
+  echo "   Keep it short, no spaces or unusual characters."
   echo
   echo "   Using device template where: (can change later)"
   echo "             HDMI RESOLUTION: $SETHDMI"
@@ -186,6 +192,7 @@ function devtemp
 	SETPMU="ACT8846";
 	SSPEC1="ON";
 	SSPEC2="OFF";
+	SSPEC3="OFF";
  	;;
  2)
 	SETLCD="LCDC1";
@@ -194,6 +201,7 @@ function devtemp
 	SETPMU="ACT8846";
 	SSPEC1="OFF";
 	SSPEC2="OFF";
+	SSPEC3="OFF";
 	;;
   3)	
 	SETLCD="LCDC1";
@@ -202,6 +210,7 @@ function devtemp
 	SETPMU="ACT8846";
 	SSPEC1="OFF";
 	SSPEC2="ON";
+	SSPEC3="ON";
 	;;
  esac
  cdev
@@ -272,7 +281,7 @@ function devitems
 	   SETWIFI="NOT SPECIFIED"
 	   SETBT="NOT SPECIFIED"
 	   SETPMU="NOT SPECIFIED"
-	   SETOC="OFF"
+	   SETCL="OFF"
 	   CPUOC="OFF"
 	   CPUOCX="OFF"
 	   GPUOC="OFF"
@@ -283,9 +292,11 @@ function devitems
 	   SETSPEC="OFF"
 	   SSPEC1="OFF"
 	   SSPEC2="OFF"
+	   SSPEC3="OFF"
 	   SDBG="ON"
 	   SMALI="OFF"
 	   SFAT="OFF"
+	   UVOLT="OFF"
 	   mainopt
 	fi
   done
@@ -434,13 +445,13 @@ function pmuitems
  done
 }
 
-# OC Check function
-function checkoc
+# Clocking Check function
+function checkcl
 {
- if [[ "$OVOLT" = "ON" || "$CPUOC" = "ON" || "$GPUOC" = "ON" || "$DDROC" = "ON" ]]; then
-  SETOC="ON"
+ if [[ "$OVOLT" = "ON" || "$CPUOC" = "ON" || "$GPUOC" = "ON" || "$DDROC" = "ON" || "$UVOLT" = "ON" ]]; then
+  SETCL="ON"
  else
-  SETOC="OFF"
+  SETCL="OFF"
  fi
 }
 
@@ -469,24 +480,25 @@ function subcpu
   if [ "$scpu" = "1" ]; then
 	if [ "$CPUOC" = "OFF" ]; then
 	 CPUOC="ON"
-	 checkoc
+	 checkcl
 	else
 	 CPUOC="OFF"
-	 checkoc
+	 CPUOCX="OFF"
+	 checkcl
 	fi
   elif [ "$scpu" = "2" ]; then
 	if [ "$CPUOCX" = "OFF" ]; then  
 	 CPUOC="ON"
 	 CPUOCX="ON"
-	 checkoc
+	 checkcl
 	else
 	 CPUOCX="OFF"
-	 checkoc
+	 checkcl
 	fi
   elif [ "$scpu" = "9" ]; then
   	CPUOC="OFF"
   	CPUOCX="OFF"
-  	checkoc
+  	checkcl
   fi
  done
 }
@@ -516,24 +528,25 @@ function subgpu
   if [ "$sgpu" = "1" ]; then
 	if [ "$GPUOC" = "OFF" ]; then
 	 GPUOC="ON"
-	 checkoc
+	 checkcl
 	else
 	 GPUOC="OFF"
-	 checkoc
+         GPUOCX="OFF"
+	 checkcl
 	fi
   elif [ "$sgpu" = "2" ]; then
 	if [ "$GPUOCX" = "OFF" ]; then  
 	 GPUOC="ON"
 	 GPUOCX="ON"
-	 checkoc
+	 checkcl
 	else
 	 GPUOCX="OFF"
-	 checkoc
+	 checkcl
 	fi
   elif [ "$sgpu" = "9" ]; then
   	GPUOC="OFF"
   	GPUOCX="OFF"
-  	checkoc
+  	checkcl
   fi
  done
 }
@@ -563,24 +576,25 @@ function subddr
   if [ "$sddr" = "1" ]; then
 	if [ "$DDROC" = "OFF" ]; then
 	 DDROC="ON"
-	 checkoc
+	 checkcl
 	else
 	 DDROC="OFF"
-	 checkoc
+	 DDROCX="OFF"
+	 checkcl
 	fi
   elif [ "$sddr" = "2" ]; then
 	if [ "$DDROCX" = "OFF" ]; then  
 	 DDROC="ON"
 	 DDROCX="ON"
-	 checkoc
+	 checkcl
 	else
 	 DDROCX="OFF"
-	 checkoc
+	 checkcl
 	fi
   elif [ "$sddr" = "9" ]; then
   	DDROC="OFF"
   	DDROCX="OFF"
-  	checkoc
+  	checkcl
   fi
  done
 }
@@ -589,7 +603,7 @@ function subddr
 # if more special requirement get added, expand on this checker
 function checkspec
 {
- if [[ "$SSPEC1" = "ON" || "$SSPEC2" = "ON" ]]; then
+ if [[ "$SSPEC1" = "ON" || "$SSPEC2" = "ON" || "$SSPEC3" = "ON" ]]; then
   SETSPEC="ON"
  else
   SETSPEC="OFF"
@@ -610,8 +624,9 @@ function specitems
 	echo "   ===============[ SPECIAL REQUIREMENTS ]================"
 	echo "                        Current: $SETSPEC"
 	echo "   =-----------------------------------------------------="
-	echo "   1. $SSPEC1 : WiFi/BT Volt 1 [1.8 ldo6] (MK908)"
-	echo "   2. $SSPEC2 : WiFi/BT Volt 2 [3.0 dcdc4, BT GPIO PD1] (QX-1)"
+	echo "   1. $SSPEC1 : WiFi/BT Volt [1.8 ldo6] (MK908)"
+	echo "   2. $SSPEC2 : WiFi/BT Volt [3.0 dcdc4] (QX-1)"
+	echo "   3. $SSPEC3 : BT GPIO [PD1] (QX-1)"
 	echo "   =-----------------------------------------------------="
 	echo "   X. Clear all special requirements"
 	echo "   ======================================================="
@@ -628,69 +643,89 @@ function specitems
 	   else
 		SSPEC2="ON"
 	   fi
+	elif [ "$specopt" = "3" ]; then
+	   if [ "$SSPEC3" = "ON" ]; then
+	        SSPEC3="OFF"
+	   else
+	        SSPEC3="ON"
+	   fi
 	elif [[ "$specopt" = "X" || "$specopt" = "x" ]]; then
 	   SSPEC1="OFF"
 	   SSPEC2="OFF"
+	   SSPEC3="OFF"
 	fi
  done
 }
 
-# Overclock Settings menu
-function ocitems
+# Clocking Settings menu
+function clitems
 {
- ocopt=""
- while [ "$ocopt" != "0" ]
+ clopt=""
+ while [ "$clopt" != "0" ]
  do
  	clear
  	echo
- 	echo "   ===============[ OVERCLOCK OPTIONS ]================"	
-	echo "                      Current: $SETOC"
+ 	echo "   ===============[ CLOCKING OPTIONS ]================="	
+	echo "                      Current: $SETCL"
 	echo "   =--------------------------------------------------="
-	echo "   Please be aware that enabling ANY of these options"
+	echo "   Enabling ANY of these options (aside from undervolt)"
 	echo "   will most certainly cause devices to get hot and"
-	echo "   proper cooling methods should be recommended to"
-	echo "   users! Also, overclocking is touchy and may need"
-	echo "   to be adjusted for specific devices (in board files)"
+	echo "   proper cooling methods should used. Undervolt will"
+	echo "   HELP reduce heat while overclocking, but it will not"
+	echo "   eliminate it. Also, overclocking may need to be"
+	echo "   adjusted for specific devices (in board files)"
 	echo "   Selecting extreme O/C WILL NOT work on some devices."
  	echo "   =--------------------------------------------------="
- 	echo -n "   1. Overclock CPU: $CPUOC"
+ 	echo -n "    1. Overclock CPU: $CPUOC"
  	if [ "$CPUOCX" = "ON" ]; then
  		echo " (+ Extreme)"
         else
          echo
 	fi
- 	echo -n "   2. Overclock GPU: $GPUOC"
+ 	echo -n "    2. Overclock GPU: $GPUOC"
  	if [ "$GPUOCX" = "ON" ]; then
  		echo " (+ Extreme)"
  	else
  	 echo
  	fi
- 	echo -n "   3. Overclock RAM: $DDROC"
+ 	echo -n "    3. Overclock RAM: $DDROC"
  	if [ "$DDROCX" = "ON" ]; then
  		echo " (+ Extreme)"
  	else
  	 echo
  	fi
- 	echo "   4. Overvolt: $OVOLT"
+	echo "   =--------------------------------------------------="
+ 	echo "    4. Overvolt: $OVOLT"
+ 	echo "    5. Undervolt: $UVOLT"
  	echo "   =--------------------------------------------------="
- 	echo "   9. Turn OFF overclock options"
+ 	echo "    9. Turn OFF clocking options"
  	echo "   ===================================================="
- 	read -n 1 -p "   Select Overclock options [0=EXIT]: " ocopt
- 	if [ "$ocopt" = "1" ]; then
+ 	read -n 1 -p "   Select Clocking options [0=EXIT]: " clopt
+ 	if [ "$clopt" = "1" ]; then
  	   subcpu
- 	elif [ "$ocopt" = "2" ]; then
+ 	elif [ "$clopt" = "2" ]; then
  	   subgpu
- 	elif [ "$ocopt" = "3" ]; then
+ 	elif [ "$clopt" = "3" ]; then
  	   subddr
- 	elif [ "$ocopt" = "4" ]; then
+ 	elif [ "$clopt" = "4" ]; then
  	   if [ "$OVOLT" = "ON" ]; then
 	    OVOLT="OFF"
-	    checkoc
+	    checkcl
 	   else
 	    OVOLT="ON"
-	    checkoc
+	    UVOLT="OFF"
+	    checkcl
 	   fi 	   
-	elif [ "$ocopt" = "9" ]; then
+	elif [ "$clopt" = "5" ]; then
+	   if [ "$UVOLT" = "ON" ]; then
+	    UVOLT="OFF"
+	    checkcl
+	   else
+	    UVOLT="ON"
+	    OVOLT="OFF"
+	    checkcl
+	   fi
+	elif [ "$clopt" = "9" ]; then
 	   CPUOC="OFF"
 	   CPUOCX="OFF"
 	   GPUOC="OFF"
@@ -698,7 +733,8 @@ function ocitems
 	   DDROC="OFF"
 	   DDROCX="OFF"
 	   OVOLT="OFF"
-	   checkoc
+	   UVOLT="OFF"
+	   checkcl
 	fi 	 
  done
 }
@@ -720,7 +756,7 @@ function dbgitems
 	echo "    reason why one would turn this off would be to shave a"
 	echo "    little bit off their kernel size and improve performance"
 	echo "    slightly. It is recommended to leave this ON, unless you"
-	echo "    know your kernel is stable and knoe what you are doing."
+	echo "    know your kernel is stable and know what you are doing."
 	echo "   =--------------------------------------------------------="
 	echo "               1. Turn ON kernel debugging (yay)"
 	echo "               =--------------------------------="
@@ -761,7 +797,7 @@ function malitems
 	echo "    option will be DISABLED and unavailable. Enable this only"
 	echo "    if you know what you are doing."
 	echo "   =--------------------------------------------------------="
-        if [ "$MALICHK" = "0" ]; then
+        if [ -n "$MALICHK" ]; then
          echo "               MALI DRIVER OPTION IS DISABLED!"
          echo
          echo "    Cannot locate any mali driver sources in the preferred"
@@ -808,7 +844,7 @@ function fatitems
 	echo "    will be DISABLED and unavailable. Enable this only if you"
 	echo "    know what you are doing."
 	echo "   =--------------------------------------------------------="
-        if [ "$FATCHK" = "0" ]; then
+        if [ -n "$FATCHK" ]; then
          echo "               EXFAT DRIVER OPTION IS DISABLED!"
          echo
          echo "    Cannot locate any exFAT driver sources in the preferred"
@@ -822,11 +858,11 @@ function fatitems
 	fi
 	echo "   =========================================================="
 	read -n 1 -p "   Select an option (if available) [0=EXIT]: " fatopt
-	if [[ "$fatopt" = "1" && "$FATCHK" != "0" ]]; then
+	if [[ "$fatopt" = "1" && -z "$FATCHK" ]]; then
 		SFAT="ON-MODULE"
-	elif [[ "$fatopt" = "2" && "$FATCHK" != "0" ]]; then
+	elif [[ "$fatopt" = "2" && -z "$FATCHK" ]]; then
 		SFAT="ON-KERNEL"
-	elif [[ "$fatopt" = "3" && "$FATCHK" != "0" ]]; then
+	elif [[ "$fatopt" = "3" && -z "$FATCHK" ]]; then
 		SFAT="OFF"
 	fi
  done
@@ -841,8 +877,8 @@ function optitems
  	clear
  	echo
  	echo "   ===================[ OPTIONS MENU ]==================="
- 	echo -n "    1. Overclock: $SETOC"
-	if [ "$SETOC" != "OFF" ]; then
+ 	echo -n "    1. Clocking: $SETCL"
+	if [ "$SETCL" != "OFF" ]; then
          echo -n " ["
 	 if [ "$CPUOC" = "ON" ]; then
 	  echo -n " CPU"
@@ -863,7 +899,10 @@ function optitems
 	  echo -n "(+X)"
 	 fi
 	 if [ "$OVOLT" = "ON" ]; then
-	  echo -n " OVERVOLT"
+	  echo -n " OV"
+	 fi
+	 if [ "$UVOLT" = "ON" ]; then
+	  echo -n " UV"
 	 fi
 	 echo " ]"
 	else
@@ -875,7 +914,7 @@ function optitems
 	echo "   ======================================================"
 	read -n 1 -p "   Select an option [0=EXIT]: " optopt
 	if [ "$optopt" = "1" ]; then
-	   ocitems
+	   clitems
 	elif [ "$optopt" = "2" ]; then
 	   dbgitems
 	elif [ "$optopt" = "3" ]; then
@@ -886,62 +925,137 @@ function optitems
  done
 }
 
-# CONFIG BUILDER
-# This will be modified as kernel components are determined for devices
-# moved this to a separate file since its so big with kernel config options
-# (easier to manage this way)
-function cfgbuild
+# tc nuller, in case using build cfg and there's no specifed tc found
+function tcnull
 {
- . CFGCORE.sh
+ TOOLCHAIN=0
+ TCDESC="ERROR"
+ CROSS_COMPILE="ERROR"
+}
+
+# toolchains checker
+function checktc
+{
+ TCM=" (DISABLED)"
+ if [[ ! -e /usr/bin/arm-linux-gnueabi-gcc || ! -h /usr/bin/arm-linux-gnueabi-gcc ]]; then
+  TCA1="0"
+  TC1M=$TCM
+  if [ "$TOOLCHAIN" = "1" ]; then
+   tcnull
+  fi
+ fi
+ if [ ! -d ./toolchains/arm-eabi-4.4.3 ]; then
+  TCA2="0"
+  TC2M=$TCM
+  if [ "$TOOLCHAIN" = "2" ]; then
+   tcnull
+  fi
+ fi	
+ if [ ! -d ./toolchains/arm-eabi-linaro-4.6.2 ]; then
+  TCA3="0"
+  TC3M=$TCM
+  if [ "$TOOLCHAIN" = "3" ]; then
+   tcnull
+  fi
+ fi	
+ if [ ! -d ./toolchains/android-toolchain-eabi ]; then
+  TCA4="0"
+  TC4M=$TCM
+  if [ "$TOOLCHAIN" = "4" ]; then
+   tcnull
+  fi
+ fi	
+ if [ ! -d ./toolchains/arm-linux-androideabi-4.7 ]; then
+  TCA5="0"
+  TC5M=$TCM
+  if [ "$TOOLCHAIN" = "5" ]; then
+   tcnull
+  fi
+ fi
 }
 
 # toolchains menu, you can change this to different ones you might have
 # installed on YOUR system by modifying the menu and then its
 # corresponding option afterward CROSS_COMPILE is the location on your
 # system in relation to the kernel directory (system-wide installed ones
-# just get named directly)
+# just get named directly), you will want to change or disable the checktc
+# function above if you modify the toolchains below
 function tcitems 
 {
+ checktc
  tcopt=""
  while [ "$tcopt" != "0" ]
  do
 	clear
 	echo
-	echo "   ===========[ TOOLCHAINS MENU ]================"
-	echo "    Current: $TOOLCHAIN ($TCDESC)"
-	echo "   =--------------------------------------------="
-	echo "   1. System (arm-linux-gnueabi via apt-get)"
-	echo "   2. Default Android (arm-eabi-4.4.3)"
-	echo "   3. Linaro 4.6.2 (arm-eabi-linaro-4.6.2)"
-	echo "   4. Linaro 4.8 2013.07 (android-toolchain-eabi)"
-	echo "   5. Google (arm-linux-androideabi-4.7)"
-	echo "   =============================================="
+	echo "   ===================[ TOOLCHAINS MENU ]===================="
+	echo "                 Current: $TOOLCHAIN ($TCDESC)"
+	echo 
+	echo "    NOTE: If an option is disabled, it is because toolchain"
+	echo "    was not found in the preferred ./toolchains directory"
+	echo "    or installed system-wide. Either edit the parameters to"
+	echo "    reflect another location or load your own below"
+	echo "   =--------------------------------------------------------="
+	echo "    1.$TC1M System (arm-linux-gnueabi via apt-get)"
+	echo "    2.$TC2M Default Android (arm-eabi-4.4.3)"
+	echo "    3.$TC3M Linaro 4.6.2 (arm-eabi-linaro-4.6.2)"
+	echo "    4.$TC4M Linaro 4.8 2013.07 (android-toolchain-eabi)"
+	echo "    5.$TC5M Google (arm-linux-androideabi-4.7)"
+	echo "   =--------------------------------------------------------="
+	echo "    L. Load your own toolchain (specify that here)"
+	echo "   =========================================================="
 	read -n 1 -p "   Select Toolchains [0=EXIT]: " tcopt
-	if [ "$tcopt" = "1" ]; then
+	if [[ "$tcopt" = "1" && -z "$TCA1" ]]; then
 	    TOOLCHAIN=1
 	    CROSS_COMPILE=arm-linux-gnueabi-
 	    TCDESC="System"
 	   break
-	elif [ "$tcopt" = "2" ]; then
+	elif [[ "$tcopt" = "2" && -z "$TCA2" ]]; then
 	    TOOLCHAIN=2
 	    CROSS_COMPILE=./toolchains/arm-eabi-4.4.3/bin/arm-eabi-
 	    TCDESC="Android"
 	   break
-	elif [ "$tcopt" = "3" ]; then
+	elif [[ "$tcopt" = "3" && -z "$TCA3" ]]; then
 	    TOOLCHAIN=3
 	    CROSS_COMPILE=./toolchains/arm-eabi-linaro-4.6.2/bin/arm-eabi-
 	    TCDESC="Linaro 4.6.2"
 	   break
-	elif [ "$tcopt" = "4" ]; then
+	elif [[ "$tcopt" = "4" && -z "$TCA4" ]]; then
 	    TOOLCHAIN=4
 	    CROSS_COMPILE=./toolchains/android-toolchain-eabi/bin/arm-eabi-
 	    TCDESC="Linaro 4.8 2013.07"
 	   break
-	elif [ "$tcopt" = "5" ]; then
+	elif [[ "$tcopt" = "5" && -z "$TCA5" ]]; then
 	    TOOLCHAIN=5
 	    CROSS_COMPILE=./toolchains/arm-linux-androideabi-4.7/bin/arm-linux-androideabi-
 	    TCDESC="Google"
 	   break
+	elif [[ "$tcopt" = "L" || "$tcopt" = "l" ]]; then
+	   clear
+           echo
+           echo
+           echo "Specify a toolchain (full path or reference path to script, case SENSITIVE)"
+           echo "         Example: ./toolchains/arm-androidtoolchain/bin/arm-eabi- "
+           echo "                (Leave blank and press [ENTER] to skip!)"
+           echo
+           read -e -p "Toolchain Path : " NEWTC
+           NTCC=$(ls "$NEWTC"* 2> /dev/null | wc -l)
+           if [[ -n "$NEWTC" && "$NTCC" != "0" ]]; then
+              TOOLCHAIN=6
+              TCDESC="CUSTOM"
+              CROSS_COMPILE="$NEWTC"
+           elif [[ -n "$NEWTC" && "$NTCC" = "0" ]]; then
+              echo
+              echo "=-----------------------------------------------------------------------="	      
+              echo
+              echo "                  WARNING! NO toolchain was found at:"
+              echo
+              echo "                  \"$NEWTC\""
+              echo
+              echo "   Check your toolchain path again and make sure it is CASE SENSITIVE"
+              echo
+              read -n 1 -p "                    [ Press any key to continue ]"
+           fi           
 	fi
  done
 }
@@ -1010,13 +1124,19 @@ if [ "$DEVNAME" = "" ]; then
 	echo "   now if you want to work with some of the features in this menu."
 else
 	NODEV=""
-	if [ "$SETOC" = "ON" ]; then
-		OCFLAG="OC-"
+	if [[ "$CPUOC" = "ON" || "$GPUOC" = "ON" || "$DDROC" = "ON" ]]; then
+		CLFLAG="OC-"
+	fi
+	if [ "$OVOLT" = "ON" ]; then
+		VFLAG="OV-"
+	fi
+	if [ "$UVOLT" = "ON" ]; then
+		VFLAG="UV-"
 	fi
         if [ "$SDBG" = "ON" ]; then
         	DBFLAG="DEBUG-"
         fi
-	DEVFILE="${DEVNAME}-${SETHDMI}-${OCFLAG}${DBFLAG}defconfig"
+	DEVFILE="${DEVNAME}-${SETHDMI}-${CLFLAG}${VFLAG}${DBFLAG}defconfig"
 fi
 	echo "   =--------------------------------------------------------------------="
 	echo "     1. Build a TEMPCONFIG (based on device settings)"
@@ -1510,7 +1630,7 @@ function scfig
  echo "SETWIFI=\"$SETWIFI\"" >> $BCFIG
  echo "SETBT=\"$SETBT\"" >> $BCFIG
  echo "SETPMU=\"$SETPMU\"" >> $BCFIG
- echo "SETOC=\"$SETOC\"" >> $BCFIG
+ echo "SETCL=\"$SETCL\"" >> $BCFIG
  echo "CPUOC=\"$CPUOC\"" >> $BCFIG
  echo "CPUOCX=\"$CPUOCX\"" >> $BCFIG
  echo "GPUOC=\"$GPUOC\"" >> $BCFIG
@@ -1521,9 +1641,11 @@ function scfig
  echo "SETSPEC=\"$SETSPEC\"" >> $BCFIG
  echo "SSPEC1=\"$SSPEC1\"" >> $BCFIG
  echo "SSPEC2=\"$SSPEC2\"" >> $BCFIG
+ echo "SSPEC3=\"$SSPEC3\"" >> $BCFIG
  echo "SDBG=\"$SDBG\"" >> $BCFIG
  echo "SMALI=\"$SMALI\"" >> $BCFIG
  echo "SFAT=\"$SFAT\"" >> $BCFIG
+ echo "UVOLT=\"$UVOLT\"" >> $BCFIG
  clear
  echo
  echo " Now that you have saved a build config, you can run unattended"
@@ -1542,6 +1664,7 @@ function fasttrack
 {
  if [ -s buildit.cfg ]; then
   icfig
+  checktc
   buildit
  else
   echo
@@ -1666,6 +1789,7 @@ done
 # functions to run if script run like normal
 initdef
 icfig
+checktc
 if [ "$DEVNAME" = "" ]; then
  devitems
 else

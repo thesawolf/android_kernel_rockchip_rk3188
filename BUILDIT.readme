@@ -77,6 +77,10 @@ achieve the same results (for now, anyways)
 - (2.5) config builder pretty much finished and made alot of attempts to make
 it kernel source neutral where I could
 - Build routines (unattended and in script working properly now)
+- (2.6) quick typo fix, toolchain detection and allow you to input your own
+- Undervolting support added (in framework, needs tuning)
+- redefined some defines for kernel (recommendation by phjanderson), updated both scripts to reflect this
+- Improved some variable and redundancy checkers
 
 **TODO:**
 - config builder mailer. If you customize your device config for a device 
