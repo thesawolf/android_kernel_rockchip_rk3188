@@ -420,14 +420,14 @@ CONFIG_SOC_RK3188=y
 # CONFIG_MACH_RK3188_FPGA is not set
 # CONFIG_MACH_RK3188_LR097 is not set
 # CONFIG_MACH_RK3188_DS1006H is not set
-CONFIG_MACH_RK3188_BOX=y
-" >> ${CFGFILE}
+CONFIG_MACH_RK3188_BOX=y" >> ${CFGFILE}
 
-# SAW - need to find a way to make this kernel neutral in case someone
-# using these scripts does not have these changes implemented in their
-# board files..(TODO)
-if [ "$SETCL" = "OFF" ]; then
- echo "#
+# SAW - Clocking options, if defines not found, skip it
+if grep -q -s "CONFIG_OVER" arch/arm/mach-rk3188/*
+then
+ if [ "$SETCL" = "OFF" ]; then
+  echo "
+#
 # RK3188 OVERCLOCK
 #
 # CONFIG_OVERCLOCK_CPU is not set
@@ -437,68 +437,79 @@ if [ "$SETCL" = "OFF" ]; then
 # CONFIG_OVERCLOCK_RAM is not set
 # CONFIG_EXTREME_OCRAM is not set
 # CONFIG_OVERVOLT is not set
-# CONFIG_UNDERVOLT is not" >> ${CFGFILE}
-else 
- echo "#
+# CONFIG_UNDERVOLT is not set" >> ${CFGFILE}
+ else 
+  echo "
+#
 # RK3188 OVERCLOCK
 #" >> ${CFGFILE}
- if [ "$CPUOC" = "ON" ]; then
-  echo "CONFIG_OVERCLOCK_CPU=y" >> ${CFGFILE}
- else
-  echo "# CONFIG_OVERCLOCK_CPU is not set" >> ${CFGFILE}
+  if [ "$CPUOC" = "ON" ]; then
+   echo "CONFIG_OVERCLOCK_CPU=y" >> ${CFGFILE}
+  else
+   echo "# CONFIG_OVERCLOCK_CPU is not set" >> ${CFGFILE}
+  fi
+  if [ "$CPUOCX" = "ON" ]; then
+   echo "CONFIG_EXTREME_OCCPU=y" >> ${CFGFILE}
+  else
+   echo "# CONFIG_EXTREME_OCCPU is not set" >> ${CFGFILE}
+  fi 
+  if [ "$GPUOC" = "ON" ]; then
+   echo "CONFIG_OVERCLOCK_GPU=y" >> ${CFGFILE}
+  else
+   echo "# CONFIG_OVERCLOCK_GPU is not set" >> ${CFGFILE}
+  fi 
+  if [ "$GPUOCX" = "ON" ]; then
+   echo "CONFIG_EXTREME_OCGPU=y" >> ${CFGFILE}
+  else
+   echo "# CONFIG_EXTREME_OCGPU is not set" >> ${CFGFILE}
+  fi
+  if [ "$DDROC" = "ON" ]; then
+   echo "CONFIG_OVERCLOCK_RAM=y" >> ${CFGFILE}
+  else
+   echo "# CONFIG_OVERCLOCK_RAM is not set" >> ${CFGFILE}
+  fi
+  if [ "$DDROCX" = "ON" ]; then
+   echo "CONFIG_EXTREME_OCRAM=y" >> ${CFGFILE}
+  else
+   echo "# CONFIG_EXTREME_OCRAM is not set" >> ${CFGFILE}
+  fi
+  if [ "$OVOLT" = "ON" ]; then
+   echo "CONFIG_OVERVOLT=y" >> ${CFGFILE}
+  else
+   echo "# CONFIG_OVERVOLT is not set" >> ${CFGFILE}
+  fi
+  if [ "$UVOLT" = "ON" ]; then
+   echo "CONFIG_UNDERVOLT=y" >> ${CFGFILE}
+  else
+   echo "# CONFIG_UNDERVOLT is not set" >> ${CFGFILE}
+  fi
  fi
- if [ "$CPUOCX" = "ON" ]; then
-  echo "CONFIG_EXTREME_OCCPU=y" >> ${CFGFILE}
- else
-  echo "# CONFIG_EXTREME_OCCPU is not set" >> ${CFGFILE}
- fi 
- if [ "$GPUOC" = "ON" ]; then
-  echo "CONFIG_OVERCLOCK_GPU=y" >> ${CFGFILE}
- else
-  echo "# CONFIG_OVERCLOCK_GPU is not set" >> ${CFGFILE}
- fi 
- if [ "$GPUOCX" = "ON" ]; then
-  echo "CONFIG_EXTREME_OCGPU=y" >> ${CFGFILE}
- else
-  echo "# CONFIG_EXTREME_OCGPU is not set" >> ${CFGFILE}
- fi
- if [ "$DDROC" = "ON" ]; then
-  echo "CONFIG_OVERCLOCK_RAM=y" >> ${CFGFILE}
- else
-  echo "# CONFIG_OVERCLOCK_RAM is not set" >> ${CFGFILE}
- fi
- if [ "$DDROCX" = "ON" ]; then
-  echo "CONFIG_EXTREME_OCRAM=y" >> ${CFGFILE}
- else
-  echo "# CONFIG_EXTREME_OCRAM is not set" >> ${CFGFILE}
- fi
- if [ "$OVOLT" = "ON" ]; then
-  echo "CONFIG_OVERVOLT=y" >> ${CFGFILE}
- else
-  echo "# CONFIG_OVERVOLT is not set" >> ${CFGFILE}
- fi
- if [ "$UVOLT" = "ON" ]; then
-  echo "CONFIG_UNDERVOLT=y" >> ${CFGFILE}
- else
-  echo "# CONFIG_UNDERVOLT is not set" >> ${CFGFILE}
- fi
-fi
+fi 
 
 # SAW - Special requirements options
-if [ "$SSPEC3" = "ON" ]; then
- echo "CONFIG_TCC_BT_DEV_POWER_PIN3_PD1=y" >> ${CFGFILE}
-else
- echo "# CONFIG_TCC_BT_DEV_POWER_PIN3_PD1 is not set" >> ${CFGFILE}
+if grep -q -s "CONFIG_TCC_BT_DEV_POWER_PIN3_PD1" arch/arm/mach-rk3188/*
+then
+ if [ "$SSPEC3" = "ON" ]; then
+  echo "CONFIG_TCC_BT_DEV_POWER_PIN3_PD1=y" >> ${CFGFILE}
+ else
+  echo "# CONFIG_TCC_BT_DEV_POWER_PIN3_PD1 is not set" >> ${CFGFILE}
+ fi
 fi
-if [ "$SSPEC2" = "ON" ]; then
- echo "CONFIG_ACT8846_DCDC4_30V=y" >> ${CFGFILE}
-else
- echo "# CONFIG_ACT8846_DCDC4_30V is not set" >> ${CFGFILE}
+if grep -q -s "CONFIG_ACT8846_DCDC4_30V" arch/arm/mach-rk3188/*
+then
+ if [ "$SSPEC2" = "ON" ]; then
+  echo "CONFIG_ACT8846_DCDC4_30V=y" >> ${CFGFILE}
+ else
+  echo "# CONFIG_ACT8846_DCDC4_30V is not set" >> ${CFGFILE}
+ fi
 fi
-if [ "$SSPEC1" = "ON" ]; then
- echo "CONFIG_ACT8846_LDO6_18V=y" >> ${CFGFILE}
-else
- echo "# CONFIG_ACT8846_LDO6_18V is not set" >> ${CFGFILE}
+if grep -q -s "CONFIG_ACT8846_LDO6_18V" arch/arm/mach-rk3188/*
+then
+ if [ "$SSPEC1" = "ON" ]; then
+  echo "CONFIG_ACT8846_LDO6_18V=y" >> ${CFGFILE}
+ else
+  echo "# CONFIG_ACT8846_LDO6_18V is not set" >> ${CFGFILE}
+ fi
 fi
 
 echo "

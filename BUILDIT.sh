@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERS="2.6"
+VERS="2.7"
 # LAZY-ASS BUILD SCRIPT (LABS) by
 # Thesawolf (thesawolf [at] gmail [d0t] com)
 #
@@ -56,8 +56,12 @@ VERS="2.6"
 # - Undervolting support added (in framework, needs tuning)
 # - redefined some defines for kernel (recommendation by phjanderson)
 # - improved some variable and redundancy checkers
+# (2.7) undervolt typo fix, more kernel neutrality stuff (added source
+# - checkers for the special options, ie. no overclock defines, feature
+# - disabled)
+# - better item selection indicators for some submenus
 
-# initialize default settigns if not set in env (just in case, mainly)
+# initialize default settings if not set in env (just in case, mainly)
 # this is needed especially if someone skipping around through the system
 # or we don't have a builder config to work from
 # initialize default settings 
@@ -666,7 +670,20 @@ function clitems
  	clear
  	echo
  	echo "   ===============[ CLOCKING OPTIONS ]================="	
-	echo "                      Current: $SETCL"
+	echo -n "                      Current: "
+	if [ -n "$CLCHK" ]; then
+	 echo "OFF (DISABLED)"
+	 CPUOC="OFF"
+	 CPUOCX="OFF"
+	 GPUOC="OFF"
+	 GPUOCX="OFF"
+	 DDROC="OFF"
+	 DDROCX="OFF"
+	 OVOLT="OFF"
+	 UVOLT="OFF"
+	else
+	 echo "$SETCL"
+	fi
 	echo "   =--------------------------------------------------="
 	echo "   Enabling ANY of these options (aside from undervolt)"
 	echo "   will most certainly cause devices to get hot and"
@@ -676,38 +693,49 @@ function clitems
 	echo "   adjusted for specific devices (in board files)"
 	echo "   Selecting extreme O/C WILL NOT work on some devices."
  	echo "   =--------------------------------------------------="
- 	echo -n "    1. Overclock CPU: $CPUOC"
- 	if [ "$CPUOCX" = "ON" ]; then
- 		echo " (+ Extreme)"
-        else
-         echo
-	fi
- 	echo -n "    2. Overclock GPU: $GPUOC"
- 	if [ "$GPUOCX" = "ON" ]; then
- 		echo " (+ Extreme)"
- 	else
- 	 echo
+	if [ -n "$CLCHK" ]; then
+	 echo "               CLOCKING OPTIONS DISABLED!"
+	 echo
+	 echo "    Cannot locate any of the Clocking defines in the"
+	 echo "    board files needed to control clocking options"
+	 echo "    such as overclocking CPU, GPU, DDR, undervolt and"
+	 echo "    overvolt. You will need to mimic or use the board"
+	 echo "    files found in the thesawolf kernel github"
+	 echo "    (github.com/thesawolf/android_kernel_rockchip_rk3188)"
+	else
+ 	 echo -n "    1. Overclock CPU: $CPUOC"
+ 	 if [ "$CPUOCX" = "ON" ]; then
+ 	 	echo " (+ Extreme)"
+         else
+          echo
+	 fi
+ 	 echo -n "    2. Overclock GPU: $GPUOC"
+ 	 if [ "$GPUOCX" = "ON" ]; then
+ 	 	echo " (+ Extreme)"
+ 	 else
+ 	  echo
+ 	 fi
+ 	 echo -n "    3. Overclock RAM: $DDROC"
+ 	 if [ "$DDROCX" = "ON" ]; then
+ 	 	echo " (+ Extreme)"
+ 	 else
+ 	  echo
+ 	 fi
+	 echo "   =--------------------------------------------------="
+ 	 echo "    4. Overvolt: $OVOLT"
+ 	 echo "    5. Undervolt: $UVOLT"
+ 	 echo "   =--------------------------------------------------="
+ 	 echo "    9. Turn OFF clocking options"
  	fi
- 	echo -n "    3. Overclock RAM: $DDROC"
- 	if [ "$DDROCX" = "ON" ]; then
- 		echo " (+ Extreme)"
- 	else
- 	 echo
- 	fi
-	echo "   =--------------------------------------------------="
- 	echo "    4. Overvolt: $OVOLT"
- 	echo "    5. Undervolt: $UVOLT"
- 	echo "   =--------------------------------------------------="
- 	echo "    9. Turn OFF clocking options"
  	echo "   ===================================================="
  	read -n 1 -p "   Select Clocking options [0=EXIT]: " clopt
- 	if [ "$clopt" = "1" ]; then
+ 	if [[ "$clopt" = "1" && -z "$CLCHK" ]]; then
  	   subcpu
- 	elif [ "$clopt" = "2" ]; then
+ 	elif [[ "$clopt" = "2" && -z "$CLCHK" ]]; then
  	   subgpu
- 	elif [ "$clopt" = "3" ]; then
+ 	elif [[ "$clopt" = "3" && -z "$CLCHK" ]]; then
  	   subddr
- 	elif [ "$clopt" = "4" ]; then
+ 	elif [[ "$clopt" = "4" && -z "$CLCHK" ]]; then
  	   if [ "$OVOLT" = "ON" ]; then
 	    OVOLT="OFF"
 	    checkcl
@@ -716,7 +744,7 @@ function clitems
 	    UVOLT="OFF"
 	    checkcl
 	   fi 	   
-	elif [ "$clopt" = "5" ]; then
+	elif [[ "$clopt" = "5" && -z "$CLCHK" ]]; then
 	   if [ "$UVOLT" = "ON" ]; then
 	    UVOLT="OFF"
 	    checkcl
@@ -758,9 +786,21 @@ function dbgitems
 	echo "    slightly. It is recommended to leave this ON, unless you"
 	echo "    know your kernel is stable and know what you are doing."
 	echo "   =--------------------------------------------------------="
-	echo "               1. Turn ON kernel debugging (yay)"
+	echo -n "            "
+	if [ "$SDBG" = "ON" ]; then 
+	 echo -n ">>"
+	else
+	 echo -n "  "
+	fi
+	echo " 1. Turn ON kernel debugging (yay)"
 	echo "               =--------------------------------="
-	echo "               2. Turn OFF kernel debugging (boo)"
+	echo -n "            "
+	if [ "$SDBG" = "OFF" ]; then
+	 echo -n ">>"
+	else
+	 echo -n "  "
+	fi
+	echo " 2. Turn OFF kernel debugging (boo)"
         echo "   =========================================================="
         read -n 1 -p "   Select an option [0=EXIT]: " dbgopt
         if [ "$dbgopt" = "1" ]; then
@@ -781,11 +821,11 @@ function malitems
  	echo
 	echo "   ==================[ MALI DRIVER OPTION ]==================" 
 	echo -n "                        Current: "
-	if [[ -d drivers/gpu/mali || -h drivers/gpu/mali ]]; then
-	   echo "$SMALI"
+	if [ -n "$MALICHK" ]; then
+	   echo "OFF (DISABLED)"
+	   SMALI="OFF"
 	else
-	   echo "DISABLED"
-	   MALICHK="0"
+	   echo "$SMALI"
 	fi
 	echo "   =--------------------------------------------------------="
 	echo "    This option is mainly for ROM creation purposes, as using"
@@ -803,15 +843,27 @@ function malitems
          echo "    Cannot locate any mali driver sources in the preferred"
          echo "    kernel source location (drivers/gpu/mali)."
         else
-	 echo "           1. Turn ON Mali driver module creation."
+	 echo -n "       "
+	 if [ "$SMALI" = "ON" ]; then
+	  echo -n ">>"
+	 else
+	  echo -n "  "
+	 fi
+	 echo " 1. Turn ON Mali driver module creation."
 	 echo "           =--------------------------------------="
-	 echo "           2. Turn OFF Mali driver module creation."
+	 echo -n "       "
+	 if [ "$SMALI" = "OFF" ]; then
+	  echo -n ">>"
+	 else
+	  echo -n "  "
+	 fi
+	 echo " 2. Turn OFF Mali driver module creation."
 	fi
 	echo "   =========================================================="
 	read -n 1 -p "   Select an option (if available) [0=EXIT]: " maliopt
-	if [[ "$maliopt" = "1" && "$MALICHK" != "0" ]]; then
+	if [[ "$maliopt" = "1" && -z "$MALICHK" ]]; then
 		SMALI="ON"
-	elif [[ "$maliopt" = "2" && "$MALICHK" != "0" ]]; then
+	elif [[ "$maliopt" = "2" && -z "$MALICHK" ]]; then
 		SMALI="OFF"
 	fi
  done
@@ -827,12 +879,12 @@ function fatitems
  	echo
 	echo "   ================[ EXFAT FS DRIVER OPTION ]================" 
 	echo -n "                       Current: "
-	if [[ -d fs/exfat || -h fs/exfat ]]; then
-	   echo "$SFAT"
-	else
-	   echo "DISABLED"
-	   FATCHK="0"
-	fi
+        if [ -n "$FATCHK" ]; then
+           echo "OFF (DISABLED)"
+           SFAT="OFF"
+        else
+           echo "$SFAT"
+        fi
 	echo "   =--------------------------------------------------------="
 	echo "    This is for building the exFAT drivers (if available)."
 	echo "    Please note that there is a legality question regarding"
@@ -850,11 +902,29 @@ function fatitems
          echo "    Cannot locate any exFAT driver sources in the preferred"
          echo "    kernel source location (fs/exfat)."
         else
-	 echo "          1. Turn ON exFAT driver MODULE creation."
+	 echo -n "      "
+	 if [ "$SFAT" = "ON-MODULE" ]; then
+	  echo -n ">>"
+	 else
+	  echo -n "  "
+	 fi
+	 echo " 1. Turn ON exFAT driver MODULE creation."
 	 echo "                           - OR -"
-	 echo "          2. Turn ON exFAT (integrated into kernel)."
+	 echo -n "      "
+	 if [ "$SFAT" = "ON-KERNEL" ]; then
+	  echo -n ">>"
+	 else
+	  echo -n "  "
+	 fi
+	 echo " 2. Turn ON exFAT (integrated into kernel)."
          echo "          =----------------------------------------="
-	 echo "          3. Turn OFF exFAT driver creation."
+	 echo -n "      "
+	 if [ "$SFAT" = "OFF" ]; then
+	  echo -n ">>"
+	 else
+	  echo -n "  "
+	 fi
+	 echo " 3. Turn OFF exFAT driver creation."
 	fi
 	echo "   =========================================================="
 	read -n 1 -p "   Select an option (if available) [0=EXIT]: " fatopt
@@ -868,7 +938,8 @@ function fatitems
  done
 }
 
-# options menu, will look put various optional features in here
+# options menu, will put various optional features in here
+# put initial feature checkers in here and cascade it down to submenus w/flags
 function optitems
 {
  optopt=""
@@ -877,8 +948,16 @@ function optitems
  	clear
  	echo
  	echo "   ===================[ OPTIONS MENU ]==================="
- 	echo -n "    1. Clocking: $SETCL"
-	if [ "$SETCL" != "OFF" ]; then
+ 	echo -n "    1. Clocking: "
+ 	if grep -q -s "CONFIG_OVER" arch/arm/mach-rk3188/*
+ 	then
+	 echo -n "$SETCL"
+	else
+	 echo -n "OFF (DISABLED)"
+	 SETCL="OFF"
+	 CLCHK="0"
+	fi
+	if [[ "$SETCL" != "OFF" && -z "$CLCHK" ]]; then
          echo -n " ["
 	 if [ "$CPUOC" = "ON" ]; then
 	  echo -n " CPU"
@@ -906,11 +985,25 @@ function optitems
 	 fi
 	 echo " ]"
 	else
-	 echo
+         echo
 	fi
 	echo "    2. Kernel debugging (dmesg/logs): $SDBG"
-	echo "    3. Mali kernel driver modules: $SMALI"
-	echo "    4. exFAT filesystem kernel drivers: $SFAT"
+	echo -n "    3. Mali kernel driver modules: "
+	if [[ -d drivers/gpu/mali || -h drivers/gpu/mali ]]; then
+	   echo "$SMALI"
+	else
+	   echo "OFF (DISABLED)"
+           SMALI="OFF"
+	   MALICHK="0"
+	fi	
+	echo -n "    4. exFAT filesystem kernel drivers: "
+	if [[ -d fs/exfat || -h fs/exfat ]]; then
+	   echo "$SFAT"
+	else
+	   echo "OFF (DISABLED)"
+	   SFAT="OFF"
+	   FATCHK="0"
+	fi
 	echo "   ======================================================"
 	read -n 1 -p "   Select an option [0=EXIT]: " optopt
 	if [ "$optopt" = "1" ]; then

@@ -81,6 +81,10 @@ it kernel source neutral where I could
 - Undervolting support added (in framework, needs tuning)
 - redefined some defines for kernel (recommendation by phjanderson), updated both scripts to reflect this
 - Improved some variable and redundancy checkers
+- (2.7) undervolt typo fix, more kernel neutrality stuff (added source
+- checkers for the special options, ie. no overclock defines, feature
+- disabled)
+- better item selection indicator for some submenus
 
 **TODO:**
 - config builder mailer. If you customize your device config for a device 
