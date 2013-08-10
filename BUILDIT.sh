@@ -1527,12 +1527,12 @@ function cuitems
 	   break
 	elif [ "$cuopt" = "2" ]; then
 	   CUTIME=2
-           CUPARM="make ARCH=arm clean"
+           CUPARM="make clean"
 	   CUDESC="Prior clean-up (make clean)"
 	   break
 	elif [ "$cuopt" = "3" ]; then
 	   CUTIME=3
-           CUPARM="make ARCH=arm mrproper"
+           CUPARM="make mrproper"
 	   CUDESC="FULL prior clean-up (make mrproper)"
 	   break
 	fi
