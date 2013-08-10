@@ -99,6 +99,7 @@ static struct rk29_keys_button key_button[] = {
 	{
 		.desc	= "esc",
 		.code	= KEY_BACK,	
+		.adc_value 	= 1,
 		.gpio	= INVALID_GPIO,
 		.active_low = PRESS_LEV_LOW,
 	},
@@ -1022,23 +1023,35 @@ static struct rfkill_rk_platform_data rfkill_rk_platdata = {
     .type               = RFKILL_TYPE_BLUETOOTH,
 
     .poweron_gpio       = { // BT_REG_ON
-        .io             = RK30_PIN3_PD1, //RK30_PIN3_PC7,
+        .io             = INVALID_GPIO, //SAW - RK30_PIN3_PD1, //RK30_PIN3_PC7,
         .enable         = GPIO_HIGH,
+	.iomux		= {
+	    .name	= "bt_poweron",
+	    .fgpio      = GPIO3_C7,
+        },
     },
 
     .reset_gpio         = { // BT_RST
-        .io             = INVALID_GPIO, // set io to INVALID_GPIO for disable it
+        .io             = RK30_PIN3_PD1, //SAW - INVALID_GPIO 
         .enable         = GPIO_LOW,
-   }, 
+	.iomux		= {
+	    .name	= "bt_reset",
+	    .fgpio      = GPIO3_D1,
+	},
+    }, 
 
     .wake_gpio          = { // BT_WAKE, use to control bt's sleep and wakeup
-        .io             = RK30_PIN3_PC7, // set io to INVALID_GPIO for disable it
+        .io             = RK30_PIN3_PC6, //SAW - RK30_PIN3_PC7, // set io to INVALID_GPIO for disable it
         .enable         = GPIO_HIGH,
+	.iomux		= {
+            .name	= "bt_wake",
+	    .fgpio	= GPIO3_C6,
+  	},
     },
 
     .wake_host_irq      = { // BT_HOST_WAKE, for bt wakeup host when it is in deep sleep
         .gpio           = {
-            .io         = RK30_PIN3_PC6, // set io to INVALID_GPIO for disable it
+            .io         = RK30_PIN3_PC7, //SAW - RK30_PIN3_PC6, // set io to INVALID_GPIO for disable it
             .enable     = GPIO_LOW,      // set GPIO_LOW for falling, set 0 for rising
             .iomux      = {
                 .name   = NULL,
@@ -1993,6 +2006,8 @@ static void __init rk30_i2c_register_board_info(void)
 #define POWER_ON_PIN RK30_PIN0_PA0   //power_hold
 static void rk30_pm_power_off(void)
 {
+	gpio_direction_output(RK30_PIN3_PD3, GPIO_LOW);//SAW - rjh for shutdown
+
 	printk(KERN_ERR "rk30_pm_power_off start...\n");
 #if defined(CONFIG_MFD_WM831X)
 	wm831x_set_bits(Wm831x,WM831X_GPIO_LEVEL,0x0001,0x0000);  //set sys_pwr 0
@@ -2001,17 +2016,18 @@ static void rk30_pm_power_off(void)
 #if defined(CONFIG_REGULATOR_ACT8846)
        if (pmic_is_act8846()) {
                printk("enter dcdet===========\n");
-               /*if(gpio_get_value (RK30_PIN0_PB2) == GPIO_LOW)
+               if(gpio_get_value (RK30_PIN0_PB2) == GPIO_LOW) //SAW was // 
                {
                        printk("enter restart===========\n");
                        arm_pm_restart(0, NULL);
                }
-		* code here may cause tablet cannot boot when shutdown without charger pluged in
+		/** code here may cause tablet cannot boot when shutdown without charger pluged in
 		  * and then plug in charger. -- Cody Xie
-               else*/
-		//{
+               else
+		{
 			act8846_device_shutdown();
-		//}
+		}
+		  */
 		  
        }
 #endif
@@ -2024,7 +2040,15 @@ static void __init machine_rk30_board_init(void)
 	//avs_init();
 	gpio_request(POWER_ON_PIN, "poweronpin");
 	gpio_direction_output(POWER_ON_PIN, GPIO_HIGH);
-	
+// SAW - osys for LED
+	int pwm_gpio;
+	pwm_gpio = iomux_mode_to_gpio(PWM0);
+	if (gpio_request(pwm_gpio, NULL)) {
+		printk("func %s, line %d: request gpio fail\n", __FUNCTION__, __LINE__);
+		return -1;
+	}
+	gpio_direction_output(pwm_gpio, GPIO_HIGH);
+// SAW - osys	
 	pm_power_off = rk30_pm_power_off;
 	
         gpio_direction_output(POWER_ON_PIN, GPIO_HIGH);

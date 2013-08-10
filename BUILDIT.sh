@@ -102,7 +102,7 @@ fi
 if [ -z "$CUTIME" ]; then
    CUTIME=3
    CUDESC="FULL clean-up (make mrproper)"
-   CUPARM="make ARCH=arm mrproper"
+   CUPARM="make mrproper"
 fi
 
 if [ -z "$DEVNAME" ]; then

@@ -1329,7 +1329,7 @@ static struct clk general_pll_clk = {
 	.pll 		= &gpll_data
 };
 /********************************clocks***********************************/
-//GATE_CLK(ddr_gpll_path, general_pll_clk, DDR_GPLL);
+//GATE_CLK(ddr_gpll_path, general_pll_clk, DDR_GPLL); 
 static struct clk clk_ddr_gpll_path = {
 	.name		= "ddr_gpll_path",
 	.parent		= &general_pll_clk,
