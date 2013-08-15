@@ -97,14 +97,20 @@ from Rikomagic before alok's linux-centric source changes
 - Added in 2.4 version of LABS (BUILDIT.sh/CFGCORE.sh) to replace build_mk908
 - Stashed away old files in temp directory as LABS is almost ready to roll
 - Added in final 2.5 version of LABS
+- Power on light CPIO found in MK908 SDK1 leak, patched
+- Added in undervolting support
+- Updated LABS to 2.7 version (w/undervolt check and device neutral checks)
+- updated Mali drivers to r3p2-01rel3 (13 Aug 2013 release)
 
 **ToDo:**
 - YAFFS2 debugging
 - <del>more O/C stuff.. get running more stable and finally unlock GPU O/C</del>
 - isolate issue with cpufreq not reporting to sys properly for apps
 - <del>DDR init issue with improper timings setting and freq init (defaults to 300MHz instead of the stock 396MHz)</del>
-- I want my blue power on light back (mk908) :(
+- <del>I want my blue power on light back (mk908)</del>
 - <del>test the new exFAT driver</del>
+- Undervolt define testing and tweaking to achieve real undervolting
+- Mali driver testing on custom ROM
 
 **Thanks:**
 - Finless for preparing the way
@@ -116,5 +122,7 @@ from Rikomagic before alok's linux-centric source changes
 - galland and omegamoon for various kernel fixes
 - crewrktablets for various models and tools to work from/with
 - hoabycsr for various tips/tricks along the way
+- rxrz for the exFAT support (via samsung leak)
+- androidminipc62 (@armtvtech) for the MK908 SDK1 leak
 - and misc others that contributed to making all this happen
 (if I forgot anyone specific, sorry.. remind me, I don't mind giving credit where credit is due)
