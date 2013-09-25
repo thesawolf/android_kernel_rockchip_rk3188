@@ -2320,7 +2320,7 @@ CONFIG_ION_ROCKCHIP=y" >> ${CFGFILE}
 # SAW - MALI DRIVER OPTION
 if [[ -d drivers/gpu/mali || -h drivers/gpu/mali ]]; then
  if [ "$SMALI" = "ON" ]; then
-  echo "# CONFIG_MALI is not set
+  echo "CONFIG_MALI=y
 CONFIG_MALI400=m" >> ${CFGFILE}
   if [ "$SDBG" = "ON" ]; then
    echo "CONFIG_MALI400_DEBUG=y" >> ${CFGFILE}

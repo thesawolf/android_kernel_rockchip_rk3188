@@ -1,0 +1,135 @@
+------------------------NEW-KERNEL---------------------
+ =---------------------------------------=
+ TOOLCHAINS: arm-linux-gnueabi-
+ DEVICE CONFIG: CM10-MK908.defconfig
+ OUTPUT: kernel.img > KERNEL/MODULES dirs
+ LOGS: BUILD.LOG/screen output (replace)
+ THREADS: 4
+ =---------------------------------------=
+scripts/kconfig/conf --silentoldconfig Kconfig
+#
+# configuration written to .config
+#
+  CHK     include/linux/version.h
+  CHK     include/generated/utsrelease.h
+make[1]: `include/generated/mach-types.h' is up to date.
+  CALL    scripts/checksyscalls.sh
+  CHK     include/generated/compile.h
+  GZIP    kernel/config_data.gz
+  IKCFG   kernel/config_data.h
+  CC      kernel/configs.o
+  LD      kernel/built-in.o
+  LD      vmlinux.o
+  MODPOST vmlinux.o
+  GEN     .version
+  CHK     include/generated/compile.h
+  UPD     include/generated/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+  KSYM    .tmp_kallsyms1.S
+  AS      .tmp_kallsyms1.o
+  LD      .tmp_vmlinux2
+  KSYM    .tmp_kallsyms2.S
+  AS      .tmp_kallsyms2.o
+  LD      vmlinux
+  SYSMAP  System.map
+  SYSMAP  .tmp_System.map
+  OBJCOPY arch/arm/boot/Image
+  Kernel: arch/arm/boot/Image is ready
+
+mkkrnlimg V20120220
+cmd:/home/thesawolf/android/system/kernel/rockchip/rk3188/arch/arm/boot/Image /home/thesawolf/android/system/kernel/rockchip/rk3188/kernel.img [(null)]
+kernel Image:/home/thesawolf/android/system/kernel/rockchip/rk3188/kernel.img for mid is ready.
+   Image:  kernel.img is ready
+------------------------NEW-MODULES--------------------
+  CHK     include/linux/version.h
+  CHK     include/generated/utsrelease.h
+make[1]: `include/generated/mach-types.h' is up to date.
+  CALL    scripts/checksyscalls.sh
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_atomics.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_irq.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_wq.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_locks.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_wait_queue.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_low_level_mem.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_math.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_memory.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_misc.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_mali.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_notification.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_time.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_timers.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_ukk_mem.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_ukk_gp.o
+  CC [M]  drivers/gpu/mali/ump/common/ump_kernel_common.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_ukk_pp.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_ukk_core.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_kernel_core.o
+  CC [M]  drivers/gpu/mali/ump/common/ump_kernel_descriptor_mapping.o
+  CC [M]  drivers/gpu/mali/ump/common/ump_kernel_api.o
+  CC [M]  drivers/gpu/mali/ump/common/ump_kernel_ref_drv.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_kernel_linux.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_kernel_memory_backend_os.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_kernel_linux.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_kernel_memory_backend_dedicated.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_memory_backend.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_ukk_wrappers.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_ukk_ref_wrappers.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_kernel_descriptor_mapping.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_osk_atomics.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_osk_low_level_mem.o
+  CC [M]  drivers/gpu/mali/ump/linux/ump_osk_misc.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_session.o
+  CC [M]  drivers/gpu/mali/ump/../mali/linux/mali_osk_atomics.o
+  CC [M]  drivers/gpu/mali/ump/../mali/linux/mali_osk_locks.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_device_pause_resume.o
+  CC [M]  drivers/gpu/mali/ump/../mali/linux/mali_osk_memory.o
+  CC [M]  drivers/gpu/mali/ump/../mali/linux/mali_osk_math.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_kernel_vsync.o
+  CC [M]  drivers/gpu/mali/ump/../mali/linux/mali_osk_misc.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_ukk_vsync.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_kernel_sysfs.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_mmu.o
+  LD [M]  drivers/gpu/mali/ump/ump.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_mmu_page_directory.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_memory.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_kernel_memory_engine.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_block_allocator.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_kernel_mem_os.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_mem_validation.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_hw_core.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_gp.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_pp.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_pp_job.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_gp_job.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_scheduler.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_gp_scheduler.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_pp_scheduler.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_group.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_dlbu.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_broadcast.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_pm.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_pmu.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_user_settings_db.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_kernel_utilization.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_l2_cache.o
+  CC [M]  drivers/gpu/mali/mali/common/mali_pm_domain.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_pm.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_pmu_power_up_down.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_ukk_profiling.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_osk_profiling.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_profiling_internal.o
+  CC [M]  drivers/gpu/mali/mali/timestamp-default/mali_timestamp.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_sync.o
+  CC [M]  drivers/gpu/mali/mali/linux/mali_sync_user.o
+  LD [M]  drivers/gpu/mali/mali/mali.o
+  Building modules, stage 2.
+  MODPOST 3 modules
+  CC      drivers/gpu/mali/mali/mali.mod.o
+  CC      drivers/scsi/scsi_wait_scan.mod.o
+  CC      drivers/gpu/mali/ump/ump.mod.o
+  LD [M]  drivers/gpu/mali/mali/mali.ko
+  LD [M]  drivers/gpu/mali/ump/ump.ko
+  LD [M]  drivers/scsi/scsi_wait_scan.ko
+Moving kernel.img > KERNEL/MODULES dirs..

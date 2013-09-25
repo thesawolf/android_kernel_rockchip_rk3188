@@ -2160,7 +2160,7 @@ static struct cpufreq_frequency_table dvfs_arm_table[] = {
 	{.frequency = 1776 * 1000,	.index = 1300 * 1000},
 	{.frequency = 1896 * 1000,	.index = 1325 * 1000},
 	{.frequency = 1920 * 1000,	.index = 1350 * 1000},
-	{.frequency = 2016 * 1000,	.index = 1400 * 1000},
+	{.frequency = 2016 * 1000,	.index = 1375 * 1000},
 #elif defined(CONFIG_EXTREME_OCCPU) && defined(CONFIG_OVERVOLT) // CPU OCX+OV
 	{.frequency = 1776 * 1000,	.index = 1350 * 1000},
 	{.frequency = 1896 * 1000,	.index = 1375 * 1000},
